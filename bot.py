@@ -1,89 +1,100 @@
 import logging
 import random
+import asyncio
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 
-# Включим логирование, чтобы видеть ошибки
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+# Настройка логирования
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-# --- Состояния игры (простая база данных в памяти) ---
-# В реальном проекте лучше использовать базу данных (SQLite, Redis),
-# но для начала сойдет и словарь.
+# ТОКЕН - ВАШ ТОКЕН
+TOKEN = "8490172496:AAG9SmhT3xhL3_QrsjE3QOomniwPxEaEYRQ"
+
+# Хранилище игр
 user_data = {}
 
-# --- Команда /start ---
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Команда /start"""
     user_id = update.effective_user.id
-    # Инициализируем нового игрока
-    user_data[user_id] = {'secret_number': None, 'attempts': 0}
+    user_data[user_id] = {'secret_number': None}
     await update.message.reply_text(
-        "Привет! Давай сыграем в 'Угадай число'? 🎲\n"
-        "Я загадал число от 1 до 100.\n"
-        "Используй команду /play, чтобы начать новую игру, или просто вводи числа."
+        "🎮 Привет! Я игровой бот!\n\n"
+        "Команды:\n"
+        "/play - начать игру 'Угадай число'\n"
+        "/help - помощь"
     )
 
-# --- Команда /play (начало игры) ---
-async def play(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    # Генерируем случайное число
-    secret = random.randint(1, 100)
-    # Сохраняем данные для пользователя
-    if user_id not in user_data:
-        user_data[user_id] = {}
-    user_data[user_id]['secret_number'] = secret
-    user_data[user_id]['attempts'] = 0
-    
-    await update.message.reply_text("Игра началась! Я загадал число от 1 до 100. Попробуй угадать!")
+async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Команда /help"""
+    await update.message.reply_text(
+        "Игра 'Угадай число':\n"
+        "1. Напиши /play\n"
+        "2. Я загадаю число от 1 до 100\n"
+        "3. Вводи числа, я буду подсказывать\n\n"
+        "Создано на Python + python-telegram-bot"
+    )
 
-# --- Обработка текстовых сообщений (попыток угадать) ---
-async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def play(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Начать игру"""
     user_id = update.effective_user.id
-    text = update.message.text
+    secret = random.randint(1, 100)
+    user_data[user_id] = {'secret_number': secret}
+    logger.info(f"User {user_id} started game. Secret: {secret}")
+    await update.message.reply_text(
+        "🎲 Игра началась!\n"
+        "Я загадал число от 1 до 100.\n"
+        "Попробуй угадай! Вводи числа."
+    )
+
+async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Обработка попыток угадать"""
+    user_id = update.effective_user.id
+    text = update.message.text.strip()
     
-    # Проверяем, есть ли активная игра у пользователя
+    # Проверяем, есть ли активная игра
     if user_id not in user_data or user_data[user_id].get('secret_number') is None:
-        await update.message.reply_text("Чтобы начать игру, используй команду /play.")
+        await update.message.reply_text("Чтобы начать игру, используй /play")
         return
     
-    # Проверяем, является ли ввод числом
+    # Проверяем, что введено число
     if not text.isdigit():
-        await update.message.reply_text("Пожалуйста, введи целое число.")
+        await update.message.reply_text("Введи целое число от 1 до 100!")
         return
     
     guess = int(text)
     secret = user_data[user_id]['secret_number']
-    user_data[user_id]['attempts'] += 1
-    attempts = user_data[user_id]['attempts']
     
     # Логика игры
-    if guess < secret:
-        await update.message.reply_text("📉 Загаданное число БОЛЬШЕ. Попробуй еще.")
+    if guess < 1 or guess > 100:
+        await update.message.reply_text("Число должно быть от 1 до 100!")
+    elif guess < secret:
+        await update.message.reply_text("📈 Загаданное число БОЛЬШЕ! Попробуй еще.")
     elif guess > secret:
-        await update.message.reply_text("📈 Загаданное число МЕНЬШЕ. Попробуй еще.")
+        await update.message.reply_text("📉 Загаданное число МЕНЬШЕ! Попробуй еще.")
     else:
-        await update.message.reply_text(f"🎉 Поздравляю! Ты угадал число {secret} за {attempts} попыток! 🎉\nЧтобы сыграть снова, введи /play.")
-        # Сбрасываем игру (удаляем секретное число)
+        await update.message.reply_text(f"🎉 ПОБЕДА! 🎉\nТы угадал число {secret}!\n\nСыграем еще? Напиши /play")
         user_data[user_id]['secret_number'] = None
+        logger.info(f"User {user_id} won the game!")
 
-# --- Главная функция запуска ---
 def main():
-    # Вставь сюда свой токен, который дал BotFather
-    TOKEN = "8490172496:AAG9SmhT3xhL3_QrsjE3QOomniwPxEaEYRQ"
+    """Запуск бота"""
+    print("🚀 Запуск бота на Render.com...")
     
     # Создаем приложение
     application = Application.builder().token(TOKEN).build()
     
     # Регистрируем команды
     application.add_handler(CommandHandler("start", start))
+    application.add_handler(CommandHandler("help", help_command))
     application.add_handler(CommandHandler("play", play))
     
-    # Регистрируем обработчик текста (для попыток угадать)
-    # filters.TEXT & ~filters.COMMAND означает: любой текст, кроме команд
+    # Регистрируем обработчик сообщений
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     
-    # Запускаем бота (polling — метод опроса серверов Telegram)
-    print("Бот запущен...")
+    # Запускаем
+    print("✅ Бот запущен и готов к работе!")
     application.run_polling()
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
