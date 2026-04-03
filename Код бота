@@ -1,7 +1,6 @@
 import logging
 import random
 import time
-import asyncio
 from telegram import Update, ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ContextTypes
 
@@ -10,8 +9,8 @@ TOKEN = ""
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
 # Базовый кулдаун в секундах (1800 секунд = 30 минут)
-BASE_COOLDOWN = 1800
-MIN_COOLDOWN = 30
+BASE_COOLDOWN = 1
+MIN_COOLDOWN = 1
 
 # Базовые множители добычи
 BASE_MIN_ITEMS = 1
@@ -252,14 +251,12 @@ async def upgrade_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
-    await update.message.reply_text(
-        f"🔝 *Улучшение добычи*\n\n"
-        f"• Используй 🔮 Артефакты чтобы увеличивать доход копания в х1.5 раза каждый раз\n"
-        f"• Используй 🔮 Артефакты чтобы сокращать кулдаун копания на 15 секунд каждый раз\n\n"
-        f"Ваши артефакты: {artifacts}",
-        parse_mode='Markdown',
-        reply_markup=reply_markup
-    )
+    text = f"🔝 *Улучшение добычи*\n\n• Используй 🔮 Артефакты чтобы увеличивать доход копания в х1.5 раза каждый раз\n• Используй 🔮 Артефакты чтобы сокращать кулдаун копания на 15 секунд каждый раз\n\nВаши артефакты: {artifacts}"
+    
+    if update.callback_query:
+        await update.callback_query.edit_message_text(text, parse_mode='Markdown', reply_markup=reply_markup)
+    else:
+        await update.message.reply_text(text, parse_mode='Markdown', reply_markup=reply_markup)
 
 async def upgrade_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -406,13 +403,12 @@ async def drones_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     reply_markup = InlineKeyboardMarkup(keyboard)
     
-    await update.message.reply_text(
-        f"🕹 *Дронстанция*\n\n"
-        f"Исследуйте и используйте дроны чтобы добывать недостающие ресурсы!\n"
-        f"🪙 Монеты: {coins}.",
-        parse_mode='Markdown',
-        reply_markup=reply_markup
-    )
+    text = f"🕹 *Дронстанция*\n\nИсследуйте и используйте дроны чтобы добывать недостающие ресурсы!\n🪙 Монеты: {coins}."
+    
+    if update.callback_query:
+        await update.callback_query.edit_message_text(text, parse_mode='Markdown', reply_markup=reply_markup)
+    else:
+        await update.message.reply_text(text, parse_mode='Markdown', reply_markup=reply_markup)
 
 async def drone_research(update: Update, context: ContextTypes.DEFAULT_TYPE, drone_name):
     query = update.callback_query
@@ -526,7 +522,7 @@ async def drone_set_resource(update: Update, context: ContextTypes.DEFAULT_TYPE,
     count_key = drone_info['count_key']
     
     drones_data[resource_key] = resource
-    drones_data[count_key] = 1
+    drones_data[count_key] = drones_data.get(count_key, 0) + 1
     
     await drones_command(update, context)
 
@@ -1364,10 +1360,11 @@ def main():
     
     app.add_handler(CallbackQueryHandler(drone_back, pattern="drone_back"))
     app.add_handler(CallbackQueryHandler(drone_stats, pattern="drone_stats"))
+    
     for drone_name in DRONES.keys():
         app.add_handler(CallbackQueryHandler(lambda u, c, dn=drone_name: drone_research(u, c, dn), pattern=f"drone_research_{drone_name}"))
         app.add_handler(CallbackQueryHandler(lambda u, c, dn=drone_name: drone_buy(u, c, dn), pattern=f"drone_buy_{drone_name}"))
-        app.add_handler(CallbackQueryHandler(lambda u, c, dn=drone_name, res=c.data.split("_")[3]: drone_set_resource(u, c, dn, res), pattern=f"drone_resource_{drone_name}_"))
+        app.add_handler(CallbackQueryHandler(lambda u, c, dn=drone_name: drone_set_resource(u, c, dn, u.callback_query.data.split("_")[3]), pattern=f"drone_resource_{drone_name}_"))
     
     app.add_handler(CommandHandler("buyartifact", lambda u, c: buy_artifact(u, c, c.args[0] if c.args else "0")))
     
