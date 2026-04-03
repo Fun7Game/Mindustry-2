@@ -9,8 +9,8 @@ TOKEN = ""
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
 # Базовый кулдаун в секундах (1800 секунд = 30 минут)
-BASE_COOLDOWN = 1
-MIN_COOLDOWN = 1
+BASE_COOLDOWN = 1800
+MIN_COOLDOWN = 30
 
 # Базовые множители добычи
 BASE_MIN_ITEMS = 1
@@ -123,6 +123,40 @@ DRONES = {
     }
 }
 
+# Шансы для ежедневного подарка
+COIN_CHANCES = [
+    (40, 500), (30, 1000), (15, 2000), (7, 5000), (5, 10000),
+    (2, 25000), (0.8, 100000), (0.15, 500000), (0.04, 2500000), (0.01, 10000000)
+]
+
+ARTIFACT_CHANCES = [
+    (40, 0), (30, 1), (15, 2), (7, 3), (5, 5),
+    (2, 10), (0.8, 25), (0.15, 100), (0.04, 500), (0.01, 2000)
+]
+
+UNIQUE_ITEMS = {
+    "Сломанный медный бур": 50,
+    "Конвейер": 50,
+    "Помпа": 25,
+    "Силовой узел": 25,
+    "Генератор внутреннего сгорания": 15,
+    "Кремниевая плавильня": 10,
+    "Паровой генератор": 10,
+    "Пластановый компрессор": 7,
+    "Радиоизотопный термоэлектрический генератор": 5,
+    "Фазовый ткач": 5,
+    "Умножающий реконструктор": 2,
+    "Ториевый реактор": 2,
+    "Сверхприводный проектор": 1,
+    "Малый логический процессор": 1,
+    "Силовой проектор": 0.5,
+    "Импульсный реактор": 0.5,
+    "Экспоненциальный реконструктор": 0.2,
+    "Логический процессор": 0.1,
+    "Тетративный реконструктор": 0.05,
+    "Большой логический процессор": 0.01
+}
+
 def get_random_resource():
     rand = random.random()
     cumulative = 0
@@ -140,6 +174,22 @@ def get_mine_resource():
         if rand <= cumulative:
             return resource
     return "Медь"
+
+def get_random_value(chances):
+    rand = random.random() * 100
+    cumulative = 0
+    for chance, value in chances:
+        cumulative += chance
+        if rand <= cumulative:
+            return value
+    return chances[-1][1]
+
+def get_unique_items():
+    obtained = []
+    for item, chance in UNIQUE_ITEMS.items():
+        if random.random() * 100 <= chance:
+            obtained.append(item)
+    return obtained
 
 def get_resource_amount(resource, user_data=None):
     if resource in ITEM_RESOURCES:
@@ -161,7 +211,7 @@ def get_main_keyboard():
         [KeyboardButton("⛏️ Копать"), KeyboardButton("📦 Инвентарь")],
         [KeyboardButton("🛠 Крафтинг"), KeyboardButton("🔮 Магазин")],
         [KeyboardButton("🔝 Улучшения"), KeyboardButton("🏭 Шахта")],
-        [KeyboardButton("🕹 Дронстанция")]
+        [KeyboardButton("🕹 Дронстанция"), KeyboardButton("🎁 Ежедневный подарок")]
     ]
     return ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
 
@@ -217,6 +267,46 @@ async def shop_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
     
     await update.message.reply_text(shop_text, parse_mode='Markdown', reply_markup=get_main_keyboard())
+
+async def daygift_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    
+    if 'last_gift' not in context.bot_data:
+        context.bot_data['last_gift'] = {}
+    
+    last_time = context.bot_data['last_gift'].get(user_id, 0)
+    current_time = time.time()
+    
+    if current_time - last_time < 86400:
+        remaining = int(86400 - (current_time - last_time))
+        hours = remaining // 3600
+        minutes = (remaining % 3600) // 60
+        seconds = remaining % 60
+        await update.message.reply_text(f"❌ Ты уже получал ежедневный подарок!\n\nСледующий подарок будет доступен через {hours} ч {minutes} мин {seconds} сек.")
+        return
+    
+    context.bot_data['last_gift'][user_id] = current_time
+    
+    coins = get_random_value(COIN_CHANCES)
+    artifacts = get_random_value(ARTIFACT_CHANCES)
+    unique_items = get_unique_items()
+    
+    if 'all_inventories' not in context.bot_data:
+        context.bot_data['all_inventories'] = {}
+    
+    if user_id not in context.bot_data['all_inventories']:
+        context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
+    
+    inventory = context.bot_data['all_inventories'][user_id]
+    inventory['coins'] = inventory.get('coins', 0) + coins
+    inventory['artifacts'] = inventory.get('artifacts', 0) + artifacts
+    
+    gift_text = f"🎁 *Ежедневный подарок открыт!*\n\nВы получили:\n🪙 Монеты: {coins}\n🔮 Артефакты: {artifacts}"
+    
+    if unique_items:
+        gift_text += "\n\n⚙️ *Уникальные предметы:*\n• " + "\n• ".join(unique_items)
+    
+    await update.message.reply_text(gift_text, parse_mode='Markdown', reply_markup=get_main_keyboard())
 
 async def upgrade_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
@@ -403,7 +493,7 @@ async def drones_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     reply_markup = InlineKeyboardMarkup(keyboard)
     
-    text = f"🕹 *Дронстанция*\n\nИсследуйте и используйте дроны чтобы добывать недостающие ресурсы!\n🪙 Монеты: {coins}."
+    text = f"🕹 *Дронстанция*\n\nИсследуйте и используйте дроны чтобы добывать недостающие ресурсы!\n\nПроизводительность дронов:\n🕹Моно - 5Рес/Ч\n🕹Поли - 75Рес/Ч\n🕹Мега - 525Рес/Ч\n🕹Квад - 3675Рес/Ч\n🕹Окт - 80000Рес/Ч\n\n🪙 Монеты: {coins}."
     
     if update.callback_query:
         await update.callback_query.edit_message_text(text, parse_mode='Markdown', reply_markup=reply_markup)
@@ -578,14 +668,13 @@ async def drone_buy(update: Update, context: ContextTypes.DEFAULT_TYPE, drone_na
     if coins < buy_cost:
         await query.edit_message_text(f"❌ Недостаточно монет для покупки дрона {drone_name}!")
         return
-    if drones_data.get(resource_key) is None:
-        await drone_select_resource(update, context, drone_name)
-        return
     
     inventory['coins'] -= buy_cost
     drones_data[count_key] = drones_data.get(count_key, 0) + 1
+    # Сбрасываем ресурс для нового дрона, чтобы пришлось выбрать заново
+    drones_data[resource_key] = None
     
-    await drones_command(update, context)
+    await drone_select_resource(update, context, drone_name)
 
 async def drone_stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -1286,6 +1375,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await mineshaft_command(update, context)
     elif text == "🕹 дронстанция":
         await drones_command(update, context)
+    elif text == "🎁 ежедневный подарок":
+        await daygift_command(update, context)
 
 async def handle_new_chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Игровой бот Mindustry", reply_markup=get_main_keyboard())
@@ -1350,6 +1441,7 @@ def main():
     app.add_handler(CommandHandler("upgrade", upgrade_command))
     app.add_handler(CommandHandler("mineshaft", mineshaft_command))
     app.add_handler(CommandHandler("drones", drones_command))
+    app.add_handler(CommandHandler("daygift", daygift_command))
     
     app.add_handler(CallbackQueryHandler(mine_build_menu, pattern="mine_build_menu"))
     app.add_handler(CallbackQueryHandler(mine_info, pattern="mine_info"))
