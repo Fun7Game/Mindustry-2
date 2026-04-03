@@ -1,1 +1,1425 @@
+import logging
+import random
+import time
+import asyncio
+from telegram import Update, ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ContextTypes
 
+TOKEN = ""
+
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+
+# Базовый кулдаун в секундах (1800 секунд = 30 минут)
+BASE_COOLDOWN = 1800
+MIN_COOLDOWN = 30
+
+# Базовые множители добычи
+BASE_MIN_ITEMS = 1
+BASE_MAX_ITEMS = 10
+BASE_MIN_LIQUID = 100
+BASE_MAX_LIQUID = 1000
+
+# Словарь с ресурсами и их шансами
+RESOURCES = {
+    "Медь": 0.2,
+    "Свинец": 0.2,
+    "Уголь": 0.2,
+    "Песок": 0.2,
+    "Вода": 0.139,
+    "Титан": 0.04,
+    "Торий": 0.01,
+    "Нефть": 0.01,
+    "Кинетический сплав": 0.001
+}
+
+ITEM_RESOURCES = ["Медь", "Свинец", "Уголь", "Песок", "Титан", "Торий", "Кинетический сплав"]
+LIQUID_RESOURCES = ["Вода", "Нефть"]
+LIQUID_DISPLAY = ["Вода", "Нефть", "Криогенная жидкость"]
+
+# Ресурсы для шахты
+MINE_RESOURCES = {
+    "Медь": 0.23,
+    "Свинец": 0.23,
+    "Песок": 0.23,
+    "Уголь": 0.23,
+    "Титан": 0.07,
+    "Торий": 0.01
+}
+
+# Буры
+DRILLS = {
+    "Медный бур": {
+        "cost": {"Медь": 25},
+        "production": 15,
+        "emoji": "⚙️"
+    },
+    "Пневматический бур": {
+        "cost": {"Медь": 35, "Графит": 10},
+        "production": 60,
+        "emoji": "⚙️"
+    },
+    "Лазерный бур": {
+        "cost": {"Медь": 120, "Кремний": 40, "Титан": 20},
+        "production": 360,
+        "emoji": "⚙️"
+    },
+    "Воздушная бур. установка": {
+        "cost": {"Медь": 250, "Свинец": 250, "Кремний": 120, "Титан": 100, "Торий": 50},
+        "production": 1800,
+        "emoji": "⚙️"
+    },
+    "Epiroc Pit Viper 351": {
+        "cost": {"Медь": 800, "Кремний": 400, "Титан": 250, "Фазовая ткань": 100},
+        "production": 6000,
+        "emoji": "🏗"
+    },
+    "Sandvik Pantera DP1600i": {
+        "cost": {"Свинец": 2000, "Кремний": 1500, "Титан": 1500, "Фазовая ткань": 400, "Кинетический сплав": 400},
+        "production": 31600,
+        "emoji": "🏗"
+    }
+}
+
+# Дроны
+DRONES = {
+    "Моно": {
+        "research_cost": 1500,
+        "buy_cost": 100,
+        "production": 5,
+        "research_key": "mono_researched",
+        "count_key": "mono_count",
+        "resource_key": "mono_resource"
+    },
+    "Поли": {
+        "research_cost": 12500,
+        "buy_cost": 1000,
+        "production": 75,
+        "research_key": "poly_researched",
+        "count_key": "poly_count",
+        "resource_key": "poly_resource"
+    },
+    "Мега": {
+        "research_cost": 85000,
+        "buy_cost": 7500,
+        "production": 525,
+        "research_key": "mega_researched",
+        "count_key": "mega_count",
+        "resource_key": "mega_resource"
+    },
+    "Квад": {
+        "research_cost": 500000,
+        "buy_cost": 45000,
+        "production": 3675,
+        "research_key": "quad_researched",
+        "count_key": "quad_count",
+        "resource_key": "quad_resource"
+    },
+    "Окт": {
+        "research_cost": 12500000,
+        "buy_cost": 1000000,
+        "production": 80000,
+        "research_key": "oct_researched",
+        "count_key": "oct_count",
+        "resource_key": "oct_resource"
+    }
+}
+
+def get_random_resource():
+    rand = random.random()
+    cumulative = 0
+    for resource, chance in RESOURCES.items():
+        cumulative += chance
+        if rand <= cumulative:
+            return resource
+    return "Медь"
+
+def get_mine_resource():
+    rand = random.random()
+    cumulative = 0
+    for resource, chance in MINE_RESOURCES.items():
+        cumulative += chance
+        if rand <= cumulative:
+            return resource
+    return "Медь"
+
+def get_resource_amount(resource, user_data=None):
+    if resource in ITEM_RESOURCES:
+        if user_data and 'mining_multiplier' in user_data:
+            max_amount = int(BASE_MAX_ITEMS * user_data['mining_multiplier'])
+            min_amount = int(BASE_MIN_ITEMS * user_data['mining_multiplier'])
+            return random.randint(min_amount, max_amount)
+        return random.randint(BASE_MIN_ITEMS, BASE_MAX_ITEMS)
+    elif resource in LIQUID_RESOURCES:
+        if user_data and 'mining_multiplier' in user_data:
+            max_amount = int(BASE_MAX_LIQUID * user_data['mining_multiplier'])
+            min_amount = int(BASE_MIN_LIQUID * user_data['mining_multiplier'])
+            return random.randint(min_amount, max_amount)
+        return random.randint(BASE_MIN_LIQUID, BASE_MAX_LIQUID)
+    return 1
+
+def get_main_keyboard():
+    keyboard = [
+        [KeyboardButton("⛏️ Копать"), KeyboardButton("📦 Инвентарь")],
+        [KeyboardButton("🛠 Крафтинг"), KeyboardButton("🔮 Магазин")],
+        [KeyboardButton("🔝 Улучшения"), KeyboardButton("🏭 Шахта")],
+        [KeyboardButton("🕹 Дронстанция")]
+    ]
+    return ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+
+def get_upgrade_cost(level):
+    return 1 * (2 ** (level)) if level > 0 else 1
+
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(
+        "Привет! Я - Mindustry Копатель Бот.⛏️\n\n"
+        "Если хочешь узнать полный список команд, используй /help",
+        reply_markup=get_main_keyboard()
+    )
+
+async def craft_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    craft_text = (
+        "🛠 *Крафтинг станция*\n\n"
+        "Графит - 2шт Уголь (0,01🔮/4🪙)\n"
+        "Метастекло - 1шт Песок, 1шт Свинец (0,02🔮/4🪙)\n"
+        "Кремний - 2шт Песок, 1шт Уголь (0,05🔮/5🪙)\n"
+        "Споровый стручок - 200мл Вода (0,01🔮/5🪙)\n"
+        "Пластан - 2шт Титан, 100мл Нефть (0,2🔮/25🪙)\n"
+        "Кинетический сплав - 3шт Медь, 4шт Свинец, 2шт Титан, 3шт Кремний (1🔮/50🪙)\n"
+        "Фазовая ткань - 4шт Торий, 10шт Песок (0,5🔮/100🪙)\n"
+        "Пиротит - 2шт Свинец, 2шт Песок, 1шт Уголь (0,05🔮/10🪙)\n"
+        "Взрывчатая смесь - 1шт Пиротит, 1шт Споровый стручок (0,2🔮/30🪙)\n"
+        "Нефть (100 мл) - 500мл Вода, 2шт Песок (5🪙)\n"
+        "Криогенная жидкость (100 мл) - 100мл Вода, 1шт Титан (10🪙)\n\n"
+        "Графит - graphite\n"
+        "Метастекло - metaglass\n"
+        "Кремний - silicon\n"
+        "Споровый стручок - sporepod\n"
+        "Пластан - plastanium\n"
+        "Кинетический сплав - surgealloy\n"
+        "Фазовая ткань - phasefabric\n"
+        "Пиротит - pyratite\n"
+        "Взрывчатая смесь - blastcompound\n"
+        "Нефть - oil\n"
+        "Криогенная жидкость - cryofluid\n\n"
+        "Выбери ресурс в нужном количестве, чтобы скрафтить\n"
+        "Пример: 10 кинетического сплава - /craftsurgealloy 10"
+    )
+    
+    await update.message.reply_text(craft_text, parse_mode='Markdown', reply_markup=get_main_keyboard())
+
+async def shop_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    shop_text = (
+        "🔮 *Магазин Токсопида* 🕷\n\n"
+        "Обменивай свои добытые и скрафченные ресурсы на 🔮Артефакты или 🪙Монеты, чтобы покупать на них улучшения и добывать еще больше ресурсов!\n\n"
+        "1 Артефакт🔮 = 1000 Монет🪙\n\n"
+        "/buyartifact 1 - купить 1 артефакт\n"
+        "/exchangesurgealloyartifact 1 - обменять 2 Кинетического сплава на 1 Артефакт\n"
+        "/exchangesilicon 5 - обменять 5 Кремния на 25 монет"
+    )
+    
+    await update.message.reply_text(shop_text, parse_mode='Markdown', reply_markup=get_main_keyboard())
+
+async def upgrade_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    
+    if 'all_inventories' not in context.bot_data:
+        context.bot_data['all_inventories'] = {}
+    
+    if user_id not in context.bot_data['all_inventories']:
+        context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
+    
+    inventory = context.bot_data['all_inventories'][user_id]
+    artifacts = inventory.get('artifacts', 0)
+    
+    if 'upgrades' not in context.bot_data:
+        context.bot_data['upgrades'] = {}
+    
+    if user_id not in context.bot_data['upgrades']:
+        context.bot_data['upgrades'][user_id] = {
+            'mining_multiplier': 1.0,
+            'cooldown_reduction': 0,
+            'mining_level': 0,
+            'cooldown_level': 0
+        }
+    
+    upgrades = context.bot_data['upgrades'][user_id]
+    mining_cost = get_upgrade_cost(upgrades['mining_level'])
+    cooldown_cost = get_upgrade_cost(upgrades['cooldown_level'])
+    
+    keyboard = [
+        [InlineKeyboardButton(f"🔝 Производство x1.5 ({mining_cost}🔮)", callback_data=f"upgrade_mining_{mining_cost}")],
+        [InlineKeyboardButton(f"⏱️ Кулдаун -15с ({cooldown_cost}🔮)", callback_data=f"upgrade_cooldown_{cooldown_cost}")]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    
+    await update.message.reply_text(
+        f"🔝 *Улучшение добычи*\n\n"
+        f"• Используй 🔮 Артефакты чтобы увеличивать доход копания в х1.5 раза каждый раз\n"
+        f"• Используй 🔮 Артефакты чтобы сокращать кулдаун копания на 15 секунд каждый раз\n\n"
+        f"Ваши артефакты: {artifacts}",
+        parse_mode='Markdown',
+        reply_markup=reply_markup
+    )
+
+async def upgrade_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    
+    user_id = update.effective_user.id
+    data = query.data
+    
+    if data == "upgrade_back":
+        await upgrade_command(update, context)
+        return
+    
+    if 'all_inventories' not in context.bot_data:
+        context.bot_data['all_inventories'] = {}
+    
+    if user_id not in context.bot_data['all_inventories']:
+        context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
+    
+    inventory = context.bot_data['all_inventories'][user_id]
+    artifacts = inventory.get('artifacts', 0)
+    
+    if 'upgrades' not in context.bot_data:
+        context.bot_data['upgrades'] = {}
+    
+    if user_id not in context.bot_data['upgrades']:
+        context.bot_data['upgrades'][user_id] = {
+            'mining_multiplier': 1.0,
+            'cooldown_reduction': 0,
+            'mining_level': 0,
+            'cooldown_level': 0
+        }
+    
+    upgrades = context.bot_data['upgrades'][user_id]
+    
+    if data.startswith("upgrade_mining_"):
+        cost = int(data.split("_")[2])
+        
+        if artifacts < cost:
+            await query.edit_message_text(
+                f"❌ Недостаточно артефактов! Нужно {cost}🔮, у вас {artifacts}🔮\n\n"
+                f"Ваши артефакты: {artifacts}",
+                parse_mode='Markdown',
+                reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="upgrade_back")]])
+            )
+            return
+        
+        inventory['artifacts'] -= cost
+        upgrades['mining_level'] += 1
+        upgrades['mining_multiplier'] *= 1.5
+        
+        await query.edit_message_text(
+            f"✅ Улучшение куплено за {cost}🔮 Артефактов!\n\n"
+            f"🔝 Производство увеличено в 1.5 раза!\n"
+            f"Текущий множитель: x{upgrades['mining_multiplier']:.1f}\n\n"
+            f"Ваши артефакты: {inventory['artifacts']}",
+            parse_mode='Markdown',
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="upgrade_back")]])
+        )
+        
+    elif data.startswith("upgrade_cooldown_"):
+        cost = int(data.split("_")[2])
+        current_cooldown = max(MIN_COOLDOWN, BASE_COOLDOWN - upgrades['cooldown_reduction'] * 15)
+        
+        if current_cooldown <= MIN_COOLDOWN:
+            await query.edit_message_text(
+                f"❌ Кулдаун уже достиг минимального значения {MIN_COOLDOWN} секунд!\n\n"
+                f"Ваши артефакты: {artifacts}",
+                parse_mode='Markdown',
+                reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="upgrade_back")]])
+            )
+            return
+        
+        if artifacts < cost:
+            await query.edit_message_text(
+                f"❌ Недостаточно артефактов! Нужно {cost}🔮, у вас {artifacts}🔮\n\n"
+                f"Ваши артефакты: {artifacts}",
+                parse_mode='Markdown',
+                reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="upgrade_back")]])
+            )
+            return
+        
+        inventory['artifacts'] -= cost
+        upgrades['cooldown_level'] += 1
+        upgrades['cooldown_reduction'] += 1
+        
+        new_cooldown = max(MIN_COOLDOWN, BASE_COOLDOWN - upgrades['cooldown_reduction'] * 15)
+        
+        await query.edit_message_text(
+            f"✅ Улучшение куплено за {cost}🔮 Артефактов!\n\n"
+            f"⏱️ Кулдаун уменьшен на 15 секунд!\n"
+            f"Текущий кулдаун: {new_cooldown} сек\n\n"
+            f"Ваши артефакты: {inventory['artifacts']}",
+            parse_mode='Markdown',
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="upgrade_back")]])
+        )
+
+async def drones_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    
+    if 'all_inventories' not in context.bot_data:
+        context.bot_data['all_inventories'] = {}
+    
+    if user_id not in context.bot_data['all_inventories']:
+        context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
+    
+    inventory = context.bot_data['all_inventories'][user_id]
+    coins = inventory.get('coins', 0)
+    
+    if 'drones' not in context.bot_data:
+        context.bot_data['drones'] = {}
+    
+    if user_id not in context.bot_data['drones']:
+        context.bot_data['drones'][user_id] = {
+            'mono_researched': False,
+            'poly_researched': False,
+            'mega_researched': False,
+            'quad_researched': False,
+            'oct_researched': False,
+            'mono_count': 0,
+            'poly_count': 0,
+            'mega_count': 0,
+            'quad_count': 0,
+            'oct_count': 0,
+            'mono_resource': None,
+            'poly_resource': None,
+            'mega_resource': None,
+            'quad_resource': None,
+            'oct_resource': None,
+            'last_update': time.time()
+        }
+    
+    drones_data = context.bot_data['drones'][user_id]
+    
+    keyboard = []
+    
+    for drone_name, drone_info in DRONES.items():
+        research_key = drone_info['research_key']
+        if not drones_data.get(research_key, False):
+            keyboard.append([InlineKeyboardButton(f"🔍 Исследовать дрон {drone_name} ({drone_info['research_cost']}🪙)", callback_data=f"drone_research_{drone_name}")])
+        else:
+            keyboard.append([InlineKeyboardButton(f"🛒 Купить {drone_name} ({drone_info['buy_cost']}🪙)", callback_data=f"drone_buy_{drone_name}")])
+    
+    keyboard.append([InlineKeyboardButton("📊 Статистика дронов", callback_data="drone_stats")])
+    
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    
+    await update.message.reply_text(
+        f"🕹 *Дронстанция*\n\n"
+        f"Исследуйте и используйте дроны чтобы добывать недостающие ресурсы!\n"
+        f"🪙 Монеты: {coins}.",
+        parse_mode='Markdown',
+        reply_markup=reply_markup
+    )
+
+async def drone_research(update: Update, context: ContextTypes.DEFAULT_TYPE, drone_name):
+    query = update.callback_query
+    await query.answer()
+    
+    user_id = update.effective_user.id
+    
+    if 'all_inventories' not in context.bot_data:
+        context.bot_data['all_inventories'] = {}
+    
+    if user_id not in context.bot_data['all_inventories']:
+        context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
+    
+    inventory = context.bot_data['all_inventories'][user_id]
+    coins = inventory.get('coins', 0)
+    
+    if 'drones' not in context.bot_data:
+        context.bot_data['drones'] = {}
+    
+    if user_id not in context.bot_data['drones']:
+        context.bot_data['drones'][user_id] = {
+            'mono_researched': False,
+            'poly_researched': False,
+            'mega_researched': False,
+            'quad_researched': False,
+            'oct_researched': False,
+            'mono_count': 0,
+            'poly_count': 0,
+            'mega_count': 0,
+            'quad_count': 0,
+            'oct_count': 0,
+            'mono_resource': None,
+            'poly_resource': None,
+            'mega_resource': None,
+            'quad_resource': None,
+            'oct_resource': None,
+            'last_update': time.time()
+        }
+    
+    drones_data = context.bot_data['drones'][user_id]
+    
+    drone_info = DRONES[drone_name]
+    research_key = drone_info['research_key']
+    research_cost = drone_info['research_cost']
+    
+    if not drones_data.get(research_key, False):
+        if coins < research_cost:
+            await query.edit_message_text(
+                f"❌ Недостаточно монет для исследования дрона {drone_name}!",
+                reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="drone_back")]])
+            )
+            return
+        
+        inventory['coins'] -= research_cost
+        drones_data[research_key] = True
+        await drone_select_resource(update, context, drone_name)
+
+async def drone_select_resource(update: Update, context: ContextTypes.DEFAULT_TYPE, drone_name):
+    query = update.callback_query
+    
+    keyboard = [
+        [InlineKeyboardButton("Медь", callback_data=f"drone_resource_{drone_name}_Медь")],
+        [InlineKeyboardButton("Свинец", callback_data=f"drone_resource_{drone_name}_Свинец")],
+        [InlineKeyboardButton("Уголь", callback_data=f"drone_resource_{drone_name}_Уголь")],
+        [InlineKeyboardButton("Песок", callback_data=f"drone_resource_{drone_name}_Песок")],
+        [InlineKeyboardButton("Титан", callback_data=f"drone_resource_{drone_name}_Титан")],
+        [InlineKeyboardButton("Торий", callback_data=f"drone_resource_{drone_name}_Торий")],
+        [InlineKeyboardButton("❌ Отменить", callback_data="drone_back")]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    
+    await query.edit_message_text(
+        f"Выберите ресурс, который будет добывать дрон {drone_name}\n\n"
+        f"Выбирайте с умом, позже это нельзя будет изменить!",
+        reply_markup=reply_markup
+    )
+
+async def drone_set_resource(update: Update, context: ContextTypes.DEFAULT_TYPE, drone_name, resource):
+    query = update.callback_query
+    await query.answer()
+    
+    user_id = update.effective_user.id
+    
+    if 'drones' not in context.bot_data:
+        context.bot_data['drones'] = {}
+    
+    if user_id not in context.bot_data['drones']:
+        context.bot_data['drones'][user_id] = {
+            'mono_researched': False,
+            'poly_researched': False,
+            'mega_researched': False,
+            'quad_researched': False,
+            'oct_researched': False,
+            'mono_count': 0,
+            'poly_count': 0,
+            'mega_count': 0,
+            'quad_count': 0,
+            'oct_count': 0,
+            'mono_resource': None,
+            'poly_resource': None,
+            'mega_resource': None,
+            'quad_resource': None,
+            'oct_resource': None,
+            'last_update': time.time()
+        }
+    
+    drones_data = context.bot_data['drones'][user_id]
+    
+    drone_info = DRONES[drone_name]
+    resource_key = drone_info['resource_key']
+    count_key = drone_info['count_key']
+    
+    drones_data[resource_key] = resource
+    drones_data[count_key] = 1
+    
+    await drones_command(update, context)
+
+async def drone_buy(update: Update, context: ContextTypes.DEFAULT_TYPE, drone_name):
+    query = update.callback_query
+    await query.answer()
+    
+    user_id = update.effective_user.id
+    
+    if 'all_inventories' not in context.bot_data:
+        context.bot_data['all_inventories'] = {}
+    
+    if user_id not in context.bot_data['all_inventories']:
+        context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
+    
+    inventory = context.bot_data['all_inventories'][user_id]
+    coins = inventory.get('coins', 0)
+    
+    if 'drones' not in context.bot_data:
+        context.bot_data['drones'] = {}
+    
+    if user_id not in context.bot_data['drones']:
+        context.bot_data['drones'][user_id] = {
+            'mono_researched': False,
+            'poly_researched': False,
+            'mega_researched': False,
+            'quad_researched': False,
+            'oct_researched': False,
+            'mono_count': 0,
+            'poly_count': 0,
+            'mega_count': 0,
+            'quad_count': 0,
+            'oct_count': 0,
+            'mono_resource': None,
+            'poly_resource': None,
+            'mega_resource': None,
+            'quad_resource': None,
+            'oct_resource': None,
+            'last_update': time.time()
+        }
+    
+    drones_data = context.bot_data['drones'][user_id]
+    
+    drone_info = DRONES[drone_name]
+    research_key = drone_info['research_key']
+    resource_key = drone_info['resource_key']
+    count_key = drone_info['count_key']
+    buy_cost = drone_info['buy_cost']
+    
+    if not drones_data.get(research_key, False):
+        await query.edit_message_text(f"❌ Сначала исследуйте дрона {drone_name}!")
+        return
+    if coins < buy_cost:
+        await query.edit_message_text(f"❌ Недостаточно монет для покупки дрона {drone_name}!")
+        return
+    if drones_data.get(resource_key) is None:
+        await drone_select_resource(update, context, drone_name)
+        return
+    
+    inventory['coins'] -= buy_cost
+    drones_data[count_key] = drones_data.get(count_key, 0) + 1
+    
+    await drones_command(update, context)
+
+async def drone_stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    
+    user_id = update.effective_user.id
+    user_name = update.effective_user.first_name
+    
+    if 'drones' not in context.bot_data:
+        context.bot_data['drones'] = {}
+    
+    if user_id not in context.bot_data['drones']:
+        context.bot_data['drones'][user_id] = {
+            'mono_researched': False,
+            'poly_researched': False,
+            'mega_researched': False,
+            'quad_researched': False,
+            'oct_researched': False,
+            'mono_count': 0,
+            'poly_count': 0,
+            'mega_count': 0,
+            'quad_count': 0,
+            'oct_count': 0,
+            'mono_resource': None,
+            'poly_resource': None,
+            'mega_resource': None,
+            'quad_resource': None,
+            'oct_resource': None,
+            'last_update': time.time()
+        }
+    
+    drones_data = context.bot_data['drones'][user_id]
+    
+    current_time = time.time()
+    last_update = drones_data.get('last_update', current_time)
+    elapsed_seconds = current_time - last_update
+    
+    if elapsed_seconds > 0 and elapsed_seconds <= 86400:
+        if 'all_inventories' in context.bot_data and user_id in context.bot_data['all_inventories']:
+            inventory = context.bot_data['all_inventories'][user_id]
+            
+            for drone_name, drone_info in DRONES.items():
+                count = drones_data.get(drone_info['count_key'], 0)
+                resource = drones_data.get(drone_info['resource_key'])
+                if count > 0 and resource:
+                    production = int((drone_info['production'] * count / 3600) * elapsed_seconds)
+                    production = min(production, 1000000)
+                    if production > 0:
+                        inventory[resource] = inventory.get(resource, 0) + production
+    
+    drones_data['last_update'] = current_time
+    
+    stats_text = f"🕹 *Дроны игрока {user_name}:*\n\n"
+    
+    resource_production = {
+        "Медь": 0, "Свинец": 0, "Уголь": 0, "Песок": 0, "Титан": 0, "Торий": 0
+    }
+    
+    for drone_name, drone_info in DRONES.items():
+        count = drones_data.get(drone_info['count_key'], 0)
+        resource = drones_data.get(drone_info['resource_key'])
+        stats_text += f"{drone_name} - {count}\n"
+        if resource and count > 0:
+            resource_production[resource] += drone_info['production'] * count
+    
+    stats_text += f"\n⛏️ *Добывающиеся дронами ресурсы:*\n"
+    stats_text += f"Медь: {resource_production['Медь']}/ч\n"
+    stats_text += f"Свинец: {resource_production['Свинец']}/ч\n"
+    stats_text += f"Уголь: {resource_production['Уголь']}/ч\n"
+    stats_text += f"Песок: {resource_production['Песок']}/ч\n"
+    stats_text += f"Титан: {resource_production['Титан']}/ч\n"
+    stats_text += f"Торий: {resource_production['Торий']}/ч\n\n"
+    stats_text += f"Ресурсы автоматически перемещаются в твой инвентарь!"
+    
+    keyboard = [[InlineKeyboardButton("⬅️ Назад", callback_data="drone_back")]]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    
+    await query.edit_message_text(stats_text, parse_mode='Markdown', reply_markup=reply_markup)
+
+async def drone_back(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await drones_command(update, context)
+
+async def mineshaft_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    
+    if 'mines' not in context.bot_data:
+        context.bot_data['mines'] = {}
+    
+    if user_id not in context.bot_data['mines']:
+        context.bot_data['mines'][user_id] = {'drills': {}, 'stored': {}, 'last_update': time.time()}
+    
+    keyboard = [
+        [InlineKeyboardButton("🛠 Построить бур", callback_data="mine_build_menu")],
+        [InlineKeyboardButton("🏭 Моя шахта", callback_data="mine_info")]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    
+    await update.message.reply_text(
+        "🏭 *Шахта*\n\n"
+        "Зарабатывай пассивные ресурсы во время АФК при помощи буров!\n\n"
+        "Стоимость строительства буров:\n"
+        "⚙️Медный бур (25 Медь) 15Рес/Ч\n"
+        "⚙️Пневматический бур (35 Медь, 10 Графит) 60Рес/Ч\n"
+        "⚙️Лазерный бур (120 Медь, 40 Кремний, 20 Титан) 360Рес/ч\n"
+        "⚙️Воздушная бур. установка (250 Медь, 250 Свинец, 120 Кремний, 100 Титан, 50 Торий) 1800 Рес/Ч\n"
+        "🏗Epiroc Pit Viper 351 (800 Медь, 400 Кремний, 250 Титан, 100 Фазовая ткань) 6000Рес/Ч\n"
+        "🏗Sandvik Pantera DP1600i (2000 Свинец, 1500 Кремний, 1500 Титан, 400 Фазовая ткань, 400 Кинетический сплав) 31600Рес/Ч",
+        parse_mode='Markdown',
+        reply_markup=reply_markup
+    )
+
+async def mine_build_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    
+    user_id = update.effective_user.id
+    
+    if 'all_inventories' not in context.bot_data:
+        context.bot_data['all_inventories'] = {}
+    
+    if user_id not in context.bot_data['all_inventories']:
+        context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
+    
+    inventory = context.bot_data['all_inventories'][user_id]
+    
+    keyboard = []
+    for drill_name, drill_info in DRILLS.items():
+        can_build = True
+        for resource, cost in drill_info["cost"].items():
+            if inventory.get(resource, 0) < cost:
+                can_build = False
+                break
+        
+        status = "✅" if can_build else "❌"
+        keyboard.append([InlineKeyboardButton(f"{drill_info['emoji']} {drill_name} {status}", callback_data=f"mine_build_{drill_name}")])
+    
+    keyboard.append([InlineKeyboardButton("⬅️ Назад", callback_data="mine_back")])
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    
+    await query.edit_message_text(
+        "Выбери бур, который хочешь построить:",
+        reply_markup=reply_markup
+    )
+
+async def mine_build_drill(update: Update, context: ContextTypes.DEFAULT_TYPE, drill_name):
+    query = update.callback_query
+    await query.answer()
+    
+    user_id = update.effective_user.id
+    
+    if drill_name not in DRILLS:
+        return
+    
+    drill_info = DRILLS[drill_name]
+    
+    if 'all_inventories' not in context.bot_data:
+        context.bot_data['all_inventories'] = {}
+    
+    if user_id not in context.bot_data['all_inventories']:
+        context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
+    
+    inventory = context.bot_data['all_inventories'][user_id]
+    
+    missing_resources = []
+    for resource, cost in drill_info["cost"].items():
+        if inventory.get(resource, 0) < cost:
+            missing_resources.append(f"{resource} ({inventory.get(resource, 0)}/{cost})")
+    
+    if missing_resources:
+        keyboard = [[InlineKeyboardButton("⬅️ Назад", callback_data="mine_build_menu")]]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        await query.edit_message_text(
+            f"❌ Недостаточно ресурсов для постройки бура!\n\nНе хватает:\n" + "\n".join(missing_resources),
+            reply_markup=reply_markup
+        )
+        return
+    
+    for resource, cost in drill_info["cost"].items():
+        inventory[resource] -= cost
+        if inventory[resource] == 0:
+            del inventory[resource]
+    
+    if 'mines' not in context.bot_data:
+        context.bot_data['mines'] = {}
+    
+    if user_id not in context.bot_data['mines']:
+        context.bot_data['mines'][user_id] = {'drills': {}, 'stored': {}, 'last_update': time.time()}
+    
+    if 'last_update' not in context.bot_data['mines'][user_id]:
+        context.bot_data['mines'][user_id]['last_update'] = time.time()
+    
+    if drill_name not in context.bot_data['mines'][user_id]['drills']:
+        context.bot_data['mines'][user_id]['drills'][drill_name] = 0
+    
+    context.bot_data['mines'][user_id]['drills'][drill_name] += 1
+    
+    await mine_build_menu(update, context)
+
+async def mine_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    
+    user_id = update.effective_user.id
+    user_name = update.effective_user.first_name
+    
+    if 'mines' not in context.bot_data:
+        context.bot_data['mines'] = {}
+    
+    if user_id not in context.bot_data['mines']:
+        context.bot_data['mines'][user_id] = {'drills': {}, 'stored': {}, 'last_update': time.time()}
+    
+    mine_data = context.bot_data['mines'][user_id]
+    drills = mine_data.get('drills', {})
+    
+    current_time = time.time()
+    last_update = mine_data.get('last_update', current_time)
+    elapsed_seconds = current_time - last_update
+    
+    if elapsed_seconds > 0 and elapsed_seconds <= 86400:
+        total_production_per_hour = 0
+        for drill_name, count in drills.items():
+            if drill_name in DRILLS:
+                total_production_per_hour += DRILLS[drill_name]["production"] * count
+        
+        if total_production_per_hour > 0:
+            total_production_per_second = total_production_per_hour / 3600
+            total_resources = int(total_production_per_second * elapsed_seconds)
+            total_resources = min(total_resources, 1000000000)
+            
+            if total_resources > 0:
+                if 'stored' not in mine_data:
+                    mine_data['stored'] = {}
+                
+                for _ in range(total_resources):
+                    resource = get_mine_resource()
+                    mine_data['stored'][resource] = mine_data['stored'].get(resource, 0) + 1
+    
+    mine_data['last_update'] = current_time
+    
+    total_production = 0
+    for drill_name, count in drills.items():
+        if drill_name in DRILLS:
+            total_production += DRILLS[drill_name]["production"] * count
+    
+    stored = mine_data.get('stored', {})
+    
+    info_text = f"🏗 *Буры игрока {user_name}:*\n\n"
+    
+    if not drills:
+        info_text += "Нет построенных буров!\n"
+    else:
+        for drill_name, count in drills.items():
+            info_text += f"{DRILLS[drill_name]['emoji']} {drill_name}: {count} шт.\n"
+    
+    info_text += f"\n📈 *Доход ресурсов:* {total_production}/Ч\n\n"
+    info_text += "📦 *Накоплено ресурсов:*\n"
+    
+    for resource in ["Медь", "Свинец", "Уголь", "Песок", "Титан", "Торий"]:
+        amount = stored.get(resource, 0)
+        info_text += f"{resource}: {amount} шт.\n"
+    
+    keyboard = [
+        [InlineKeyboardButton("💰 Собрать ресурсы", callback_data="mine_collect")],
+        [InlineKeyboardButton("⬅️ Назад", callback_data="mine_back")]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    
+    await query.edit_message_text(info_text, parse_mode='Markdown', reply_markup=reply_markup)
+
+async def mine_collect(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    
+    user_id = update.effective_user.id
+    
+    if 'mines' not in context.bot_data:
+        context.bot_data['mines'] = {}
+    
+    if user_id not in context.bot_data['mines']:
+        context.bot_data['mines'][user_id] = {'drills': {}, 'stored': {}, 'last_update': time.time()}
+    
+    mine_data = context.bot_data['mines'][user_id]
+    stored = mine_data.get('stored', {})
+    
+    if not stored:
+        await mine_info(update, context)
+        return
+    
+    if 'all_inventories' not in context.bot_data:
+        context.bot_data['all_inventories'] = {}
+    
+    if user_id not in context.bot_data['all_inventories']:
+        context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
+    
+    inventory = context.bot_data['all_inventories'][user_id]
+    
+    for resource, amount in stored.items():
+        inventory[resource] = inventory.get(resource, 0) + amount
+    
+    mine_data['stored'] = {}
+    
+    await mine_info(update, context)
+
+async def mine_back(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    
+    keyboard = [
+        [InlineKeyboardButton("🛠 Построить бур", callback_data="mine_build_menu")],
+        [InlineKeyboardButton("🏭 Моя шахта", callback_data="mine_info")]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    
+    await query.edit_message_text(
+        "🏭 *Шахта*\n\n"
+        "Зарабатывай пассивные ресурсы во время АФК при помощи буров!\n\n"
+        "Стоимость строительства буров:\n"
+        "⚙️Медный бур (25 Медь) 15Рес/Ч\n"
+        "⚙️Пневматический бур (35 Медь, 10 Графит) 60Рес/Ч\n"
+        "⚙️Лазерный бур (120 Медь, 40 Кремний, 20 Титан) 360Рес/ч\n"
+        "⚙️Воздушная бур. установка (250 Медь, 250 Свинец, 120 Кремний, 100 Титан, 50 Торий) 1800 Рес/Ч\n"
+        "🏗Epiroc Pit Viper 351 (800 Медь, 400 Кремний, 250 Титан, 100 Фазовая ткань) 6000Рес/Ч\n"
+        "🏗Sandvik Pantera DP1600i (2000 Свинец, 1500 Кремний, 1500 Титан, 400 Фазовая ткань, 400 Кинетический сплав) 31600Рес/Ч",
+        parse_mode='Markdown',
+        reply_markup=reply_markup
+    )
+
+async def buy_artifact(update: Update, context: ContextTypes.DEFAULT_TYPE, amount_str):
+    user_id = update.effective_user.id
+    
+    if 'all_inventories' not in context.bot_data:
+        context.bot_data['all_inventories'] = {}
+    
+    if user_id not in context.bot_data['all_inventories']:
+        context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
+    
+    inventory = context.bot_data['all_inventories'][user_id]
+    
+    if 'coins' not in inventory:
+        inventory['coins'] = 0
+    if 'artifacts' not in inventory:
+        inventory['artifacts'] = 0
+    
+    if amount_str == "all":
+        amount = inventory['coins'] // 1000
+        if amount == 0:
+            await update.message.reply_text("❌ Недостаточно монет!")
+            return
+    else:
+        try:
+            amount = int(amount_str)
+            if amount <= 0:
+                raise ValueError
+        except ValueError:
+            await update.message.reply_text(
+                "Выбери нужное количество артефактов\n"
+                "Пример: /buyartifact 1"
+            )
+            return
+    
+    total_cost = amount * 1000
+    
+    if inventory['coins'] < total_cost:
+        await update.message.reply_text("❌ Недостаточно монет!")
+        return
+    
+    inventory['coins'] -= total_cost
+    inventory['artifacts'] += amount
+    
+    await update.message.reply_text(f"✅ Вы купили 🔮 Артефакты в количестве {amount} шт!")
+
+async def exchange_artifact(update: Update, context: ContextTypes.DEFAULT_TYPE, resource_name, amount_str):
+    user_id = update.effective_user.id
+    
+    if resource_name not in ARTIFACT_EXCHANGE:
+        await update.message.reply_text("Этот ресурс нельзя обменять на артефакты!")
+        return
+    
+    if 'all_inventories' not in context.bot_data:
+        context.bot_data['all_inventories'] = {}
+    
+    if user_id not in context.bot_data['all_inventories']:
+        context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
+    
+    inventory = context.bot_data['all_inventories'][user_id]
+    
+    required_per_artifact = ARTIFACT_EXCHANGE[resource_name]
+    
+    if resource_name not in inventory:
+        await update.message.reply_text("❌ Недостаточно ресурсов!")
+        return
+    
+    if amount_str == "all":
+        amount = inventory[resource_name] // required_per_artifact
+        if amount == 0:
+            await update.message.reply_text("❌ Недостаточно ресурсов!")
+            return
+    else:
+        try:
+            amount = int(amount_str)
+            if amount <= 0:
+                raise ValueError
+        except ValueError:
+            await update.message.reply_text(
+                f"Выбери нужное количество для обмена\n"
+                f"Пример: /exchange{resource_name}artifact 1"
+            )
+            return
+    
+    required_total = required_per_artifact * amount
+    
+    if inventory[resource_name] < required_total:
+        await update.message.reply_text("❌ Недостаточно ресурсов!")
+        return
+    
+    inventory[resource_name] -= required_total
+    if inventory[resource_name] == 0:
+        del inventory[resource_name]
+    
+    if 'artifacts' not in inventory:
+        inventory['artifacts'] = 0
+    inventory['artifacts'] += amount
+    
+    await update.message.reply_text(f"✅ Вы обменяли {required_total} {resource_name} на {amount} 🔮 Артефактов!")
+
+async def exchange_coins(update: Update, context: ContextTypes.DEFAULT_TYPE, resource_name, amount_str):
+    user_id = update.effective_user.id
+    
+    if resource_name not in COIN_EXCHANGE:
+        await update.message.reply_text("Этот ресурс нельзя обменять на монеты!")
+        return
+    
+    if 'all_inventories' not in context.bot_data:
+        context.bot_data['all_inventories'] = {}
+    
+    if user_id not in context.bot_data['all_inventories']:
+        context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
+    
+    inventory = context.bot_data['all_inventories'][user_id]
+    
+    coin_value = COIN_EXCHANGE[resource_name]
+    
+    if resource_name not in inventory:
+        await update.message.reply_text("❌ Недостаточно ресурсов!")
+        return
+    
+    if amount_str == "all":
+        amount = inventory[resource_name]
+        if resource_name in LIQUID_DISPLAY and resource_name not in ITEM_RESOURCES:
+            amount = int(amount)
+        if amount == 0:
+            await update.message.reply_text("❌ Недостаточно ресурсов!")
+            return
+    else:
+        try:
+            amount = int(amount_str)
+            if amount <= 0:
+                raise ValueError
+        except ValueError:
+            await update.message.reply_text(
+                f"Выбери нужное количество для обмена\n"
+                f"Пример: /exchange{resource_name} 5"
+            )
+            return
+    
+    if inventory[resource_name] < amount:
+        await update.message.reply_text("❌ Недостаточно ресурсов!")
+        return
+    
+    if coin_value < 1:
+        coins_earned = int(amount * coin_value)
+    else:
+        coins_earned = amount * coin_value
+    
+    inventory[resource_name] -= amount
+    if inventory[resource_name] == 0:
+        del inventory[resource_name]
+    
+    if 'coins' not in inventory:
+        inventory['coins'] = 0
+    inventory['coins'] += coins_earned
+    
+    await update.message.reply_text(f"✅ Вы обменяли {amount} {resource_name} на {coins_earned} 🪙 Монет!")
+
+async def craft_item(update: Update, context: ContextTypes.DEFAULT_TYPE, item_key, amount_str):
+    user_id = update.effective_user.id
+    
+    if item_key not in CRAFT_RECIPES:
+        await update.message.reply_text("Неизвестный предмет для крафта!")
+        return
+    
+    recipe = CRAFT_RECIPES[item_key]
+    item_name = recipe["name"]
+    item_type = recipe["type"]
+    amount_per_craft = recipe["amount_per_craft"]
+    required_resources = recipe["resources"]
+    
+    if 'all_inventories' not in context.bot_data:
+        context.bot_data['all_inventories'] = {}
+    
+    if user_id not in context.bot_data['all_inventories']:
+        context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
+    
+    inventory = context.bot_data['all_inventories'][user_id]
+    
+    if amount_str == "all":
+        max_amount = float('inf')
+        for resource, amount_needed in required_resources.items():
+            if resource in inventory:
+                available = inventory[resource]
+                possible = available // amount_needed
+                max_amount = min(max_amount, possible)
+            else:
+                max_amount = 0
+                break
+        
+        if max_amount == float('inf') or max_amount == 0:
+            await update.message.reply_text("❌ Недостаточно ресурсов!")
+            return
+        
+        amount = max_amount
+    else:
+        try:
+            amount = int(amount_str)
+            if amount <= 0:
+                raise ValueError
+        except ValueError:
+            await update.message.reply_text(
+                "Выбери нужное количество ресурсов\n"
+                f"Пример: /craft{item_key} 10"
+            )
+            return
+    
+    for resource, amount_needed in required_resources.items():
+        required_total = amount_needed * amount
+        if resource not in inventory or inventory[resource] < required_total:
+            await update.message.reply_text("❌ Недостаточно ресурсов!")
+            return
+    
+    for resource, amount_needed in required_resources.items():
+        required_total = amount_needed * amount
+        inventory[resource] -= required_total
+        if inventory[resource] == 0:
+            del inventory[resource]
+    
+    if item_name not in inventory:
+        inventory[item_name] = 0
+    
+    crafted_amount = amount * amount_per_craft
+    inventory[item_name] += crafted_amount
+    
+    if item_type == "liquid":
+        await update.message.reply_text(f"✅ Вы скрафтили {item_name} в количестве {crafted_amount} мл!")
+    else:
+        await update.message.reply_text(f"✅ Вы скрафтили {item_name} в количестве {crafted_amount} шт!")
+
+async def mine(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    
+    if 'upgrades' not in context.bot_data:
+        context.bot_data['upgrades'] = {}
+    
+    if user_id not in context.bot_data['upgrades']:
+        context.bot_data['upgrades'][user_id] = {
+            'mining_multiplier': 1.0,
+            'cooldown_reduction': 0,
+            'mining_level': 0,
+            'cooldown_level': 0
+        }
+    
+    upgrades = context.bot_data['upgrades'][user_id]
+    current_cooldown = max(MIN_COOLDOWN, BASE_COOLDOWN - upgrades['cooldown_reduction'] * 15)
+    
+    if 'cooldowns' not in context.bot_data:
+        context.bot_data['cooldowns'] = {}
+    
+    current_time = time.time()
+    last_use = context.bot_data['cooldowns'].get(user_id, 0)
+    time_passed = current_time - last_use
+    
+    if time_passed < current_cooldown:
+        remaining = int(current_cooldown - time_passed)
+        
+        if remaining >= 3600:
+            hours = remaining // 3600
+            minutes = (remaining % 3600) // 60
+            seconds = remaining % 60
+            time_text = f"{hours} ч {minutes} мин {seconds} сек"
+        elif remaining >= 60:
+            minutes = remaining // 60
+            seconds = remaining % 60
+            time_text = f"{minutes} мин {seconds} сек"
+        else:
+            time_text = f"{remaining} сек"
+        
+        await update.message.reply_text(
+            f"❌ Ты уже недавно копал ресурсы!\n\n"
+            f"Возвращайся через {time_text}."
+        )
+        return
+    
+    context.bot_data['cooldowns'][user_id] = current_time
+    
+    resource = get_random_resource()
+    amount = get_resource_amount(resource, upgrades)
+    
+    if resource == "Кинетический сплав":
+        result_text = f"💥 *НЕВЕРОЯТНАЯ УДАЧА!*\n\nТы обнаружил заброшенную шахту и нашел контейнер с {amount} шт. Кинетическим сплавом! Мои поздравления!"
+        
+        if 'all_inventories' not in context.bot_data:
+            context.bot_data['all_inventories'] = {}
+        
+        if user_id not in context.bot_data['all_inventories']:
+            context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
+        
+        if resource not in context.bot_data['all_inventories'][user_id]:
+            context.bot_data['all_inventories'][user_id][resource] = 0
+        
+        context.bot_data['all_inventories'][user_id][resource] += amount
+        
+        await update.message.reply_text(result_text, parse_mode='Markdown')
+        return
+    
+    mining_messages = [
+        "⛏️ Вы ударили киркой по земле и добыли",
+        "⛏️ Вы поставили бур и добыли",
+        "⛏️ Исследуя местность, вы обнаружили и добыли"
+    ]
+    
+    selected_message = random.choice(mining_messages)
+    
+    if resource in ITEM_RESOURCES:
+        unit = "шт"
+    else:
+        unit = "мл"
+    
+    result_text = f"{selected_message} {resource} {amount} {unit}!"
+    
+    if 'all_inventories' not in context.bot_data:
+        context.bot_data['all_inventories'] = {}
+    
+    if user_id not in context.bot_data['all_inventories']:
+        context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
+    
+    if resource not in context.bot_data['all_inventories'][user_id]:
+        context.bot_data['all_inventories'][user_id][resource] = 0
+    
+    context.bot_data['all_inventories'][user_id][resource] += amount
+    
+    await update.message.reply_text(result_text)
+
+async def inventory_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    user_name = update.effective_user.first_name
+    
+    if 'all_inventories' not in context.bot_data:
+        context.bot_data['all_inventories'] = {}
+    
+    if user_id not in context.bot_data['all_inventories']:
+        context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
+    
+    inventory = context.bot_data['all_inventories'][user_id]
+    
+    coins = inventory.get('coins', 0)
+    artifacts = inventory.get('artifacts', 0)
+    
+    inventory_text = f"📦 Инвентарь игрока {user_name}:\n\n"
+    inventory_text += f"🔮 Артефакты: {artifacts} шт.\n"
+    inventory_text += f"🪙 Монеты: {coins} шт.\n\n"
+    
+    other_items = {k: v for k, v in inventory.items() if k not in ['coins', 'artifacts']}
+    
+    if not other_items:
+        inventory_text += "Других ресурсов нет!"
+    else:
+        for resource, amount in other_items.items():
+            if resource in LIQUID_DISPLAY:
+                inventory_text += f"• {resource}: {amount} мл\n"
+            else:
+                inventory_text += f"• {resource}: {amount} шт.\n"
+    
+    await update.message.reply_text(inventory_text, reply_markup=get_main_keyboard())
+
+async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text = update.message.text.lower()
+    
+    if text == "⛏️ копать" or text == "копать":
+        await mine(update, context)
+    elif text == "📦 инвентарь":
+        await inventory_command(update, context)
+    elif text == "🛠 крафтинг":
+        await craft_command(update, context)
+    elif text == "🔮 магазин":
+        await shop_command(update, context)
+    elif text == "🔝 улучшения":
+        await upgrade_command(update, context)
+    elif text == "🏭 шахта":
+        await mineshaft_command(update, context)
+    elif text == "🕹 дронстанция":
+        await drones_command(update, context)
+
+async def handle_new_chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("Игровой бот Mindustry", reply_markup=get_main_keyboard())
+
+# Рецепты крафта
+CRAFT_RECIPES = {
+    "graphite": {"name": "Графит", "type": "item", "amount_per_craft": 1, "resources": {"Уголь": 2}},
+    "metaglass": {"name": "Метастекло", "type": "item", "amount_per_craft": 1, "resources": {"Песок": 1, "Свинец": 1}},
+    "silicon": {"name": "Кремний", "type": "item", "amount_per_craft": 1, "resources": {"Песок": 2, "Уголь": 1}},
+    "sporepod": {"name": "Споровый стручок", "type": "item", "amount_per_craft": 1, "resources": {"Вода": 200}},
+    "plastanium": {"name": "Пластан", "type": "item", "amount_per_craft": 1, "resources": {"Титан": 2, "Нефть": 100}},
+    "surgealloy": {"name": "Кинетический сплав", "type": "item", "amount_per_craft": 1, "resources": {"Медь": 3, "Свинец": 4, "Титан": 2, "Кремний": 3}},
+    "phasefabric": {"name": "Фазовая ткань", "type": "item", "amount_per_craft": 1, "resources": {"Торий": 4, "Песок": 10}},
+    "pyratite": {"name": "Пиротит", "type": "item", "amount_per_craft": 1, "resources": {"Свинец": 2, "Песок": 2, "Уголь": 1}},
+    "blastcompound": {"name": "Взрывчатая смесь", "type": "item", "amount_per_craft": 1, "resources": {"Пиротит": 1, "Споровый стручок": 1}},
+    "oil": {"name": "Нефть", "type": "liquid", "amount_per_craft": 100, "resources": {"Вода": 500, "Песок": 2}},
+    "cryofluid": {"name": "Криогенная жидкость", "type": "liquid", "amount_per_craft": 100, "resources": {"Вода": 100, "Титан": 1}}
+}
+
+# Курсы обмена
+ARTIFACT_EXCHANGE = {
+    "Графит": 100,
+    "Метастекло": 50,
+    "Кремний": 20,
+    "Споровый стручок": 100,
+    "Пластан": 5,
+    "Кинетический сплав": 1,
+    "Фазовая ткань": 2,
+    "Пиротит": 20,
+    "Взрывчатая смесь": 5
+}
+
+COIN_EXCHANGE = {
+    "Медь": 1,
+    "Свинец": 1,
+    "Песок": 1,
+    "Уголь": 1,
+    "Вода": 0.01,
+    "Нефть": 0.05,
+    "Криогенная жидкость": 0.1,
+    "Титан": 2,
+    "Торий": 5,
+    "Графит": 4,
+    "Метастекло": 4,
+    "Кремний": 5,
+    "Споровый стручок": 5,
+    "Пластан": 25,
+    "Кинетический сплав": 50,
+    "Фазовая ткань": 100,
+    "Пиротит": 10,
+    "Взрывчатая смесь": 30
+}
+
+def main():
+    app = Application.builder().token(TOKEN).build()
+    
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("mine", mine))
+    app.add_handler(CommandHandler("inventory", inventory_command))
+    app.add_handler(CommandHandler("craft", craft_command))
+    app.add_handler(CommandHandler("shop", shop_command))
+    app.add_handler(CommandHandler("upgrade", upgrade_command))
+    app.add_handler(CommandHandler("mineshaft", mineshaft_command))
+    app.add_handler(CommandHandler("drones", drones_command))
+    
+    app.add_handler(CallbackQueryHandler(mine_build_menu, pattern="mine_build_menu"))
+    app.add_handler(CallbackQueryHandler(mine_info, pattern="mine_info"))
+    app.add_handler(CallbackQueryHandler(mine_collect, pattern="mine_collect"))
+    app.add_handler(CallbackQueryHandler(mine_back, pattern="mine_back"))
+    app.add_handler(CallbackQueryHandler(lambda u, c: mine_build_drill(u, c, u.callback_query.data.replace("mine_build_", "")), pattern="mine_build_"))
+    app.add_handler(CallbackQueryHandler(upgrade_callback, pattern="upgrade_"))
+    
+    app.add_handler(CallbackQueryHandler(drone_back, pattern="drone_back"))
+    app.add_handler(CallbackQueryHandler(drone_stats, pattern="drone_stats"))
+    for drone_name in DRONES.keys():
+        app.add_handler(CallbackQueryHandler(lambda u, c, dn=drone_name: drone_research(u, c, dn), pattern=f"drone_research_{drone_name}"))
+        app.add_handler(CallbackQueryHandler(lambda u, c, dn=drone_name: drone_buy(u, c, dn), pattern=f"drone_buy_{drone_name}"))
+        app.add_handler(CallbackQueryHandler(lambda u, c, dn=drone_name, res=c.data.split("_")[3]: drone_set_resource(u, c, dn, res), pattern=f"drone_resource_{drone_name}_"))
+    
+    app.add_handler(CommandHandler("buyartifact", lambda u, c: buy_artifact(u, c, c.args[0] if c.args else "0")))
+    
+    # Команды обмена на монеты
+    app.add_handler(CommandHandler("exchangecopper", lambda u, c: exchange_coins(u, c, "Медь", c.args[0] if c.args else "0")))
+    app.add_handler(CommandHandler("exchangelead", lambda u, c: exchange_coins(u, c, "Свинец", c.args[0] if c.args else "0")))
+    app.add_handler(CommandHandler("exchangesand", lambda u, c: exchange_coins(u, c, "Песок", c.args[0] if c.args else "0")))
+    app.add_handler(CommandHandler("exchangecoal", lambda u, c: exchange_coins(u, c, "Уголь", c.args[0] if c.args else "0")))
+    app.add_handler(CommandHandler("exchangewater", lambda u, c: exchange_coins(u, c, "Вода", c.args[0] if c.args else "0")))
+    app.add_handler(CommandHandler("exchangeoil", lambda u, c: exchange_coins(u, c, "Нефть", c.args[0] if c.args else "0")))
+    app.add_handler(CommandHandler("exchangecryofluid", lambda u, c: exchange_coins(u, c, "Криогенная жидкость", c.args[0] if c.args else "0")))
+    app.add_handler(CommandHandler("exchangetitanium", lambda u, c: exchange_coins(u, c, "Титан", c.args[0] if c.args else "0")))
+    app.add_handler(CommandHandler("exchangethorium", lambda u, c: exchange_coins(u, c, "Торий", c.args[0] if c.args else "0")))
+    app.add_handler(CommandHandler("exchangegraphite", lambda u, c: exchange_coins(u, c, "Графит", c.args[0] if c.args else "0")))
+    app.add_handler(CommandHandler("exchangemetaglass", lambda u, c: exchange_coins(u, c, "Метастекло", c.args[0] if c.args else "0")))
+    app.add_handler(CommandHandler("exchangesilicon", lambda u, c: exchange_coins(u, c, "Кремний", c.args[0] if c.args else "0")))
+    app.add_handler(CommandHandler("exchangesporepod", lambda u, c: exchange_coins(u, c, "Споровый стручок", c.args[0] if c.args else "0")))
+    app.add_handler(CommandHandler("exchangeplastanium", lambda u, c: exchange_coins(u, c, "Пластан", c.args[0] if c.args else "0")))
+    app.add_handler(CommandHandler("exchangesurgealloy", lambda u, c: exchange_coins(u, c, "Кинетический сплав", c.args[0] if c.args else "0")))
+    app.add_handler(CommandHandler("exchangephasefabric", lambda u, c: exchange_coins(u, c, "Фазовая ткань", c.args[0] if c.args else "0")))
+    app.add_handler(CommandHandler("exchangepyratite", lambda u, c: exchange_coins(u, c, "Пиротит", c.args[0] if c.args else "0")))
+    app.add_handler(CommandHandler("exchangeblastcompound", lambda u, c: exchange_coins(u, c, "Взрывчатая смесь", c.args[0] if c.args else "0")))
+    
+    # Команды обмена на артефакты
+    app.add_handler(CommandHandler("exchangegraphiteartifact", lambda u, c: exchange_artifact(u, c, "Графит", c.args[0] if c.args else "0")))
+    app.add_handler(CommandHandler("exchangemetaglassartifact", lambda u, c: exchange_artifact(u, c, "Метастекло", c.args[0] if c.args else "0")))
+    app.add_handler(CommandHandler("exchangesiliconartifact", lambda u, c: exchange_artifact(u, c, "Кремний", c.args[0] if c.args else "0")))
+    app.add_handler(CommandHandler("exchangesporepodartifact", lambda u, c: exchange_artifact(u, c, "Споровый стручок", c.args[0] if c.args else "0")))
+    app.add_handler(CommandHandler("exchangeplastaniumartifact", lambda u, c: exchange_artifact(u, c, "Пластан", c.args[0] if c.args else "0")))
+    app.add_handler(CommandHandler("exchangesurgealloyartifact", lambda u, c: exchange_artifact(u, c, "Кинетический сплав", c.args[0] if c.args else "0")))
+    app.add_handler(CommandHandler("exchangephasefabricartifact", lambda u, c: exchange_artifact(u, c, "Фазовая ткань", c.args[0] if c.args else "0")))
+    app.add_handler(CommandHandler("exchangepyratiteartifact", lambda u, c: exchange_artifact(u, c, "Пиротит", c.args[0] if c.args else "0")))
+    app.add_handler(CommandHandler("exchangeblastcompoundartifact", lambda u, c: exchange_artifact(u, c, "Взрывчатая смесь", c.args[0] if c.args else "0")))
+    
+    # Команды крафта
+    app.add_handler(CommandHandler("craftgraphite", lambda u, c: craft_item(u, c, "graphite", c.args[0] if c.args else "0")))
+    app.add_handler(CommandHandler("craftmetaglass", lambda u, c: craft_item(u, c, "metaglass", c.args[0] if c.args else "0")))
+    app.add_handler(CommandHandler("craftsilicon", lambda u, c: craft_item(u, c, "silicon", c.args[0] if c.args else "0")))
+    app.add_handler(CommandHandler("craftsporepod", lambda u, c: craft_item(u, c, "sporepod", c.args[0] if c.args else "0")))
+    app.add_handler(CommandHandler("craftplastanium", lambda u, c: craft_item(u, c, "plastanium", c.args[0] if c.args else "0")))
+    app.add_handler(CommandHandler("craftsurgealloy", lambda u, c: craft_item(u, c, "surgealloy", c.args[0] if c.args else "0")))
+    app.add_handler(CommandHandler("craftphasefabric", lambda u, c: craft_item(u, c, "phasefabric", c.args[0] if c.args else "0")))
+    app.add_handler(CommandHandler("craftpyratite", lambda u, c: craft_item(u, c, "pyratite", c.args[0] if c.args else "0")))
+    app.add_handler(CommandHandler("craftblastcompound", lambda u, c: craft_item(u, c, "blastcompound", c.args[0] if c.args else "0")))
+    app.add_handler(CommandHandler("craftoil", lambda u, c: craft_item(u, c, "oil", c.args[0] if c.args else "0")))
+    app.add_handler(CommandHandler("craftcryofluid", lambda u, c: craft_item(u, c, "cryofluid", c.args[0] if c.args else "0")))
+    
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_new_chat), group=0)
+    
+    print("🤖 Бот запущен! Нажмите Ctrl+C для остановки.")
+    app.run_polling(allowed_updates=Update.ALL_TYPES)
+
+if __name__ == '__main__':
+    main()
