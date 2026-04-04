@@ -1,7 +1,6 @@
 import logging
 import random
 import time
-import asyncio
 from telegram import Update, ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ContextTypes
 
@@ -9,8 +8,8 @@ TOKEN = ""
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
-# Базовый кулдаун в секундах (1800 секунд = 30 минут)
-BASE_COOLDOWN = 1800
+# Базовый кулдаун в секундах (1200 секунд = 20 минут)
+BASE_COOLDOWN = 1200
 MIN_COOLDOWN = 30
 
 # Базовые множители добычи
@@ -235,7 +234,8 @@ def get_main_keyboard():
         [KeyboardButton("⛏️ Копать"), KeyboardButton("📦 Инвентарь")],
         [KeyboardButton("🛠 Крафтинг"), KeyboardButton("🔮 Магазин")],
         [KeyboardButton("🔝 Улучшения"), KeyboardButton("🏭 Шахта")],
-        [KeyboardButton("🕹 Дронстанция"), KeyboardButton("🎁 Ежедневный подарок")]
+        [KeyboardButton("🕹 Дронстанция"), KeyboardButton("🎁 Ежедневный подарок")],
+        [KeyboardButton("⚔️ Сектор")]
     ]
     return ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
 
@@ -291,6 +291,208 @@ async def shop_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
     
     await update.message.reply_text(shop_text, parse_mode='Markdown', reply_markup=get_main_keyboard())
+
+async def sector_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Команда /sector - меню сектора"""
+    keyboard = [
+        [InlineKeyboardButton("🟡 Моя база", callback_data="sector_my_base")],
+        [InlineKeyboardButton("🔴 Вражеские базы", callback_data="sector_enemy_bases")],
+        [InlineKeyboardButton("🛠 Создать турель/юнита", callback_data="sector_create")]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    
+    await update.message.reply_text(
+        "⚔️ *Сектор*\n\n"
+        "Улучшай защиту своей базы, делай атаки на вражеские сектора чтобы получать ресурсы и разблокировать новые турели/юниты!",
+        parse_mode='Markdown',
+        reply_markup=reply_markup
+    )
+
+async def sector_my_base(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Моя база"""
+    query = update.callback_query
+    await query.answer()
+    
+    user_id = update.effective_user.id
+    user_name = update.effective_user.first_name
+    
+    if 'sector' not in context.bot_data:
+        context.bot_data['sector'] = {}
+    
+    if user_id not in context.bot_data['sector']:
+        context.bot_data['sector'][user_id] = {
+            'core': 'Осколок',
+            'weapons': 0,
+            'turrets': {},
+            'units': {}
+        }
+    
+    sector_data = context.bot_data['sector'][user_id]
+    
+    base_text = f"🌐 *База игрока {user_name}:*\n\n"
+    base_text += f"🛡 Ядро: {sector_data['core']}\n"
+    base_text += f"💥 Вооружение базы: {sector_data['weapons']}\n\n"
+    
+    if sector_data['turrets']:
+        base_text += "🔫 *Турели:*\n"
+        for turret, count in sector_data['turrets'].items():
+            base_text += f"{turret} - {count} шт. 🛡{count * 10} Защиты\n"
+        base_text += "\n"
+    
+    if sector_data['units']:
+        base_text += "🤖 *Юниты:*\n"
+        for unit, count in sector_data['units'].items():
+            base_text += f"{unit} - {count} шт. ⚔️{count * 5} Атаки\n"
+        base_text += "\n"
+    
+    base_text += "📊 Статус: "
+    
+    keyboard = [
+        [InlineKeyboardButton("🛡 Построить ядро Штаб", callback_data="sector_upgrade_core")],
+        [InlineKeyboardButton("⬅️ Назад", callback_data="sector_back")]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    
+    await query.edit_message_text(base_text, parse_mode='Markdown', reply_markup=reply_markup)
+
+async def sector_upgrade_core(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Улучшение ядра"""
+    query = update.callback_query
+    await query.answer()
+    
+    user_id = update.effective_user.id
+    
+    if 'sector' not in context.bot_data:
+        context.bot_data['sector'] = {}
+    
+    if user_id not in context.bot_data['sector']:
+        context.bot_data['sector'][user_id] = {
+            'core': 'Осколок',
+            'weapons': 0,
+            'turrets': {},
+            'units': {}
+        }
+    
+    sector_data = context.bot_data['sector'][user_id]
+    
+    if sector_data['core'] != 'Осколок':
+        await query.edit_message_text(
+            "❌ Ядро уже улучшено!",
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="sector_my_base")]])
+        )
+        return
+    
+    keyboard = [
+        [InlineKeyboardButton("✅ Построить", callback_data="sector_upgrade_core_confirm")],
+        [InlineKeyboardButton("❌ Отменить", callback_data="sector_my_base")]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    
+    await query.edit_message_text(
+        "Построить ядро Штаб за 4000 Медь, 4000 Свинец, 1500 Кремний?",
+        reply_markup=reply_markup
+    )
+
+async def sector_upgrade_core_confirm(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Подтверждение улучшения ядра"""
+    query = update.callback_query
+    await query.answer()
+    
+    user_id = update.effective_user.id
+    
+    if 'all_inventories' not in context.bot_data:
+        context.bot_data['all_inventories'] = {}
+    
+    if user_id not in context.bot_data['all_inventories']:
+        context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
+    
+    inventory = context.bot_data['all_inventories'][user_id]
+    
+    # Проверка ресурсов
+    if inventory.get('Медь', 0) < 4000 or inventory.get('Свинец', 0) < 4000 or inventory.get('Кремний', 0) < 1500:
+        await query.edit_message_text(
+            "❌ Недостаточно ресурсов для улучшения ядра!",
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="sector_my_base")]])
+        )
+        return
+    
+    # Списываем ресурсы
+    inventory['Медь'] -= 4000
+    inventory['Свинец'] -= 4000
+    inventory['Кремний'] -= 1500
+    
+    if inventory['Медь'] == 0:
+        del inventory['Медь']
+    if inventory['Свинец'] == 0:
+        del inventory['Свинец']
+    if inventory['Кремний'] == 0:
+        del inventory['Кремний']
+    
+    if 'sector' not in context.bot_data:
+        context.bot_data['sector'] = {}
+    
+    if user_id not in context.bot_data['sector']:
+        context.bot_data['sector'][user_id] = {
+            'core': 'Осколок',
+            'weapons': 0,
+            'turrets': {},
+            'units': {}
+        }
+    
+    sector_data = context.bot_data['sector'][user_id]
+    sector_data['core'] = 'Штаб'
+    
+    await query.edit_message_text(
+        "✅ Ядро улучшено!",
+        reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="sector_my_base")]])
+    )
+
+async def sector_enemy_bases(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Вражеские базы (пока заглушка)"""
+    query = update.callback_query
+    await query.answer()
+    
+    keyboard = [[InlineKeyboardButton("⬅️ Назад", callback_data="sector_back")]]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    
+    await query.edit_message_text(
+        "🔴 *Вражеские базы*\n\nСкоро здесь появятся вражеские сектора для атаки!",
+        parse_mode='Markdown',
+        reply_markup=reply_markup
+    )
+
+async def sector_create(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Создать турель/юнита (пока заглушка)"""
+    query = update.callback_query
+    await query.answer()
+    
+    keyboard = [[InlineKeyboardButton("⬅️ Назад", callback_data="sector_back")]]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    
+    await query.edit_message_text(
+        "🛠 *Создать турель/юнита*\n\nСкоро здесь появятся турели и юниты для создания!",
+        parse_mode='Markdown',
+        reply_markup=reply_markup
+    )
+
+async def sector_back(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Возврат в главное меню сектора"""
+    query = update.callback_query
+    await query.answer()
+    
+    keyboard = [
+        [InlineKeyboardButton("🟡 Моя база", callback_data="sector_my_base")],
+        [InlineKeyboardButton("🔴 Вражеские базы", callback_data="sector_enemy_bases")],
+        [InlineKeyboardButton("🛠 Создать турель/юнита", callback_data="sector_create")]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    
+    await query.edit_message_text(
+        "⚔️ *Сектор*\n\n"
+        "Улучшай защиту своей базы, делай атаки на вражеские сектора чтобы получать ресурсы и разблокировать новые турели/юниты!",
+        parse_mode='Markdown',
+        reply_markup=reply_markup
+    )
 
 async def daygift_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
@@ -686,7 +888,10 @@ async def drone_buy(update: Update, context: ContextTypes.DEFAULT_TYPE, drone_na
         await query.edit_message_text(f"❌ Сначала исследуйте дрона {drone_name}!")
         return
     if coins < buy_cost:
-        await query.edit_message_text(f"❌ Недостаточно монет для покупки дрона {drone_name}!")
+        await query.edit_message_text(
+            f"❌ Недостаточно монет для покупки дрона {drone_name}!",
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="drone_back")]])
+        )
         return
     
     # Сохраняем информацию о покупаемом дроне
@@ -1528,6 +1733,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await drones_command(update, context)
     elif text == "🎁 ежедневный подарок":
         await daygift_command(update, context)
+    elif text == "⚔️ сектор":
+        await sector_command(update, context)
 
 async def handle_new_chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Игровой бот Mindustry", reply_markup=get_main_keyboard())
@@ -1593,6 +1800,7 @@ def main():
     app.add_handler(CommandHandler("mineshaft", mineshaft_command))
     app.add_handler(CommandHandler("drones", drones_command))
     app.add_handler(CommandHandler("daygift", daygift_command))
+    app.add_handler(CommandHandler("sector", sector_command))
     
     app.add_handler(CallbackQueryHandler(mine_build_menu, pattern="mine_build_menu"))
     app.add_handler(CallbackQueryHandler(mine_info, pattern="mine_info"))
@@ -1604,6 +1812,13 @@ def main():
     app.add_handler(CallbackQueryHandler(drone_back, pattern="drone_back"))
     app.add_handler(CallbackQueryHandler(drone_stats, pattern="drone_stats"))
     app.add_handler(CallbackQueryHandler(drone_buy_cancel, pattern="drone_buy_cancel"))
+    
+    app.add_handler(CallbackQueryHandler(sector_my_base, pattern="sector_my_base"))
+    app.add_handler(CallbackQueryHandler(sector_enemy_bases, pattern="sector_enemy_bases"))
+    app.add_handler(CallbackQueryHandler(sector_create, pattern="sector_create"))
+    app.add_handler(CallbackQueryHandler(sector_back, pattern="sector_back"))
+    app.add_handler(CallbackQueryHandler(sector_upgrade_core, pattern="sector_upgrade_core"))
+    app.add_handler(CallbackQueryHandler(sector_upgrade_core_confirm, pattern="sector_upgrade_core_confirm"))
     
     for drone_name in DRONES.keys():
         app.add_handler(CallbackQueryHandler(lambda u, c, dn=drone_name: drone_research(u, c, dn), pattern=f"drone_research_{drone_name}"))
