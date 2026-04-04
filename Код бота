@@ -554,67 +554,7 @@ async def drone_research(update: Update, context: ContextTypes.DEFAULT_TYPE, dro
         
         inventory['coins'] -= research_cost
         drones_data[research_key] = True
-        await drone_select_resource(update, context, drone_name)
-
-async def drone_select_resource(update: Update, context: ContextTypes.DEFAULT_TYPE, drone_name):
-    query = update.callback_query
-    
-    keyboard = [
-        [InlineKeyboardButton("Медь", callback_data=f"drone_resource_{drone_name}_Медь")],
-        [InlineKeyboardButton("Свинец", callback_data=f"drone_resource_{drone_name}_Свинец")],
-        [InlineKeyboardButton("Уголь", callback_data=f"drone_resource_{drone_name}_Уголь")],
-        [InlineKeyboardButton("Песок", callback_data=f"drone_resource_{drone_name}_Песок")],
-        [InlineKeyboardButton("Титан", callback_data=f"drone_resource_{drone_name}_Титан")],
-        [InlineKeyboardButton("Торий", callback_data=f"drone_resource_{drone_name}_Торий")],
-        [InlineKeyboardButton("❌ Отменить", callback_data="drone_back")]
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    
-    await query.edit_message_text(
-        f"Выберите ресурс, который будет добывать дрон {drone_name}\n\n"
-        f"Выбирайте с умом, позже это нельзя будет изменить!",
-        reply_markup=reply_markup
-    )
-
-async def drone_set_resource(update: Update, context: ContextTypes.DEFAULT_TYPE, drone_name, resource):
-    query = update.callback_query
-    await query.answer()
-    
-    user_id = update.effective_user.id
-    
-    if 'drones' not in context.bot_data:
-        context.bot_data['drones'] = {}
-    
-    if user_id not in context.bot_data['drones']:
-        context.bot_data['drones'][user_id] = {
-            'mono_researched': False,
-            'poly_researched': False,
-            'mega_researched': False,
-            'quad_researched': False,
-            'oct_researched': False,
-            'mono_count': 0,
-            'poly_count': 0,
-            'mega_count': 0,
-            'quad_count': 0,
-            'oct_count': 0,
-            'mono_resource': None,
-            'poly_resource': None,
-            'mega_resource': None,
-            'quad_resource': None,
-            'oct_resource': None,
-            'last_update': time.time()
-        }
-    
-    drones_data = context.bot_data['drones'][user_id]
-    
-    drone_info = DRONES[drone_name]
-    resource_key = drone_info['resource_key']
-    count_key = drone_info['count_key']
-    
-    drones_data[resource_key] = resource
-    drones_data[count_key] = drones_data.get(count_key, 0) + 1
-    
-    await drones_command(update, context)
+        await drones_command(update, context)
 
 async def drone_buy(update: Update, context: ContextTypes.DEFAULT_TYPE, drone_name):
     query = update.callback_query
@@ -651,15 +591,14 @@ async def drone_buy(update: Update, context: ContextTypes.DEFAULT_TYPE, drone_na
             'mega_resource': None,
             'quad_resource': None,
             'oct_resource': None,
-            'last_update': time.time()
+            'last_update': time.time(),
+            'pending_drone': None
         }
     
     drones_data = context.bot_data['drones'][user_id]
     
     drone_info = DRONES[drone_name]
     research_key = drone_info['research_key']
-    resource_key = drone_info['resource_key']
-    count_key = drone_info['count_key']
     buy_cost = drone_info['buy_cost']
     
     if not drones_data.get(research_key, False):
@@ -669,12 +608,123 @@ async def drone_buy(update: Update, context: ContextTypes.DEFAULT_TYPE, drone_na
         await query.edit_message_text(f"❌ Недостаточно монет для покупки дрона {drone_name}!")
         return
     
-    inventory['coins'] -= buy_cost
-    drones_data[count_key] = drones_data.get(count_key, 0) + 1
-    # Сбрасываем ресурс для нового дрона, чтобы пришлось выбрать заново
-    drones_data[resource_key] = None
+    # Сохраняем информацию о покупаемом дроне
+    drones_data['pending_drone'] = drone_name
+    drones_data['pending_cost'] = buy_cost
     
-    await drone_select_resource(update, context, drone_name)
+    # Показываем выбор ресурса
+    keyboard = [
+        [InlineKeyboardButton("Медь", callback_data=f"drone_resource_{drone_name}_Медь")],
+        [InlineKeyboardButton("Свинец", callback_data=f"drone_resource_{drone_name}_Свинец")],
+        [InlineKeyboardButton("Уголь", callback_data=f"drone_resource_{drone_name}_Уголь")],
+        [InlineKeyboardButton("Песок", callback_data=f"drone_resource_{drone_name}_Песок")],
+        [InlineKeyboardButton("Титан", callback_data=f"drone_resource_{drone_name}_Титан")],
+        [InlineKeyboardButton("Торий", callback_data=f"drone_resource_{drone_name}_Торий")],
+        [InlineKeyboardButton("❌ Отменить", callback_data="drone_buy_cancel")]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    
+    await query.edit_message_text(
+        f"Выберите ресурс, который будет добывать дрон {drone_name}\n\n"
+        f"Выбирайте с умом, позже это нельзя будет изменить!",
+        reply_markup=reply_markup
+    )
+
+async def drone_buy_cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    
+    user_id = update.effective_user.id
+    
+    if 'drones' not in context.bot_data:
+        context.bot_data['drones'] = {}
+    
+    if user_id not in context.bot_data['drones']:
+        context.bot_data['drones'][user_id] = {
+            'mono_researched': False,
+            'poly_researched': False,
+            'mega_researched': False,
+            'quad_researched': False,
+            'oct_researched': False,
+            'mono_count': 0,
+            'poly_count': 0,
+            'mega_count': 0,
+            'quad_count': 0,
+            'oct_count': 0,
+            'mono_resource': None,
+            'poly_resource': None,
+            'mega_resource': None,
+            'quad_resource': None,
+            'oct_resource': None,
+            'last_update': time.time(),
+            'pending_drone': None
+        }
+    
+    drones_data = context.bot_data['drones'][user_id]
+    drones_data['pending_drone'] = None
+    
+    await drones_command(update, context)
+
+async def drone_set_resource(update: Update, context: ContextTypes.DEFAULT_TYPE, drone_name, resource):
+    query = update.callback_query
+    await query.answer()
+    
+    user_id = update.effective_user.id
+    
+    if 'drones' not in context.bot_data:
+        context.bot_data['drones'] = {}
+    
+    if user_id not in context.bot_data['drones']:
+        context.bot_data['drones'][user_id] = {
+            'mono_researched': False,
+            'poly_researched': False,
+            'mega_researched': False,
+            'quad_researched': False,
+            'oct_researched': False,
+            'mono_count': 0,
+            'poly_count': 0,
+            'mega_count': 0,
+            'quad_count': 0,
+            'oct_count': 0,
+            'mono_resource': None,
+            'poly_resource': None,
+            'mega_resource': None,
+            'quad_resource': None,
+            'oct_resource': None,
+            'last_update': time.time(),
+            'pending_drone': None
+        }
+    
+    drones_data = context.bot_data['drones'][user_id]
+    
+    # Проверяем, есть ли ожидающая покупка
+    if drones_data.get('pending_drone') != drone_name:
+        await drones_command(update, context)
+        return
+    
+    if 'all_inventories' not in context.bot_data:
+        context.bot_data['all_inventories'] = {}
+    
+    if user_id not in context.bot_data['all_inventories']:
+        context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
+    
+    inventory = context.bot_data['all_inventories'][user_id]
+    pending_cost = drones_data.get('pending_cost', 0)
+    
+    # Списываем монеты
+    inventory['coins'] -= pending_cost
+    
+    drone_info = DRONES[drone_name]
+    resource_key = drone_info['resource_key']
+    count_key = drone_info['count_key']
+    
+    # Добавляем дрон с выбранным ресурсом
+    drones_data[resource_key] = resource
+    drones_data[count_key] = drones_data.get(count_key, 0) + 1
+    drones_data['pending_drone'] = None
+    drones_data['pending_cost'] = None
+    
+    await drones_command(update, context)
 
 async def drone_stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -703,7 +753,8 @@ async def drone_stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
             'mega_resource': None,
             'quad_resource': None,
             'oct_resource': None,
-            'last_update': time.time()
+            'last_update': time.time(),
+            'pending_drone': None
         }
     
     drones_data = context.bot_data['drones'][user_id]
@@ -755,6 +806,35 @@ async def drone_stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await query.edit_message_text(stats_text, parse_mode='Markdown', reply_markup=reply_markup)
 
 async def drone_back(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    
+    if 'drones' not in context.bot_data:
+        context.bot_data['drones'] = {}
+    
+    if user_id not in context.bot_data['drones']:
+        context.bot_data['drones'][user_id] = {
+            'mono_researched': False,
+            'poly_researched': False,
+            'mega_researched': False,
+            'quad_researched': False,
+            'oct_researched': False,
+            'mono_count': 0,
+            'poly_count': 0,
+            'mega_count': 0,
+            'quad_count': 0,
+            'oct_count': 0,
+            'mono_resource': None,
+            'poly_resource': None,
+            'mega_resource': None,
+            'quad_resource': None,
+            'oct_resource': None,
+            'last_update': time.time(),
+            'pending_drone': None
+        }
+    
+    drones_data = context.bot_data['drones'][user_id]
+    drones_data['pending_drone'] = None
+    
     await drones_command(update, context)
 
 async def mineshaft_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -1452,6 +1532,7 @@ def main():
     
     app.add_handler(CallbackQueryHandler(drone_back, pattern="drone_back"))
     app.add_handler(CallbackQueryHandler(drone_stats, pattern="drone_stats"))
+    app.add_handler(CallbackQueryHandler(drone_buy_cancel, pattern="drone_buy_cancel"))
     
     for drone_name in DRONES.keys():
         app.add_handler(CallbackQueryHandler(lambda u, c, dn=drone_name: drone_research(u, c, dn), pattern=f"drone_research_{drone_name}"))
