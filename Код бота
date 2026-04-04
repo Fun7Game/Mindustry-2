@@ -9,6 +9,23 @@ TOKEN = ""
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
+# ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
+
+async def safe_edit_message(query, text=None, reply_markup=None, parse_mode=None):
+    """Безопасное редактирование сообщения, игнорирующее ошибку 'Message is not modified'"""
+    try:
+        if text is not None:
+            await query.edit_message_text(text, reply_markup=reply_markup, parse_mode=parse_mode)
+        else:
+            await query.edit_message_reply_markup(reply_markup=reply_markup)
+    except Exception as e:
+        if "Message is not modified" in str(e) or "message is not modified" in str(e).lower():
+            pass
+        else:
+            raise e
+
+# ========== КОНСТАНТЫ ==========
+
 # Базовый кулдаун в секундах (1200 секунд = 20 минут)
 BASE_COOLDOWN = 1200
 MIN_COOLDOWN = 30
@@ -368,6 +385,8 @@ UNIQUE_ITEMS_EMOJI = {
     "Большой логический процессор": "🌌"
 }
 
+# ========== ОСНОВНЫЕ ФУНКЦИИ ==========
+
 def get_random_resource():
     rand = random.random()
     cumulative = 0
@@ -430,8 +449,9 @@ def get_main_keyboard():
 def get_upgrade_cost(level):
     return 1 * (2 ** (level)) if level > 0 else 1
 
+# ========== ОБРАБОТЧИКИ КОМАНД ==========
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # Инициализация базы при первом взаимодействии
     user_id = update.effective_user.id
     if 'sector' not in context.bot_data:
         context.bot_data['sector'] = {}
@@ -497,7 +517,6 @@ async def shop_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(shop_text, parse_mode='Markdown', reply_markup=get_main_keyboard())
 
 async def drawings_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Команда /drawings - список чертежей"""
     user_id = update.effective_user.id
     user_name = update.effective_user.first_name
     
@@ -533,7 +552,6 @@ async def drawings_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(text, parse_mode='Markdown', reply_markup=InlineKeyboardMarkup(keyboard))
 
 async def sector_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Команда /sector - меню сектора"""
     keyboard = [
         [InlineKeyboardButton("🟡 Моя база", callback_data="sector_my_base")],
         [InlineKeyboardButton("🔴 Вражеские базы", callback_data="sector_enemy_bases")],
@@ -549,7 +567,6 @@ async def sector_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 async def sector_create(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Создать турель/юнита - выбор категории"""
     query = update.callback_query
     await query.answer()
     
@@ -560,13 +577,9 @@ async def sector_create(update: Update, context: ContextTypes.DEFAULT_TYPE):
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
-    await query.edit_message_text(
-        "Выберите категорию:",
-        reply_markup=reply_markup
-    )
+    await safe_edit_message(query, "Выберите категорию:", reply_markup=reply_markup)
 
 async def sector_create_turrets(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Выбор турели для создания"""
     query = update.callback_query
     await query.answer()
     
@@ -576,19 +589,23 @@ async def sector_create_turrets(update: Update, context: ContextTypes.DEFAULT_TY
     keyboard.append([InlineKeyboardButton("⬅️ Назад", callback_data="sector_create")])
     reply_markup = InlineKeyboardMarkup(keyboard)
     
-    await query.edit_message_text(
-        "Выберите турель, которую хотите поместить в чертежи:",
-        reply_markup=reply_markup
-    )
+    await safe_edit_message(query, "Выберите турель, которую хотите поместить в чертежи:", reply_markup=reply_markup)
+
+async def sector_create_units(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    
+    keyboard = [[InlineKeyboardButton("⬅️ Назад", callback_data="sector_create")]]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    
+    await safe_edit_message(query, "🤖 *Юниты*\n\nСкоро здесь появятся юниты для создания!", parse_mode='Markdown', reply_markup=reply_markup)
 
 async def sector_turret_info(update: Update, context: ContextTypes.DEFAULT_TYPE, turret_name):
-    """Информация о турели и выбор количества"""
     query = update.callback_query
     await query.answer()
     
     turret = TURRETS[turret_name]
     
-    # Формируем текст стоимости
     cost_text = ""
     for resource, amount in turret['cost'].items():
         cost_text += f"{amount} {resource}, "
@@ -599,7 +616,6 @@ async def sector_turret_info(update: Update, context: ContextTypes.DEFAULT_TYPE,
     text += f"⏳️ Время производства (1 Шт.): {turret['build_time']} Секунд\n"
     text += f"💥 Вооружение базы (1 Шт.): {turret['defense']} Единиц"
     
-    # Проверяем ресурсы игрока
     user_id = update.effective_user.id
     if 'all_inventories' not in context.bot_data:
         context.bot_data['all_inventories'] = {}
@@ -619,10 +635,9 @@ async def sector_turret_info(update: Update, context: ContextTypes.DEFAULT_TYPE,
     keyboard.append([InlineKeyboardButton("⬅️ Назад", callback_data="sector_create_turrets")])
     reply_markup = InlineKeyboardMarkup(keyboard)
     
-    await query.edit_message_text(text, parse_mode='Markdown', reply_markup=reply_markup)
+    await safe_edit_message(query, text, reply_markup=reply_markup, parse_mode='Markdown')
 
 async def sector_turret_buy(update: Update, context: ContextTypes.DEFAULT_TYPE, turret_name, amount):
-    """Покупка турели и добавление в чертежи"""
     query = update.callback_query
     await query.answer()
     
@@ -635,19 +650,18 @@ async def sector_turret_buy(update: Update, context: ContextTypes.DEFAULT_TYPE, 
         context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
     inventory = context.bot_data['all_inventories'][user_id]
     
-    # Проверка ресурсов
     for resource, cost in turret['cost'].items():
         if inventory.get(resource, 0) < cost * amount:
-            await query.edit_message_text("❌ Недостаточно ресурсов!")
+            keyboard = [[InlineKeyboardButton("⬅️ Назад", callback_data="sector_create_turrets")]]
+            reply_markup = InlineKeyboardMarkup(keyboard)
+            await safe_edit_message(query, "❌ Недостаточно ресурсов!", reply_markup=reply_markup)
             return
     
-    # Списываем ресурсы
     for resource, cost in turret['cost'].items():
         inventory[resource] -= cost * amount
         if inventory[resource] == 0:
             del inventory[resource]
     
-    # Добавляем в чертежи
     if 'drawings' not in context.bot_data:
         context.bot_data['drawings'] = {}
     if user_id not in context.bot_data['drawings']:
@@ -663,27 +677,9 @@ async def sector_turret_buy(update: Update, context: ContextTypes.DEFAULT_TYPE, 
     keyboard = [[InlineKeyboardButton("⬅️ Назад", callback_data="sector_create_turrets")]]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
-    await query.edit_message_text(
-        f"✅ {turret_name} в количестве {amount} шт. помещена в ваши чертежи!",
-        reply_markup=reply_markup
-    )
-
-async def sector_create_units(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Юниты (пока заглушка)"""
-    query = update.callback_query
-    await query.answer()
-    
-    keyboard = [[InlineKeyboardButton("⬅️ Назад", callback_data="sector_create")]]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    
-    await query.edit_message_text(
-        "🤖 *Юниты*\n\nСкоро здесь появятся юниты для создания!",
-        parse_mode='Markdown',
-        reply_markup=reply_markup
-    )
+    await safe_edit_message(query, f"✅ {turret_name} в количестве {amount} шт. помещена в ваши чертежи!", reply_markup=reply_markup)
 
 async def drawing_start(update: Update, context: ContextTypes.DEFAULT_TYPE, drawing_index):
-    """Начало выполнения чертежа"""
     query = update.callback_query
     await query.answer()
     
@@ -696,7 +692,7 @@ async def drawing_start(update: Update, context: ContextTypes.DEFAULT_TYPE, draw
     inventory = context.bot_data['all_inventories'][user_id]
     
     if inventory.get('artifacts', 0) < 5:
-        await query.edit_message_text("❌ Недостаточно артефактов для начала выполнения чертежа!")
+        await safe_edit_message(query, "❌ Недостаточно артефактов для начала выполнения чертежа!")
         return
     
     inventory['artifacts'] -= 5
@@ -726,7 +722,6 @@ async def drawing_start(update: Update, context: ContextTypes.DEFAULT_TYPE, draw
         'start_time': time.time()
     }
     
-    # Запускаем таймер
     asyncio.create_task(complete_drawing(update, context, user_id))
     
     text = f"📜 *Активный чертеж:*\n\n"
@@ -738,11 +733,10 @@ async def drawing_start(update: Update, context: ContextTypes.DEFAULT_TYPE, draw
     keyboard = [[InlineKeyboardButton("❌ Отменить чертеж", callback_data="drawing_cancel")]]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
-    await query.edit_message_text(text, parse_mode='Markdown', reply_markup=reply_markup)
+    await safe_edit_message(query, text, parse_mode='Markdown', reply_markup=reply_markup)
 
 async def complete_drawing(update: Update, context: ContextTypes.DEFAULT_TYPE, user_id):
-    """Завершение выполнения чертежа"""
-    await asyncio.sleep(1)  # Небольшая задержка
+    await asyncio.sleep(1)
     
     while True:
         if 'active_drawing' not in context.bot_data or user_id not in context.bot_data['active_drawing']:
@@ -753,7 +747,6 @@ async def complete_drawing(update: Update, context: ContextTypes.DEFAULT_TYPE, u
         total_time = active['build_time'] * active['count']
         
         if elapsed >= total_time:
-            # Добавляем турели на базу
             if 'sector' not in context.bot_data:
                 context.bot_data['sector'] = {}
             if user_id not in context.bot_data['sector']:
@@ -778,7 +771,6 @@ async def complete_drawing(update: Update, context: ContextTypes.DEFAULT_TYPE, u
             
             del context.bot_data['active_drawing'][user_id]
             
-            # Отправляем уведомление
             try:
                 await update.effective_user.send_message(f"✅ Чертеж завершен! {turret_name} в количестве {count} шт. добавлены на базу!")
             except:
@@ -788,7 +780,6 @@ async def complete_drawing(update: Update, context: ContextTypes.DEFAULT_TYPE, u
         await asyncio.sleep(5)
 
 async def drawing_cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Отмена выполнения чертежа"""
     query = update.callback_query
     await query.answer()
     
@@ -800,12 +791,12 @@ async def drawing_cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await drawings_command(update, context)
 
 async def sector_my_base(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Моя база"""
     query = update.callback_query
     await query.answer()
     
     user_id = update.effective_user.id
     user_name = update.effective_user.first_name
+    WAVE_COOLDOWN = 10800
     
     if 'sector' not in context.bot_data:
         context.bot_data['sector'] = {}
@@ -823,11 +814,8 @@ async def sector_my_base(update: Update, context: ContextTypes.DEFAULT_TYPE):
         }
     
     sector_data = context.bot_data['sector'][user_id]
-    
     current_time = time.time()
     
-    # Обновляем волны (кулдаун 3 часа = 10800 секунд)
-    WAVE_COOLDOWN = 10800  # 3 часа в секундах
     while current_time - sector_data.get('last_attack_time', current_time) >= WAVE_COOLDOWN:
         sector_data['last_attack_time'] = sector_data.get('last_attack_time', current_time) + WAVE_COOLDOWN
         
@@ -887,27 +875,17 @@ async def sector_my_base(update: Update, context: ContextTypes.DEFAULT_TYPE):
             damage_display += " ❗️"
         base_text += f"💥 База стала уязвимее на {damage_display} Единиц!"
     
-    # Кнопки
     keyboard = []
-    
     if sector_data['core'] == 'Осколок':
         keyboard.append([InlineKeyboardButton("🛡 Построить ядро Штаб", callback_data="sector_upgrade_core")])
     elif sector_data['core'] == 'Штаб':
         keyboard.append([InlineKeyboardButton("🛡 Построить ядро Атом", callback_data="sector_upgrade_core_atom")])
-    
     keyboard.append([InlineKeyboardButton("⬅️ Назад", callback_data="sector_back")])
     reply_markup = InlineKeyboardMarkup(keyboard)
     
-    try:
-        await query.edit_message_text(base_text, parse_mode='Markdown', reply_markup=reply_markup)
-    except Exception as e:
-        if "Message is not modified" in str(e) or "message is not modified" in str(e).lower():
-            pass
-        else:
-            raise e
+    await safe_edit_message(query, base_text, parse_mode='Markdown', reply_markup=reply_markup)
 
 async def sector_upgrade_core(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Улучшение ядра до Штаба"""
     query = update.callback_query
     await query.answer()
     
@@ -915,7 +893,6 @@ async def sector_upgrade_core(update: Update, context: ContextTypes.DEFAULT_TYPE
     
     if 'sector' not in context.bot_data:
         context.bot_data['sector'] = {}
-    
     if user_id not in context.bot_data['sector']:
         context.bot_data['sector'][user_id] = {
             'core': 'Осколок',
@@ -929,7 +906,6 @@ async def sector_upgrade_core(update: Update, context: ContextTypes.DEFAULT_TYPE
         }
     
     sector_data = context.bot_data['sector'][user_id]
-    
     if sector_data['core'] != 'Осколок':
         await sector_my_base(update, context)
         return
@@ -940,18 +916,9 @@ async def sector_upgrade_core(update: Update, context: ContextTypes.DEFAULT_TYPE
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
-    text = "Построить ядро Штаб за 4000 Медь, 4000 Свинец, 1500 Кремний?"
-    
-    try:
-        await query.edit_message_text(text, reply_markup=reply_markup)
-    except Exception as e:
-        if "Message is not modified" in str(e) or "message is not modified" in str(e).lower():
-            pass
-        else:
-            raise e
+    await safe_edit_message(query, "Построить ядро Штаб за 4000 Медь, 4000 Свинец, 1500 Кремний?", reply_markup=reply_markup)
 
 async def sector_upgrade_core_confirm(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Подтверждение улучшения ядра до Штаба"""
     query = update.callback_query
     await query.answer()
     
@@ -959,33 +926,24 @@ async def sector_upgrade_core_confirm(update: Update, context: ContextTypes.DEFA
     
     if 'all_inventories' not in context.bot_data:
         context.bot_data['all_inventories'] = {}
-    
     if user_id not in context.bot_data['all_inventories']:
         context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
-    
     inventory = context.bot_data['all_inventories'][user_id]
     
     if inventory.get('Медь', 0) < 4000 or inventory.get('Свинец', 0) < 4000 or inventory.get('Кремний', 0) < 1500:
-        await query.edit_message_text(
-            "❌ Недостаточно ресурсов для улучшения ядра!",
-            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="sector_my_base")]])
-        )
+        await safe_edit_message(query, "❌ Недостаточно ресурсов для улучшения ядра!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="sector_my_base")]]))
         return
     
     inventory['Медь'] -= 4000
     inventory['Свинец'] -= 4000
     inventory['Кремний'] -= 1500
     
-    if inventory['Медь'] == 0:
-        del inventory['Медь']
-    if inventory['Свинец'] == 0:
-        del inventory['Свинец']
-    if inventory['Кремний'] == 0:
-        del inventory['Кремний']
+    if inventory['Медь'] == 0: del inventory['Медь']
+    if inventory['Свинец'] == 0: del inventory['Свинец']
+    if inventory['Кремний'] == 0: del inventory['Кремний']
     
     if 'sector' not in context.bot_data:
         context.bot_data['sector'] = {}
-    
     if user_id not in context.bot_data['sector']:
         context.bot_data['sector'][user_id] = {
             'core': 'Осколок',
@@ -1001,13 +959,9 @@ async def sector_upgrade_core_confirm(update: Update, context: ContextTypes.DEFA
     sector_data = context.bot_data['sector'][user_id]
     sector_data['core'] = 'Штаб'
     
-    await query.edit_message_text(
-        "✅ Ядро улучшено!",
-        reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="sector_my_base")]])
-    )
+    await safe_edit_message(query, "✅ Ядро улучшено!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="sector_my_base")]]))
 
 async def sector_upgrade_core_atom(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Улучшение ядра до Атома"""
     query = update.callback_query
     await query.answer()
     
@@ -1015,7 +969,6 @@ async def sector_upgrade_core_atom(update: Update, context: ContextTypes.DEFAULT
     
     if 'sector' not in context.bot_data:
         context.bot_data['sector'] = {}
-    
     if user_id not in context.bot_data['sector']:
         context.bot_data['sector'][user_id] = {
             'core': 'Осколок',
@@ -1029,7 +982,6 @@ async def sector_upgrade_core_atom(update: Update, context: ContextTypes.DEFAULT
         }
     
     sector_data = context.bot_data['sector'][user_id]
-    
     if sector_data['core'] != 'Штаб':
         await sector_my_base(update, context)
         return
@@ -1040,18 +992,9 @@ async def sector_upgrade_core_atom(update: Update, context: ContextTypes.DEFAULT
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
-    text = "Построить ядро Атом за 12000 Медь, 12000 Свинец, 8000 Кремний, 4500 Торий, 500 Кинетический сплав?"
-    
-    try:
-        await query.edit_message_text(text, reply_markup=reply_markup)
-    except Exception as e:
-        if "Message is not modified" in str(e) or "message is not modified" in str(e).lower():
-            pass
-        else:
-            raise e
+    await safe_edit_message(query, "Построить ядро Атом за 12000 Медь, 12000 Свинец, 8000 Кремний, 4500 Торий, 500 Кинетический сплав?", reply_markup=reply_markup)
 
 async def sector_upgrade_core_atom_confirm(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Подтверждение улучшения ядра до Атома"""
     query = update.callback_query
     await query.answer()
     
@@ -1059,21 +1002,14 @@ async def sector_upgrade_core_atom_confirm(update: Update, context: ContextTypes
     
     if 'all_inventories' not in context.bot_data:
         context.bot_data['all_inventories'] = {}
-    
     if user_id not in context.bot_data['all_inventories']:
         context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
-    
     inventory = context.bot_data['all_inventories'][user_id]
     
-    if (inventory.get('Медь', 0) < 12000 or 
-        inventory.get('Свинец', 0) < 12000 or 
-        inventory.get('Кремний', 0) < 8000 or 
-        inventory.get('Торий', 0) < 4500 or 
+    if (inventory.get('Медь', 0) < 12000 or inventory.get('Свинец', 0) < 12000 or 
+        inventory.get('Кремний', 0) < 8000 or inventory.get('Торий', 0) < 4500 or 
         inventory.get('Кинетический сплав', 0) < 500):
-        await query.edit_message_text(
-            "❌ Недостаточно ресурсов для улучшения ядра!",
-            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="sector_my_base")]])
-        )
+        await safe_edit_message(query, "❌ Недостаточно ресурсов для улучшения ядра!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="sector_my_base")]]))
         return
     
     inventory['Медь'] -= 12000
@@ -1082,20 +1018,14 @@ async def sector_upgrade_core_atom_confirm(update: Update, context: ContextTypes
     inventory['Торий'] -= 4500
     inventory['Кинетический сплав'] -= 500
     
-    if inventory['Медь'] == 0:
-        del inventory['Медь']
-    if inventory['Свинец'] == 0:
-        del inventory['Свинец']
-    if inventory['Кремний'] == 0:
-        del inventory['Кремний']
-    if inventory['Торий'] == 0:
-        del inventory['Торий']
-    if inventory['Кинетический сплав'] == 0:
-        del inventory['Кинетический сплав']
+    if inventory['Медь'] == 0: del inventory['Медь']
+    if inventory['Свинец'] == 0: del inventory['Свинец']
+    if inventory['Кремний'] == 0: del inventory['Кремний']
+    if inventory['Торий'] == 0: del inventory['Торий']
+    if inventory['Кинетический сплав'] == 0: del inventory['Кинетический сплав']
     
     if 'sector' not in context.bot_data:
         context.bot_data['sector'] = {}
-    
     if user_id not in context.bot_data['sector']:
         context.bot_data['sector'][user_id] = {
             'core': 'Осколок',
@@ -1111,10 +1041,7 @@ async def sector_upgrade_core_atom_confirm(update: Update, context: ContextTypes
     sector_data = context.bot_data['sector'][user_id]
     sector_data['core'] = 'Атом'
     
-    await query.edit_message_text(
-        "✅ Ядро улучшено!",
-        reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="sector_my_base")]])
-    )
+    await safe_edit_message(query, "✅ Ядро улучшено!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="sector_my_base")]]))
 
 async def sector_enemy_bases(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -1123,11 +1050,7 @@ async def sector_enemy_bases(update: Update, context: ContextTypes.DEFAULT_TYPE)
     keyboard = [[InlineKeyboardButton("⬅️ Назад", callback_data="sector_back")]]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
-    await query.edit_message_text(
-        "🔴 *Вражеские базы*\n\nСкоро здесь появятся вражеские сектора для атаки!",
-        parse_mode='Markdown',
-        reply_markup=reply_markup
-    )
+    await safe_edit_message(query, "🔴 *Вражеские базы*\n\nСкоро здесь появятся вражеские сектора для атаки!", parse_mode='Markdown', reply_markup=reply_markup)
 
 async def sector_back(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -1140,12 +1063,7 @@ async def sector_back(update: Update, context: ContextTypes.DEFAULT_TYPE):
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
-    await query.edit_message_text(
-        "⚔️ *Сектор*\n\n"
-        "Улучшай защиту своей базы, делай атаки на вражеские сектора чтобы получать ресурсы и разблокировать новые турели/юниты!",
-        parse_mode='Markdown',
-        reply_markup=reply_markup
-    )
+    await safe_edit_message(query, "⚔️ *Сектор*\n\nУлучшай защиту своей базы, делай атаки на вражеские сектора чтобы получать ресурсы и разблокировать новые турели/юниты!", parse_mode='Markdown', reply_markup=reply_markup)
 
 async def daygift_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
@@ -1172,7 +1090,6 @@ async def daygift_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     if 'all_inventories' not in context.bot_data:
         context.bot_data['all_inventories'] = {}
-    
     if user_id not in context.bot_data['all_inventories']:
         context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
     
@@ -1195,7 +1112,6 @@ async def upgrade_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     if 'all_inventories' not in context.bot_data:
         context.bot_data['all_inventories'] = {}
-    
     if user_id not in context.bot_data['all_inventories']:
         context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
     
@@ -1204,7 +1120,6 @@ async def upgrade_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     if 'upgrades' not in context.bot_data:
         context.bot_data['upgrades'] = {}
-    
     if user_id not in context.bot_data['upgrades']:
         context.bot_data['upgrades'][user_id] = {
             'mining_multiplier': 1.0,
@@ -1226,7 +1141,7 @@ async def upgrade_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = f"🔝 *Улучшение добычи*\n\n• Используй 🔮 Артефакты чтобы увеличивать доход копания в х1.5 раза каждый раз\n• Используй 🔮 Артефакты чтобы сокращать кулдаун копания на 15 секунд каждый раз\n\nВаши артефакты: {artifacts}"
     
     if update.callback_query:
-        await update.callback_query.edit_message_text(text, parse_mode='Markdown', reply_markup=reply_markup)
+        await safe_edit_message(update.callback_query, text, parse_mode='Markdown', reply_markup=reply_markup)
     else:
         await update.message.reply_text(text, parse_mode='Markdown', reply_markup=reply_markup)
 
@@ -1243,7 +1158,6 @@ async def upgrade_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     if 'all_inventories' not in context.bot_data:
         context.bot_data['all_inventories'] = {}
-    
     if user_id not in context.bot_data['all_inventories']:
         context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
     
@@ -1252,7 +1166,6 @@ async def upgrade_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     if 'upgrades' not in context.bot_data:
         context.bot_data['upgrades'] = {}
-    
     if user_id not in context.bot_data['upgrades']:
         context.bot_data['upgrades'][user_id] = {
             'mining_multiplier': 1.0,
@@ -1267,47 +1180,25 @@ async def upgrade_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         cost = int(data.split("_")[2])
         
         if artifacts < cost:
-            await query.edit_message_text(
-                f"❌ Недостаточно артефактов! Нужно {cost}🔮, у вас {artifacts}🔮\n\n"
-                f"Ваши артефакты: {artifacts}",
-                parse_mode='Markdown',
-                reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="upgrade_back")]])
-            )
+            await safe_edit_message(query, f"❌ Недостаточно артефактов! Нужно {cost}🔮, у вас {artifacts}🔮\n\nВаши артефакты: {artifacts}", parse_mode='Markdown', reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="upgrade_back")]]))
             return
         
         inventory['artifacts'] -= cost
         upgrades['mining_level'] += 1
         upgrades['mining_multiplier'] *= 1.5
         
-        await query.edit_message_text(
-            f"✅ Улучшение куплено за {cost}🔮 Артефактов!\n\n"
-            f"🔝 Производство увеличено в 1.5 раза!\n"
-            f"Текущий множитель: x{upgrades['mining_multiplier']:.1f}\n\n"
-            f"Ваши артефакты: {inventory['artifacts']}",
-            parse_mode='Markdown',
-            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="upgrade_back")]])
-        )
+        await safe_edit_message(query, f"✅ Улучшение куплено за {cost}🔮 Артефактов!\n\n🔝 Производство увеличено в 1.5 раза!\nТекущий множитель: x{upgrades['mining_multiplier']:.1f}\n\nВаши артефакты: {inventory['artifacts']}", parse_mode='Markdown', reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="upgrade_back")]]))
         
     elif data.startswith("upgrade_cooldown_"):
         cost = int(data.split("_")[2])
         current_cooldown = max(MIN_COOLDOWN, BASE_COOLDOWN - upgrades['cooldown_reduction'] * 15)
         
         if current_cooldown <= MIN_COOLDOWN:
-            await query.edit_message_text(
-                f"❌ Кулдаун уже достиг минимального значения {MIN_COOLDOWN} секунд!\n\n"
-                f"Ваши артефакты: {artifacts}",
-                parse_mode='Markdown',
-                reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="upgrade_back")]])
-            )
+            await safe_edit_message(query, f"❌ Кулдаун уже достиг минимального значения {MIN_COOLDOWN} секунд!\n\nВаши артефакты: {artifacts}", parse_mode='Markdown', reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="upgrade_back")]]))
             return
         
         if artifacts < cost:
-            await query.edit_message_text(
-                f"❌ Недостаточно артефактов! Нужно {cost}🔮, у вас {artifacts}🔮\n\n"
-                f"Ваши артефакты: {artifacts}",
-                parse_mode='Markdown',
-                reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="upgrade_back")]])
-            )
+            await safe_edit_message(query, f"❌ Недостаточно артефактов! Нужно {cost}🔮, у вас {artifacts}🔮\n\nВаши артефакты: {artifacts}", parse_mode='Markdown', reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="upgrade_back")]]))
             return
         
         inventory['artifacts'] -= cost
@@ -1316,43 +1207,22 @@ async def upgrade_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
         new_cooldown = max(MIN_COOLDOWN, BASE_COOLDOWN - upgrades['cooldown_reduction'] * 15)
         
-        await query.edit_message_text(
-            f"✅ Улучшение куплено за {cost}🔮 Артефактов!\n\n"
-            f"⏱️ Кулдаун уменьшен на 15 секунд!\n"
-            f"Текущий кулдаун: {new_cooldown} сек\n\n"
-            f"Ваши артефакты: {inventory['artifacts']}",
-            parse_mode='Markdown',
-            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="upgrade_back")]])
-        )
+        await safe_edit_message(query, f"✅ Улучшение куплено за {cost}🔮 Артефактов!\n\n⏱️ Кулдаун уменьшен на 15 секунд!\nТекущий кулдаун: {new_cooldown} сек\n\nВаши артефакты: {inventory['artifacts']}", parse_mode='Markdown', reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="upgrade_back")]]))
 
 async def update_drone_resources(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     
     if 'drones' not in context.bot_data:
         context.bot_data['drones'] = {}
-    
     if user_id not in context.bot_data['drones']:
         context.bot_data['drones'][user_id] = {
-            'mono_researched': False,
-            'poly_researched': False,
-            'mega_researched': False,
-            'quad_researched': False,
-            'oct_researched': False,
-            'mono_count': 0,
-            'poly_count': 0,
-            'mega_count': 0,
-            'quad_count': 0,
-            'oct_count': 0,
-            'mono_resources': {},
-            'poly_resources': {},
-            'mega_resources': {},
-            'quad_resources': {},
-            'oct_resources': {},
+            'mono_researched': False, 'poly_researched': False, 'mega_researched': False, 'quad_researched': False, 'oct_researched': False,
+            'mono_count': 0, 'poly_count': 0, 'mega_count': 0, 'quad_count': 0, 'oct_count': 0,
+            'mono_resources': {}, 'poly_resources': {}, 'mega_resources': {}, 'quad_resources': {}, 'oct_resources': {},
             'last_update': time.time()
         }
     
     drones_data = context.bot_data['drones'][user_id]
-    
     current_time = time.time()
     last_update = drones_data.get('last_update', current_time)
     elapsed_seconds = current_time - last_update
@@ -1360,12 +1230,10 @@ async def update_drone_resources(update: Update, context: ContextTypes.DEFAULT_T
     if elapsed_seconds > 0 and elapsed_seconds <= 86400:
         if 'all_inventories' in context.bot_data and user_id in context.bot_data['all_inventories']:
             inventory = context.bot_data['all_inventories'][user_id]
-            
             for drone_name, drone_info in DRONES.items():
                 resources_key = drone_info['resources_key']
                 resources = drones_data.get(resources_key, {})
                 production = drone_info['production']
-                
                 for resource, count in resources.items():
                     if count > 0:
                         amount = int((production * count / 3600) * elapsed_seconds)
@@ -1377,115 +1245,73 @@ async def update_drone_resources(update: Update, context: ContextTypes.DEFAULT_T
 
 async def drones_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
-    
     await update_drone_resources(update, context)
     
     if 'all_inventories' not in context.bot_data:
         context.bot_data['all_inventories'] = {}
-    
     if user_id not in context.bot_data['all_inventories']:
         context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
-    
     inventory = context.bot_data['all_inventories'][user_id]
     coins = inventory.get('coins', 0)
     
     if 'drones' not in context.bot_data:
         context.bot_data['drones'] = {}
-    
     if user_id not in context.bot_data['drones']:
         context.bot_data['drones'][user_id] = {
-            'mono_researched': False,
-            'poly_researched': False,
-            'mega_researched': False,
-            'quad_researched': False,
-            'oct_researched': False,
-            'mono_count': 0,
-            'poly_count': 0,
-            'mega_count': 0,
-            'quad_count': 0,
-            'oct_count': 0,
-            'mono_resources': {},
-            'poly_resources': {},
-            'mega_resources': {},
-            'quad_resources': {},
-            'oct_resources': {},
+            'mono_researched': False, 'poly_researched': False, 'mega_researched': False, 'quad_researched': False, 'oct_researched': False,
+            'mono_count': 0, 'poly_count': 0, 'mega_count': 0, 'quad_count': 0, 'oct_count': 0,
+            'mono_resources': {}, 'poly_resources': {}, 'mega_resources': {}, 'quad_resources': {}, 'oct_resources': {},
             'last_update': time.time()
         }
     
     drones_data = context.bot_data['drones'][user_id]
-    
     keyboard = []
-    
     for drone_name, drone_info in DRONES.items():
         research_key = drone_info['research_key']
         if not drones_data.get(research_key, False):
             keyboard.append([InlineKeyboardButton(f"🔍 Исследовать дрон {drone_name} ({drone_info['research_cost']}🪙)", callback_data=f"drone_research_{drone_name}")])
         else:
             keyboard.append([InlineKeyboardButton(f"🛒 Купить {drone_name} ({drone_info['buy_cost']}🪙)", callback_data=f"drone_buy_{drone_name}")])
-    
     keyboard.append([InlineKeyboardButton("📊 Статистика дронов", callback_data="drone_stats")])
-    
     reply_markup = InlineKeyboardMarkup(keyboard)
-    
     text = f"🕹 *Дронстанция*\n\nИсследуйте и используйте дроны чтобы добывать недостающие ресурсы!\n\nПроизводительность дронов:\n🕹Моно - 1Рес/Ч\n🕹Поли - 9Рес/Ч\n🕹Мега - 65Рес/Ч\n🕹Квад - 380Рес/Ч\n🕹Окт - 8500Рес/Ч\n\n🪙 Монеты: {coins}."
     
     if update.callback_query:
-        await update.callback_query.edit_message_text(text, parse_mode='Markdown', reply_markup=reply_markup)
+        await safe_edit_message(update.callback_query, text, parse_mode='Markdown', reply_markup=reply_markup)
     else:
         await update.message.reply_text(text, parse_mode='Markdown', reply_markup=reply_markup)
 
 async def drone_research(update: Update, context: ContextTypes.DEFAULT_TYPE, drone_name):
     query = update.callback_query
     await query.answer()
-    
     user_id = update.effective_user.id
     
     if 'all_inventories' not in context.bot_data:
         context.bot_data['all_inventories'] = {}
-    
     if user_id not in context.bot_data['all_inventories']:
         context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
-    
     inventory = context.bot_data['all_inventories'][user_id]
     coins = inventory.get('coins', 0)
     
     if 'drones' not in context.bot_data:
         context.bot_data['drones'] = {}
-    
     if user_id not in context.bot_data['drones']:
         context.bot_data['drones'][user_id] = {
-            'mono_researched': False,
-            'poly_researched': False,
-            'mega_researched': False,
-            'quad_researched': False,
-            'oct_researched': False,
-            'mono_count': 0,
-            'poly_count': 0,
-            'mega_count': 0,
-            'quad_count': 0,
-            'oct_count': 0,
-            'mono_resources': {},
-            'poly_resources': {},
-            'mega_resources': {},
-            'quad_resources': {},
-            'oct_resources': {},
+            'mono_researched': False, 'poly_researched': False, 'mega_researched': False, 'quad_researched': False, 'oct_researched': False,
+            'mono_count': 0, 'poly_count': 0, 'mega_count': 0, 'quad_count': 0, 'oct_count': 0,
+            'mono_resources': {}, 'poly_resources': {}, 'mega_resources': {}, 'quad_resources': {}, 'oct_resources': {},
             'last_update': time.time()
         }
     
     drones_data = context.bot_data['drones'][user_id]
-    
     drone_info = DRONES[drone_name]
     research_key = drone_info['research_key']
     research_cost = drone_info['research_cost']
     
     if not drones_data.get(research_key, False):
         if coins < research_cost:
-            await query.edit_message_text(
-                f"❌ Недостаточно монет для исследования дрона {drone_name}!",
-                reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="drone_back")]])
-            )
+            await safe_edit_message(query, f"❌ Недостаточно монет для исследования дрона {drone_name}!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="drone_back")]]))
             return
-        
         inventory['coins'] -= research_cost
         drones_data[research_key] = True
         await drones_command(update, context)
@@ -1493,56 +1319,35 @@ async def drone_research(update: Update, context: ContextTypes.DEFAULT_TYPE, dro
 async def drone_buy(update: Update, context: ContextTypes.DEFAULT_TYPE, drone_name):
     query = update.callback_query
     await query.answer()
-    
     user_id = update.effective_user.id
     
     if 'all_inventories' not in context.bot_data:
         context.bot_data['all_inventories'] = {}
-    
     if user_id not in context.bot_data['all_inventories']:
         context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
-    
     inventory = context.bot_data['all_inventories'][user_id]
     coins = inventory.get('coins', 0)
     
     if 'drones' not in context.bot_data:
         context.bot_data['drones'] = {}
-    
     if user_id not in context.bot_data['drones']:
         context.bot_data['drones'][user_id] = {
-            'mono_researched': False,
-            'poly_researched': False,
-            'mega_researched': False,
-            'quad_researched': False,
-            'oct_researched': False,
-            'mono_count': 0,
-            'poly_count': 0,
-            'mega_count': 0,
-            'quad_count': 0,
-            'oct_count': 0,
-            'mono_resources': {},
-            'poly_resources': {},
-            'mega_resources': {},
-            'quad_resources': {},
-            'oct_resources': {},
-            'last_update': time.time(),
-            'pending_drone': None
+            'mono_researched': False, 'poly_researched': False, 'mega_researched': False, 'quad_researched': False, 'oct_researched': False,
+            'mono_count': 0, 'poly_count': 0, 'mega_count': 0, 'quad_count': 0, 'oct_count': 0,
+            'mono_resources': {}, 'poly_resources': {}, 'mega_resources': {}, 'quad_resources': {}, 'oct_resources': {},
+            'last_update': time.time(), 'pending_drone': None
         }
     
     drones_data = context.bot_data['drones'][user_id]
-    
     drone_info = DRONES[drone_name]
     research_key = drone_info['research_key']
     buy_cost = drone_info['buy_cost']
     
     if not drones_data.get(research_key, False):
-        await query.edit_message_text(f"❌ Сначала исследуйте дрона {drone_name}!")
+        await safe_edit_message(query, f"❌ Сначала исследуйте дрона {drone_name}!")
         return
     if coins < buy_cost:
-        await query.edit_message_text(
-            f"❌ Недостаточно монет для покупки дрона {drone_name}!",
-            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="drone_back")]])
-        )
+        await safe_edit_message(query, f"❌ Недостаточно монет для покупки дрона {drone_name}!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="drone_back")]]))
         return
     
     drones_data['pending_drone'] = drone_name
@@ -1558,99 +1363,58 @@ async def drone_buy(update: Update, context: ContextTypes.DEFAULT_TYPE, drone_na
         [InlineKeyboardButton("❌ Отменить", callback_data="drone_buy_cancel")]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    
-    await query.edit_message_text(
-        f"Выберите ресурс, который будет добывать дрон {drone_name}\n\n"
-        f"Выбирайте с умом, позже это нельзя будет изменить!",
-        reply_markup=reply_markup
-    )
+    await safe_edit_message(query, f"Выберите ресурс, который будет добывать дрон {drone_name}\n\nВыбирайте с умом, позже это нельзя будет изменить!", reply_markup=reply_markup)
 
 async def drone_buy_cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
-    
     user_id = update.effective_user.id
     
     if 'drones' not in context.bot_data:
         context.bot_data['drones'] = {}
-    
     if user_id not in context.bot_data['drones']:
         context.bot_data['drones'][user_id] = {
-            'mono_researched': False,
-            'poly_researched': False,
-            'mega_researched': False,
-            'quad_researched': False,
-            'oct_researched': False,
-            'mono_count': 0,
-            'poly_count': 0,
-            'mega_count': 0,
-            'quad_count': 0,
-            'oct_count': 0,
-            'mono_resources': {},
-            'poly_resources': {},
-            'mega_resources': {},
-            'quad_resources': {},
-            'oct_resources': {},
-            'last_update': time.time(),
-            'pending_drone': None
+            'mono_researched': False, 'poly_researched': False, 'mega_researched': False, 'quad_researched': False, 'oct_researched': False,
+            'mono_count': 0, 'poly_count': 0, 'mega_count': 0, 'quad_count': 0, 'oct_count': 0,
+            'mono_resources': {}, 'poly_resources': {}, 'mega_resources': {}, 'quad_resources': {}, 'oct_resources': {},
+            'last_update': time.time(), 'pending_drone': None
         }
     
     drones_data = context.bot_data['drones'][user_id]
     drones_data['pending_drone'] = None
-    
     await drones_command(update, context)
 
 async def drone_set_resource(update: Update, context: ContextTypes.DEFAULT_TYPE, drone_name, resource):
     query = update.callback_query
     await query.answer()
-    
     user_id = update.effective_user.id
     
     if 'drones' not in context.bot_data:
         context.bot_data['drones'] = {}
-    
     if user_id not in context.bot_data['drones']:
         context.bot_data['drones'][user_id] = {
-            'mono_researched': False,
-            'poly_researched': False,
-            'mega_researched': False,
-            'quad_researched': False,
-            'oct_researched': False,
-            'mono_count': 0,
-            'poly_count': 0,
-            'mega_count': 0,
-            'quad_count': 0,
-            'oct_count': 0,
-            'mono_resources': {},
-            'poly_resources': {},
-            'mega_resources': {},
-            'quad_resources': {},
-            'oct_resources': {},
-            'last_update': time.time(),
-            'pending_drone': None
+            'mono_researched': False, 'poly_researched': False, 'mega_researched': False, 'quad_researched': False, 'oct_researched': False,
+            'mono_count': 0, 'poly_count': 0, 'mega_count': 0, 'quad_count': 0, 'oct_count': 0,
+            'mono_resources': {}, 'poly_resources': {}, 'mega_resources': {}, 'quad_resources': {}, 'oct_resources': {},
+            'last_update': time.time(), 'pending_drone': None
         }
     
     drones_data = context.bot_data['drones'][user_id]
-    
     if drones_data.get('pending_drone') != drone_name:
         await drones_command(update, context)
         return
     
     if 'all_inventories' not in context.bot_data:
         context.bot_data['all_inventories'] = {}
-    
     if user_id not in context.bot_data['all_inventories']:
         context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
-    
     inventory = context.bot_data['all_inventories'][user_id]
     pending_cost = drones_data.get('pending_cost', 0)
-    
     inventory['coins'] -= pending_cost
     
     drone_info = DRONES[drone_name]
     resources_key = drone_info['resources_key']
     count_key = drone_info['count_key']
-    
     resources = drones_data.get(resources_key, {})
     resources[resource] = resources.get(resource, 0) + 1
     drones_data[resources_key] = resources
@@ -1663,42 +1427,23 @@ async def drone_set_resource(update: Update, context: ContextTypes.DEFAULT_TYPE,
 async def drone_stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
-    
     user_id = update.effective_user.id
     user_name = update.effective_user.first_name
-    
     await update_drone_resources(update, context)
     
     if 'drones' not in context.bot_data:
         context.bot_data['drones'] = {}
-    
     if user_id not in context.bot_data['drones']:
         context.bot_data['drones'][user_id] = {
-            'mono_researched': False,
-            'poly_researched': False,
-            'mega_researched': False,
-            'quad_researched': False,
-            'oct_researched': False,
-            'mono_count': 0,
-            'poly_count': 0,
-            'mega_count': 0,
-            'quad_count': 0,
-            'oct_count': 0,
-            'mono_resources': {},
-            'poly_resources': {},
-            'mega_resources': {},
-            'quad_resources': {},
-            'oct_resources': {},
+            'mono_researched': False, 'poly_researched': False, 'mega_researched': False, 'quad_researched': False, 'oct_researched': False,
+            'mono_count': 0, 'poly_count': 0, 'mega_count': 0, 'quad_count': 0, 'oct_count': 0,
+            'mono_resources': {}, 'poly_resources': {}, 'mega_resources': {}, 'quad_resources': {}, 'oct_resources': {},
             'last_update': time.time()
         }
     
     drones_data = context.bot_data['drones'][user_id]
-    
     stats_text = f"🕹 *Дроны игрока {user_name}:*\n\n"
-    
-    resource_production = {
-        "Медь": 0, "Свинец": 0, "Уголь": 0, "Песок": 0, "Титан": 0, "Торий": 0
-    }
+    resource_production = {"Медь": 0, "Свинец": 0, "Уголь": 0, "Песок": 0, "Титан": 0, "Торий": 0}
     
     for drone_name, drone_info in DRONES.items():
         count_key = drone_info['count_key']
@@ -1706,9 +1451,7 @@ async def drone_stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
         resources = drones_data.get(resources_key, {})
         total_count = drones_data.get(count_key, 0)
         production = drone_info['production']
-        
         stats_text += f"{drone_name} - {total_count}\n"
-        
         for resource, count in resources.items():
             resource_production[resource] += production * count
     
@@ -1723,39 +1466,23 @@ async def drone_stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     keyboard = [[InlineKeyboardButton("⬅️ Назад", callback_data="drone_back")]]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    
-    await query.edit_message_text(stats_text, parse_mode='Markdown', reply_markup=reply_markup)
+    await safe_edit_message(query, stats_text, parse_mode='Markdown', reply_markup=reply_markup)
 
 async def drone_back(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     
     if 'drones' not in context.bot_data:
         context.bot_data['drones'] = {}
-    
     if user_id not in context.bot_data['drones']:
         context.bot_data['drones'][user_id] = {
-            'mono_researched': False,
-            'poly_researched': False,
-            'mega_researched': False,
-            'quad_researched': False,
-            'oct_researched': False,
-            'mono_count': 0,
-            'poly_count': 0,
-            'mega_count': 0,
-            'quad_count': 0,
-            'oct_count': 0,
-            'mono_resources': {},
-            'poly_resources': {},
-            'mega_resources': {},
-            'quad_resources': {},
-            'oct_resources': {},
-            'last_update': time.time(),
-            'pending_drone': None
+            'mono_researched': False, 'poly_researched': False, 'mega_researched': False, 'quad_researched': False, 'oct_researched': False,
+            'mono_count': 0, 'poly_count': 0, 'mega_count': 0, 'quad_count': 0, 'oct_count': 0,
+            'mono_resources': {}, 'poly_resources': {}, 'mega_resources': {}, 'quad_resources': {}, 'oct_resources': {},
+            'last_update': time.time(), 'pending_drone': None
         }
     
     drones_data = context.bot_data['drones'][user_id]
     drones_data['pending_drone'] = None
-    
     await drones_command(update, context)
 
 async def mineshaft_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -1763,7 +1490,6 @@ async def mineshaft_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     if 'mines' not in context.bot_data:
         context.bot_data['mines'] = {}
-    
     if user_id not in context.bot_data['mines']:
         context.bot_data['mines'][user_id] = {'drills': {}, 'stored': {}, 'last_update': time.time()}
     
@@ -1774,15 +1500,7 @@ async def mineshaft_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     reply_markup = InlineKeyboardMarkup(keyboard)
     
     await update.message.reply_text(
-        "🏭 *Шахта*\n\n"
-        "Зарабатывай пассивные ресурсы во время АФК при помощи буров!\n\n"
-        "Стоимость строительства буров:\n"
-        "⚙️Медный бур (25 Медь) 15Рес/Ч\n"
-        "⚙️Пневматический бур (35 Медь, 10 Графит) 60Рес/Ч\n"
-        "⚙️Лазерный бур (120 Медь, 40 Кремний, 20 Титан) 360Рес/ч\n"
-        "⚙️Воздушная бур. установка (250 Медь, 250 Свинец, 120 Кремний, 100 Титан, 50 Торий) 1800 Рес/Ч\n"
-        "🏗Epiroc Pit Viper 351 (800 Медь, 400 Кремний, 250 Титан, 100 Фазовая ткань) 6000Рес/Ч\n"
-        "🏗Sandvik Pantera DP1600i (2000 Свинец, 1500 Кремний, 1500 Титан, 400 Фазовая ткань, 400 Кинетический сплав) 31600Рес/Ч",
+        "🏭 *Шахта*\n\nЗарабатывай пассивные ресурсы во время АФК при помощи буров!\n\nСтоимость строительства буров:\n⚙️Медный бур (25 Медь) 15Рес/Ч\n⚙️Пневматический бур (35 Медь, 10 Графит) 60Рес/Ч\n⚙️Лазерный бур (120 Медь, 40 Кремний, 20 Титан) 360Рес/ч\n⚙️Воздушная бур. установка (250 Медь, 250 Свинец, 120 Кремний, 100 Титан, 50 Торий) 1800 Рес/Ч\n🏗Epiroc Pit Viper 351 (800 Медь, 400 Кремний, 250 Титан, 100 Фазовая ткань) 6000Рес/Ч\n🏗Sandvik Pantera DP1600i (2000 Свинец, 1500 Кремний, 1500 Титан, 400 Фазовая ткань, 400 Кинетический сплав) 31600Рес/Ч",
         parse_mode='Markdown',
         reply_markup=reply_markup
     )
@@ -1790,15 +1508,12 @@ async def mineshaft_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def mine_build_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
-    
     user_id = update.effective_user.id
     
     if 'all_inventories' not in context.bot_data:
         context.bot_data['all_inventories'] = {}
-    
     if user_id not in context.bot_data['all_inventories']:
         context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
-    
     inventory = context.bot_data['all_inventories'][user_id]
     
     keyboard = []
@@ -1808,35 +1523,25 @@ async def mine_build_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
             if inventory.get(resource, 0) < cost:
                 can_build = False
                 break
-        
         status = "✅" if can_build else "❌"
         keyboard.append([InlineKeyboardButton(f"{drill_info['emoji']} {drill_name} {status}", callback_data=f"mine_build_{drill_name}")])
-    
     keyboard.append([InlineKeyboardButton("⬅️ Назад", callback_data="mine_back")])
     reply_markup = InlineKeyboardMarkup(keyboard)
-    
-    await query.edit_message_text(
-        "Выбери бур, который хочешь построить:",
-        reply_markup=reply_markup
-    )
+    await safe_edit_message(query, "Выбери бур, который хочешь построить:", reply_markup=reply_markup)
 
 async def mine_build_drill(update: Update, context: ContextTypes.DEFAULT_TYPE, drill_name):
     query = update.callback_query
     await query.answer()
-    
     user_id = update.effective_user.id
     
     if drill_name not in DRILLS:
         return
-    
     drill_info = DRILLS[drill_name]
     
     if 'all_inventories' not in context.bot_data:
         context.bot_data['all_inventories'] = {}
-    
     if user_id not in context.bot_data['all_inventories']:
         context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
-    
     inventory = context.bot_data['all_inventories'][user_id]
     
     missing_resources = []
@@ -1847,10 +1552,7 @@ async def mine_build_drill(update: Update, context: ContextTypes.DEFAULT_TYPE, d
     if missing_resources:
         keyboard = [[InlineKeyboardButton("⬅️ Назад", callback_data="mine_build_menu")]]
         reply_markup = InlineKeyboardMarkup(keyboard)
-        await query.edit_message_text(
-            f"❌ Недостаточно ресурсов для постройки бура!\n\nНе хватает:\n" + "\n".join(missing_resources),
-            reply_markup=reply_markup
-        )
+        await safe_edit_message(query, f"❌ Недостаточно ресурсов для постройки бура!\n\nНе хватает:\n" + "\n".join(missing_resources), reply_markup=reply_markup)
         return
     
     for resource, cost in drill_info["cost"].items():
@@ -1860,7 +1562,6 @@ async def mine_build_drill(update: Update, context: ContextTypes.DEFAULT_TYPE, d
     
     if 'mines' not in context.bot_data:
         context.bot_data['mines'] = {}
-    
     if user_id not in context.bot_data['mines']:
         context.bot_data['mines'][user_id] = {'drills': {}, 'stored': {}, 'last_update': time.time()}
     
@@ -1871,25 +1572,21 @@ async def mine_build_drill(update: Update, context: ContextTypes.DEFAULT_TYPE, d
         context.bot_data['mines'][user_id]['drills'][drill_name] = 0
     
     context.bot_data['mines'][user_id]['drills'][drill_name] += 1
-    
     await mine_build_menu(update, context)
 
 async def mine_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
-    
     user_id = update.effective_user.id
     user_name = update.effective_user.first_name
     
     if 'mines' not in context.bot_data:
         context.bot_data['mines'] = {}
-    
     if user_id not in context.bot_data['mines']:
         context.bot_data['mines'][user_id] = {'drills': {}, 'stored': {}, 'last_update': time.time()}
     
     mine_data = context.bot_data['mines'][user_id]
     drills = mine_data.get('drills', {})
-    
     current_time = time.time()
     last_update = mine_data.get('last_update', current_time)
     elapsed_seconds = current_time - last_update
@@ -1904,35 +1601,27 @@ async def mine_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
             total_production_per_second = total_production_per_hour / 3600
             total_resources = int(total_production_per_second * elapsed_seconds)
             total_resources = min(total_resources, 1000000000)
-            
             if total_resources > 0:
                 if 'stored' not in mine_data:
                     mine_data['stored'] = {}
-                
                 for _ in range(total_resources):
                     resource = get_mine_resource()
                     mine_data['stored'][resource] = mine_data['stored'].get(resource, 0) + 1
     
     mine_data['last_update'] = current_time
-    
     total_production = 0
     for drill_name, count in drills.items():
         if drill_name in DRILLS:
             total_production += DRILLS[drill_name]["production"] * count
-    
     stored = mine_data.get('stored', {})
     
     info_text = f"🏗 *Буры игрока {user_name}:*\n\n"
-    
     if not drills:
         info_text += "Нет построенных буров!\n"
     else:
         for drill_name, count in drills.items():
             info_text += f"{DRILLS[drill_name]['emoji']} {drill_name}: {count} шт.\n"
-    
-    info_text += f"\n📈 *Доход ресурсов:* {total_production}/Ч\n\n"
-    info_text += "📦 *Накоплено ресурсов:*\n"
-    
+    info_text += f"\n📈 *Доход ресурсов:* {total_production}/Ч\n\n📦 *Накоплено ресурсов:*\n"
     for resource in ["Медь", "Свинец", "Уголь", "Песок", "Титан", "Торий"]:
         amount = stored.get(resource, 0)
         info_text += f"{resource}: {amount} шт.\n"
@@ -1942,18 +1631,15 @@ async def mine_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("⬅️ Назад", callback_data="mine_back")]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    
-    await query.edit_message_text(info_text, parse_mode='Markdown', reply_markup=reply_markup)
+    await safe_edit_message(query, info_text, parse_mode='Markdown', reply_markup=reply_markup)
 
 async def mine_collect(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
-    
     user_id = update.effective_user.id
     
     if 'mines' not in context.bot_data:
         context.bot_data['mines'] = {}
-    
     if user_id not in context.bot_data['mines']:
         context.bot_data['mines'][user_id] = {'drills': {}, 'stored': {}, 'last_update': time.time()}
     
@@ -1966,17 +1652,13 @@ async def mine_collect(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     if 'all_inventories' not in context.bot_data:
         context.bot_data['all_inventories'] = {}
-    
     if user_id not in context.bot_data['all_inventories']:
         context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
     
     inventory = context.bot_data['all_inventories'][user_id]
-    
     for resource, amount in stored.items():
         inventory[resource] = inventory.get(resource, 0) + amount
-    
     mine_data['stored'] = {}
-    
     await mine_info(update, context)
 
 async def mine_back(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -1989,31 +1671,17 @@ async def mine_back(update: Update, context: ContextTypes.DEFAULT_TYPE):
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
-    await query.edit_message_text(
-        "🏭 *Шахта*\n\n"
-        "Зарабатывай пассивные ресурсы во время АФК при помощи буров!\n\n"
-        "Стоимость строительства буров:\n"
-        "⚙️Медный бур (25 Медь) 15Рес/Ч\n"
-        "⚙️Пневматический бур (35 Медь, 10 Графит) 60Рес/Ч\n"
-        "⚙️Лазерный бур (120 Медь, 40 Кремний, 20 Титан) 360Рес/ч\n"
-        "⚙️Воздушная бур. установка (250 Медь, 250 Свинец, 120 Кремний, 100 Титан, 50 Торий) 1800 Рес/Ч\n"
-        "🏗Epiroc Pit Viper 351 (800 Медь, 400 Кремний, 250 Титан, 100 Фазовая ткань) 6000Рес/Ч\n"
-        "🏗Sandvik Pantera DP1600i (2000 Свинец, 1500 Кремний, 1500 Титан, 400 Фазовая ткань, 400 Кинетический сплав) 31600Рес/Ч",
-        parse_mode='Markdown',
-        reply_markup=reply_markup
-    )
+    await safe_edit_message(query, "🏭 *Шахта*\n\nЗарабатывай пассивные ресурсы во время АФК при помощи буров!\n\nСтоимость строительства буров:\n⚙️Медный бур (25 Медь) 15Рес/Ч\n⚙️Пневматический бур (35 Медь, 10 Графит) 60Рес/Ч\n⚙️Лазерный бур (120 Медь, 40 Кремний, 20 Титан) 360Рес/ч\n⚙️Воздушная бур. установка (250 Медь, 250 Свинец, 120 Кремний, 100 Титан, 50 Торий) 1800 Рес/Ч\n🏗Epiroc Pit Viper 351 (800 Медь, 400 Кремний, 250 Титан, 100 Фазовая ткань) 6000Рес/Ч\n🏗Sandvik Pantera DP1600i (2000 Свинец, 1500 Кремний, 1500 Титан, 400 Фазовая ткань, 400 Кинетический сплав) 31600Рес/Ч", parse_mode='Markdown', reply_markup=reply_markup)
 
 async def buy_artifact(update: Update, context: ContextTypes.DEFAULT_TYPE, amount_str):
     user_id = update.effective_user.id
     
     if 'all_inventories' not in context.bot_data:
         context.bot_data['all_inventories'] = {}
-    
     if user_id not in context.bot_data['all_inventories']:
         context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
     
     inventory = context.bot_data['all_inventories'][user_id]
-    
     if 'coins' not in inventory:
         inventory['coins'] = 0
     if 'artifacts' not in inventory:
@@ -2030,21 +1698,16 @@ async def buy_artifact(update: Update, context: ContextTypes.DEFAULT_TYPE, amoun
             if amount <= 0:
                 raise ValueError
         except ValueError:
-            await update.message.reply_text(
-                "Выбери нужное количество артефактов\n"
-                "Пример: /buyartifact 1"
-            )
+            await update.message.reply_text("Выбери нужное количество артефактов\nПример: /buyartifact 1")
             return
     
     total_cost = amount * 1000
-    
     if inventory['coins'] < total_cost:
         await update.message.reply_text("❌ Недостаточно монет!")
         return
     
     inventory['coins'] -= total_cost
     inventory['artifacts'] += amount
-    
     await update.message.reply_text(f"✅ Вы купили 🔮 Артефакты в количестве {amount} шт!")
 
 async def exchange_artifact(update: Update, context: ContextTypes.DEFAULT_TYPE, resource_name, amount_str):
@@ -2056,12 +1719,10 @@ async def exchange_artifact(update: Update, context: ContextTypes.DEFAULT_TYPE, 
     
     if 'all_inventories' not in context.bot_data:
         context.bot_data['all_inventories'] = {}
-    
     if user_id not in context.bot_data['all_inventories']:
         context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
     
     inventory = context.bot_data['all_inventories'][user_id]
-    
     required_per_artifact = ARTIFACT_EXCHANGE[resource_name]
     
     if resource_name not in inventory:
@@ -2079,14 +1740,10 @@ async def exchange_artifact(update: Update, context: ContextTypes.DEFAULT_TYPE, 
             if amount <= 0:
                 raise ValueError
         except ValueError:
-            await update.message.reply_text(
-                f"Выбери нужное количество для обмена\n"
-                f"Пример: /exchange{resource_name}artifact 1"
-            )
+            await update.message.reply_text(f"Выбери нужное количество для обмена\nПример: /exchange{resource_name}artifact 1")
             return
     
     required_total = required_per_artifact * amount
-    
     if inventory[resource_name] < required_total:
         await update.message.reply_text("❌ Недостаточно ресурсов!")
         return
@@ -2098,7 +1755,6 @@ async def exchange_artifact(update: Update, context: ContextTypes.DEFAULT_TYPE, 
     if 'artifacts' not in inventory:
         inventory['artifacts'] = 0
     inventory['artifacts'] += amount
-    
     await update.message.reply_text(f"✅ Вы обменяли {required_total} {resource_name} на {amount} 🔮 Артефактов!")
 
 async def exchange_coins(update: Update, context: ContextTypes.DEFAULT_TYPE, resource_name, amount_str):
@@ -2110,12 +1766,10 @@ async def exchange_coins(update: Update, context: ContextTypes.DEFAULT_TYPE, res
     
     if 'all_inventories' not in context.bot_data:
         context.bot_data['all_inventories'] = {}
-    
     if user_id not in context.bot_data['all_inventories']:
         context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
     
     inventory = context.bot_data['all_inventories'][user_id]
-    
     coin_value = COIN_EXCHANGE[resource_name]
     
     if resource_name not in inventory:
@@ -2135,10 +1789,7 @@ async def exchange_coins(update: Update, context: ContextTypes.DEFAULT_TYPE, res
             if amount <= 0:
                 raise ValueError
         except ValueError:
-            await update.message.reply_text(
-                f"Выбери нужное количество для обмена\n"
-                f"Пример: /exchange{resource_name} 5"
-            )
+            await update.message.reply_text(f"Выбери нужное количество для обмена\nПример: /exchange{resource_name} 5")
             return
     
     if inventory[resource_name] < amount:
@@ -2157,7 +1808,6 @@ async def exchange_coins(update: Update, context: ContextTypes.DEFAULT_TYPE, res
     if 'coins' not in inventory:
         inventory['coins'] = 0
     inventory['coins'] += coins_earned
-    
     await update.message.reply_text(f"✅ Вы обменяли {amount} {resource_name} на {coins_earned} 🪙 Монет!")
 
 async def craft_item(update: Update, context: ContextTypes.DEFAULT_TYPE, item_key, amount_str):
@@ -2175,7 +1825,6 @@ async def craft_item(update: Update, context: ContextTypes.DEFAULT_TYPE, item_ke
     
     if 'all_inventories' not in context.bot_data:
         context.bot_data['all_inventories'] = {}
-    
     if user_id not in context.bot_data['all_inventories']:
         context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
     
@@ -2195,7 +1844,6 @@ async def craft_item(update: Update, context: ContextTypes.DEFAULT_TYPE, item_ke
         if max_amount == float('inf') or max_amount == 0:
             await update.message.reply_text("❌ Недостаточно ресурсов!")
             return
-        
         amount = max_amount
     else:
         try:
@@ -2203,10 +1851,7 @@ async def craft_item(update: Update, context: ContextTypes.DEFAULT_TYPE, item_ke
             if amount <= 0:
                 raise ValueError
         except ValueError:
-            await update.message.reply_text(
-                "Выбери нужное количество ресурсов\n"
-                f"Пример: /craft{item_key} 10"
-            )
+            await update.message.reply_text(f"Выбери нужное количество ресурсов\nПример: /craft{item_key} 10")
             return
     
     for resource, amount_needed in required_resources.items():
@@ -2237,7 +1882,6 @@ async def mine(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     if 'upgrades' not in context.bot_data:
         context.bot_data['upgrades'] = {}
-    
     if user_id not in context.bot_data['upgrades']:
         context.bot_data['upgrades'][user_id] = {
             'mining_multiplier': 1.0,
@@ -2258,7 +1902,6 @@ async def mine(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     if time_passed < current_cooldown:
         remaining = int(current_cooldown - time_passed)
-        
         if remaining >= 3600:
             hours = remaining // 3600
             minutes = (remaining % 3600) // 60
@@ -2270,32 +1913,22 @@ async def mine(update: Update, context: ContextTypes.DEFAULT_TYPE):
             time_text = f"{minutes} мин {seconds} сек"
         else:
             time_text = f"{remaining} сек"
-        
-        await update.message.reply_text(
-            f"❌ Ты уже недавно копал ресурсы!\n\n"
-            f"Возвращайся через {time_text}."
-        )
+        await update.message.reply_text(f"❌ Ты уже недавно копал ресурсы!\n\nВозвращайся через {time_text}.")
         return
     
     context.bot_data['cooldowns'][user_id] = current_time
-    
     resource = get_random_resource()
     amount = get_resource_amount(resource, upgrades)
     
     if resource == "Кинетический сплав":
         result_text = f"💥 *НЕВЕРОЯТНАЯ УДАЧА!*\n\nТы обнаружил заброшенную шахту и нашел контейнер с {amount} шт. Кинетическим сплавом! Мои поздравления!"
-        
         if 'all_inventories' not in context.bot_data:
             context.bot_data['all_inventories'] = {}
-        
         if user_id not in context.bot_data['all_inventories']:
             context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
-        
         if resource not in context.bot_data['all_inventories'][user_id]:
             context.bot_data['all_inventories'][user_id][resource] = 0
-        
         context.bot_data['all_inventories'][user_id][resource] += amount
-        
         await update.message.reply_text(result_text, parse_mode='Markdown')
         return
     
@@ -2304,7 +1937,6 @@ async def mine(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "⛏️ Вы поставили бур и добыли",
         "⛏️ Исследуя местность, вы обнаружили и добыли"
     ]
-    
     selected_message = random.choice(mining_messages)
     
     if resource in ITEM_RESOURCES:
@@ -2316,15 +1948,11 @@ async def mine(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     if 'all_inventories' not in context.bot_data:
         context.bot_data['all_inventories'] = {}
-    
     if user_id not in context.bot_data['all_inventories']:
         context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
-    
     if resource not in context.bot_data['all_inventories'][user_id]:
         context.bot_data['all_inventories'][user_id][resource] = 0
-    
     context.bot_data['all_inventories'][user_id][resource] += amount
-    
     await update.message.reply_text(result_text)
 
 async def inventory_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -2333,19 +1961,14 @@ async def inventory_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     if 'all_inventories' not in context.bot_data:
         context.bot_data['all_inventories'] = {}
-    
     if user_id not in context.bot_data['all_inventories']:
         context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
     
     inventory = context.bot_data['all_inventories'][user_id]
-    
     coins = inventory.get('coins', 0)
     artifacts = inventory.get('artifacts', 0)
     
-    inventory_text = f"📦 Инвентарь игрока {user_name}:\n\n"
-    inventory_text += f"🔮 Артефакты: {artifacts} шт.\n"
-    inventory_text += f"🪙 Монеты: {coins} шт.\n\n"
-    
+    inventory_text = f"📦 Инвентарь игрока {user_name}:\n\n🔮 Артефакты: {artifacts} шт.\n🪙 Монеты: {coins} шт.\n\n"
     other_items = {k: v for k, v in inventory.items() if k not in ['coins', 'artifacts']}
     
     if not other_items:
@@ -2403,36 +2026,15 @@ CRAFT_RECIPES = {
 
 # Курсы обмена
 ARTIFACT_EXCHANGE = {
-    "Графит": 100,
-    "Метастекло": 50,
-    "Кремний": 20,
-    "Споровый стручок": 100,
-    "Пластан": 5,
-    "Кинетический сплав": 1,
-    "Фазовая ткань": 2,
-    "Пиротит": 20,
-    "Взрывчатая смесь": 5
+    "Графит": 100, "Метастекло": 50, "Кремний": 20, "Споровый стручок": 100,
+    "Пластан": 5, "Кинетический сплав": 1, "Фазовая ткань": 2, "Пиротит": 20, "Взрывчатая смесь": 5
 }
 
 COIN_EXCHANGE = {
-    "Медь": 1,
-    "Свинец": 1,
-    "Песок": 1,
-    "Уголь": 1,
-    "Вода": 0.01,
-    "Нефть": 0.05,
-    "Криогенная жидкость": 0.1,
-    "Титан": 2,
-    "Торий": 5,
-    "Графит": 4,
-    "Метастекло": 4,
-    "Кремний": 5,
-    "Споровый стручок": 5,
-    "Пластан": 25,
-    "Кинетический сплав": 50,
-    "Фазовая ткань": 100,
-    "Пиротит": 10,
-    "Взрывчатая смесь": 30
+    "Медь": 1, "Свинец": 1, "Песок": 1, "Уголь": 1, "Вода": 0.01, "Нефть": 0.05,
+    "Криогенная жидкость": 0.1, "Титан": 2, "Торий": 5, "Графит": 4, "Метастекло": 4,
+    "Кремний": 5, "Споровый стручок": 5, "Пластан": 25, "Кинетический сплав": 50,
+    "Фазовая ткань": 100, "Пиротит": 10, "Взрывчатая смесь": 30
 }
 
 def main():
