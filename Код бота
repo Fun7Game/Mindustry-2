@@ -9,21 +9,6 @@ TOKEN = ""
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
-# ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
-
-async def safe_edit_message(query, text=None, reply_markup=None, parse_mode=None):
-    """Безопасное редактирование сообщения, игнорирующее ошибку 'Message is not modified'"""
-    try:
-        if text is not None:
-            await query.edit_message_text(text, reply_markup=reply_markup, parse_mode=parse_mode)
-        else:
-            await query.edit_message_reply_markup(reply_markup=reply_markup)
-    except Exception as e:
-        if "Message is not modified" in str(e) or "message is not modified" in str(e).lower():
-            pass
-        else:
-            raise e
-
 # ========== КОНСТАНТЫ ==========
 
 BASE_COOLDOWN = 1200
@@ -197,6 +182,24 @@ def get_main_keyboard():
 def get_upgrade_cost(level):
     return 1 * (2 ** level) if level > 0 else 1
 
+# ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ДЛЯ ОТПРАВКИ СООБЩЕНИЙ ==========
+
+async def send_or_edit(query, text, reply_markup=None, parse_mode=None):
+    """Отправляет новое сообщение или удаляет старое и отправляет новое"""
+    try:
+        # Пытаемся отредактировать
+        if text is not None:
+            await query.edit_message_text(text, reply_markup=reply_markup, parse_mode=parse_mode)
+        else:
+            await query.edit_message_reply_markup(reply_markup=reply_markup)
+    except Exception:
+        # Если не получилось (сообщение не изменилось или другая ошибка) - удаляем старое и отправляем новое
+        try:
+            await query.message.delete()
+        except:
+            pass
+        await query.message.reply_text(text, reply_markup=reply_markup, parse_mode=parse_mode)
+
 # ========== ОСНОВНЫЕ КОМАНДЫ ==========
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -243,7 +246,7 @@ async def sector_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def sector_create(update: Update, context: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
-    await safe_edit_message(q, "Выберите категорию:", reply_markup=InlineKeyboardMarkup([
+    await send_or_edit(q, "Выберите категорию:", reply_markup=InlineKeyboardMarkup([
         [InlineKeyboardButton("🔫 Турели", callback_data="sector_create_turrets")],
         [InlineKeyboardButton("🤖 Юниты", callback_data="sector_create_units")],
         [InlineKeyboardButton("⬅️ Назад", callback_data="sector_back")]
@@ -254,12 +257,12 @@ async def sector_create_turrets(update: Update, context: ContextTypes.DEFAULT_TY
     await q.answer()
     keyboard = [[InlineKeyboardButton(name, callback_data=f"sector_turret_{name}")] for name in TURRETS.keys()]
     keyboard.append([InlineKeyboardButton("⬅️ Назад", callback_data="sector_create")])
-    await safe_edit_message(q, "Выберите турель, которую хотите поместить в чертежи:", reply_markup=InlineKeyboardMarkup(keyboard))
+    await send_or_edit(q, "Выберите турель, которую хотите поместить в чертежи:", reply_markup=InlineKeyboardMarkup(keyboard))
 
 async def sector_create_units(update: Update, context: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
-    await safe_edit_message(q, "🤖 *Юниты*\n\nСкоро здесь появятся юниты для создания!", parse_mode='Markdown', reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="sector_create")]]))
+    await send_or_edit(q, "🤖 *Юниты*\n\nСкоро здесь появятся юниты для создания!", parse_mode='Markdown', reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="sector_create")]]))
 
 async def sector_turret_info(update: Update, context: ContextTypes.DEFAULT_TYPE, turret_name):
     q = update.callback_query
@@ -278,7 +281,7 @@ async def sector_turret_info(update: Update, context: ContextTypes.DEFAULT_TYPE,
         can = all(inv.get(res, 0) >= cost * amount for res, cost in turret['cost'].items())
         keyboard.append([InlineKeyboardButton(f"{amount} {'✅' if can else '❌'}", callback_data=f"sector_turret_buy_{turret_name}_{amount}")])
     keyboard.append([InlineKeyboardButton("⬅️ Назад", callback_data="sector_create_turrets")])
-    await safe_edit_message(q, text, parse_mode='Markdown', reply_markup=InlineKeyboardMarkup(keyboard))
+    await send_or_edit(q, text, parse_mode='Markdown', reply_markup=InlineKeyboardMarkup(keyboard))
 
 async def sector_turret_buy(update: Update, context: ContextTypes.DEFAULT_TYPE, turret_name, amount):
     q = update.callback_query
@@ -291,7 +294,7 @@ async def sector_turret_buy(update: Update, context: ContextTypes.DEFAULT_TYPE, 
     inv = context.bot_data['all_inventories'][user_id]
     for res, cost in turret['cost'].items():
         if inv.get(res, 0) < cost * amount:
-            await safe_edit_message(q, "❌ Недостаточно ресурсов!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="sector_create_turrets")]]))
+            await send_or_edit(q, "❌ Недостаточно ресурсов!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="sector_create_turrets")]]))
             return
     for res, cost in turret['cost'].items():
         inv[res] -= cost * amount
@@ -302,7 +305,7 @@ async def sector_turret_buy(update: Update, context: ContextTypes.DEFAULT_TYPE, 
     if user_id not in context.bot_data['drawings']:
         context.bot_data['drawings'][user_id] = []
     context.bot_data['drawings'][user_id].append({'name': turret_name, 'count': amount, 'defense': turret['defense'], 'build_time': turret['build_time']})
-    await safe_edit_message(q, f"✅ {turret_name} в количестве {amount} шт. помещена в ваши чертежи!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="sector_create_turrets")]]))
+    await send_or_edit(q, f"✅ {turret_name} в количестве {amount} шт. помещена в ваши чертежи!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="sector_create_turrets")]]))
 
 async def drawing_start(update: Update, context: ContextTypes.DEFAULT_TYPE, idx):
     q = update.callback_query
@@ -314,7 +317,7 @@ async def drawing_start(update: Update, context: ContextTypes.DEFAULT_TYPE, idx)
         context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
     inv = context.bot_data['all_inventories'][user_id]
     if inv.get('artifacts', 0) < 5:
-        await safe_edit_message(q, "❌ Недостаточно артефактов для начала выполнения чертежа!")
+        await send_or_edit(q, "❌ Недостаточно артефактов для начала выполнения чертежа!")
         return
     inv['artifacts'] -= 5
     if 'drawings' not in context.bot_data:
@@ -330,7 +333,7 @@ async def drawing_start(update: Update, context: ContextTypes.DEFAULT_TYPE, idx)
         context.bot_data['active_drawing'] = {}
     context.bot_data['active_drawing'][user_id] = {'index': idx, 'name': d['name'], 'count': d['count'], 'defense': d['defense'], 'build_time': d['build_time'], 'start_time': time.time()}
     asyncio.create_task(complete_drawing(update, context, user_id))
-    await safe_edit_message(q, f"📜 *Активный чертеж:*\n\n🔫 {d['name']}\nКоличество: {d['count']} шт.\n💥 Вооружение (общ): {d['defense'] * d['count']} Единиц\n⏳️ Оставшееся время создания (общ): {d['build_time'] * d['count']} сек", parse_mode='Markdown', reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("❌ Отменить чертеж", callback_data="drawing_cancel")]]))
+    await send_or_edit(q, f"📜 *Активный чертеж:*\n\n🔫 {d['name']}\nКоличество: {d['count']} шт.\n💥 Вооружение (общ): {d['defense'] * d['count']} Единиц\n⏳️ Оставшееся время создания (общ): {d['build_time'] * d['count']} сек", parse_mode='Markdown', reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("❌ Отменить чертеж", callback_data="drawing_cancel")]]))
 
 async def complete_drawing(update: Update, context: ContextTypes.DEFAULT_TYPE, user_id):
     await asyncio.sleep(1)
@@ -396,12 +399,12 @@ async def sector_my_base(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif sd['core'] == 'Штаб':
         kb.append([InlineKeyboardButton("🛡 Построить ядро Атом", callback_data="sector_upgrade_core_atom")])
     kb.append([InlineKeyboardButton("⬅️ Назад", callback_data="sector_back")])
-    await safe_edit_message(q, text, parse_mode='Markdown', reply_markup=InlineKeyboardMarkup(kb))
+    await send_or_edit(q, text, parse_mode='Markdown', reply_markup=InlineKeyboardMarkup(kb))
 
 async def sector_upgrade_core(update: Update, context: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
-    await safe_edit_message(q, "Построить ядро Штаб за 4000 Медь, 4000 Свинец, 1500 Кремний?", reply_markup=InlineKeyboardMarkup([
+    await send_or_edit(q, "Построить ядро Штаб за 4000 Медь, 4000 Свинец, 1500 Кремний?", reply_markup=InlineKeyboardMarkup([
         [InlineKeyboardButton("✅ Построить", callback_data="sector_upgrade_core_confirm")],
         [InlineKeyboardButton("❌ Отменить", callback_data="sector_my_base")]
     ]))
@@ -416,7 +419,7 @@ async def sector_upgrade_core_confirm(update: Update, context: ContextTypes.DEFA
         context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
     inv = context.bot_data['all_inventories'][user_id]
     if inv.get('Медь', 0) < 4000 or inv.get('Свинец', 0) < 4000 or inv.get('Кремний', 0) < 1500:
-        await safe_edit_message(q, "❌ Недостаточно ресурсов для улучшения ядра!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="sector_my_base")]]))
+        await send_or_edit(q, "❌ Недостаточно ресурсов для улучшения ядра!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="sector_my_base")]]))
         return
     for res, amt in [('Медь', 4000), ('Свинец', 4000), ('Кремний', 1500)]:
         inv[res] -= amt
@@ -427,12 +430,12 @@ async def sector_upgrade_core_confirm(update: Update, context: ContextTypes.DEFA
     if user_id not in context.bot_data['sector']:
         context.bot_data['sector'][user_id] = {'core': 'Осколок', 'weapons': 0, 'turrets': {}, 'units': {}, 'wave': 1, 'last_attack_time': time.time(), 'last_wave_damage': 0, 'last_wave_composition': None}
     context.bot_data['sector'][user_id]['core'] = 'Штаб'
-    await safe_edit_message(q, "✅ Ядро улучшено!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="sector_my_base")]]))
+    await send_or_edit(q, "✅ Ядро улучшено!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="sector_my_base")]]))
 
 async def sector_upgrade_core_atom(update: Update, context: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
-    await safe_edit_message(q, "Построить ядро Атом за 12000 Медь, 12000 Свинец, 8000 Кремний, 4500 Торий, 500 Кинетический сплав?", reply_markup=InlineKeyboardMarkup([
+    await send_or_edit(q, "Построить ядро Атом за 12000 Медь, 12000 Свинец, 8000 Кремний, 4500 Торий, 500 Кинетический сплав?", reply_markup=InlineKeyboardMarkup([
         [InlineKeyboardButton("✅ Построить", callback_data="sector_upgrade_core_atom_confirm")],
         [InlineKeyboardButton("❌ Отменить", callback_data="sector_my_base")]
     ]))
@@ -447,7 +450,7 @@ async def sector_upgrade_core_atom_confirm(update: Update, context: ContextTypes
         context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
     inv = context.bot_data['all_inventories'][user_id]
     if inv.get('Медь', 0) < 12000 or inv.get('Свинец', 0) < 12000 or inv.get('Кремний', 0) < 8000 or inv.get('Торий', 0) < 4500 or inv.get('Кинетический сплав', 0) < 500:
-        await safe_edit_message(q, "❌ Недостаточно ресурсов для улучшения ядра!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="sector_my_base")]]))
+        await send_or_edit(q, "❌ Недостаточно ресурсов для улучшения ядра!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="sector_my_base")]]))
         return
     for res, amt in [('Медь', 12000), ('Свинец', 12000), ('Кремний', 8000), ('Торий', 4500), ('Кинетический сплав', 500)]:
         inv[res] -= amt
@@ -458,17 +461,17 @@ async def sector_upgrade_core_atom_confirm(update: Update, context: ContextTypes
     if user_id not in context.bot_data['sector']:
         context.bot_data['sector'][user_id] = {'core': 'Осколок', 'weapons': 0, 'turrets': {}, 'units': {}, 'wave': 1, 'last_attack_time': time.time(), 'last_wave_damage': 0, 'last_wave_composition': None}
     context.bot_data['sector'][user_id]['core'] = 'Атом'
-    await safe_edit_message(q, "✅ Ядро улучшено!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="sector_my_base")]]))
+    await send_or_edit(q, "✅ Ядро улучшено!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="sector_my_base")]]))
 
 async def sector_enemy_bases(update: Update, context: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
-    await safe_edit_message(q, "🔴 *Вражеские базы*\n\nСкоро здесь появятся вражеские сектора для атаки!", parse_mode='Markdown', reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="sector_back")]]))
+    await send_or_edit(q, "🔴 *Вражеские базы*\n\nСкоро здесь появятся вражеские сектора для атаки!", parse_mode='Markdown', reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="sector_back")]]))
 
 async def sector_back(update: Update, context: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
-    await safe_edit_message(q, "⚔️ *Сектор*\n\nУлучшай защиту своей базы, делай атаки на вражеские сектора чтобы получать ресурсы и разблокировать новые турели/юниты!", parse_mode='Markdown', reply_markup=InlineKeyboardMarkup([
+    await send_or_edit(q, "⚔️ *Сектор*\n\nУлучшай защиту своей базы, делай атаки на вражеские сектора чтобы получать ресурсы и разблокировать новые турели/юниты!", parse_mode='Markdown', reply_markup=InlineKeyboardMarkup([
         [InlineKeyboardButton("🟡 Моя база", callback_data="sector_my_base")],
         [InlineKeyboardButton("🔴 Вражеские базы", callback_data="sector_enemy_bases")],
         [InlineKeyboardButton("🛠 Создать турель/юнита", callback_data="sector_create")]
@@ -516,7 +519,7 @@ async def drones_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     kb.append([InlineKeyboardButton("📊 Статистика дронов", callback_data="drone_stats")])
     text = f"🕹 *Дронстанция*\n\nИсследуйте и используйте дроны чтобы добывать недостающие ресурсы!\n\nПроизводительность дронов:\n🕹Моно - 1Рес/Ч\n🕹Поли - 9Рес/Ч\n🕹Мега - 65Рес/Ч\n🕹Квад - 380Рес/Ч\n🕹Окт - 8500Рес/Ч\n\n🪙 Монеты: {coins}."
     if update.callback_query:
-        await safe_edit_message(update.callback_query, text, parse_mode='Markdown', reply_markup=InlineKeyboardMarkup(kb))
+        await send_or_edit(update.callback_query, text, parse_mode='Markdown', reply_markup=InlineKeyboardMarkup(kb))
     else:
         await update.message.reply_text(text, parse_mode='Markdown', reply_markup=InlineKeyboardMarkup(kb))
 
@@ -534,7 +537,7 @@ async def drone_research(update: Update, context: ContextTypes.DEFAULT_TYPE, dn)
     dd = context.bot_data['drones'][uid]
     if not dd.get(di['research_key'], False):
         if inv.get('coins', 0) < di['research_cost']:
-            await safe_edit_message(q, f"❌ Недостаточно монет для исследования дрона {dn}!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="drone_back")]]))
+            await send_or_edit(q, f"❌ Недостаточно монет для исследования дрона {dn}!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="drone_back")]]))
             return
         inv['coins'] -= di['research_cost']
         dd[di['research_key']] = True
@@ -553,16 +556,16 @@ async def drone_buy(update: Update, context: ContextTypes.DEFAULT_TYPE, dn):
         context.bot_data['drones'][uid]['last_update'] = time.time()
     dd = context.bot_data['drones'][uid]
     if not dd.get(di['research_key'], False):
-        await safe_edit_message(q, f"❌ Сначала исследуйте дрона {dn}!")
+        await send_or_edit(q, f"❌ Сначала исследуйте дрона {dn}!")
         return
     if inv.get('coins', 0) < di['buy_cost']:
-        await safe_edit_message(q, f"❌ Недостаточно монет для покупки дрона {dn}!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="drone_back")]]))
+        await send_or_edit(q, f"❌ Недостаточно монет для покупки дрона {dn}!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="drone_back")]]))
         return
     dd['pending_drone'] = dn
     dd['pending_cost'] = di['buy_cost']
     kb = [[InlineKeyboardButton(r, callback_data=f"drone_resource_{dn}_{r}")] for r in ["Медь","Свинец","Уголь","Песок","Титан","Торий"]]
     kb.append([InlineKeyboardButton("❌ Отменить", callback_data="drone_buy_cancel")])
-    await safe_edit_message(q, f"Выберите ресурс, который будет добывать дрон {dn}\n\nВыбирайте с умом, позже это нельзя будет изменить!", reply_markup=InlineKeyboardMarkup(kb))
+    await send_or_edit(q, f"Выберите ресурс, который будет добывать дрон {dn}\n\nВыбирайте с умом, позже это нельзя будет изменить!", reply_markup=InlineKeyboardMarkup(kb))
 
 async def drone_buy_cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
@@ -616,7 +619,7 @@ async def drone_stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
         for r, c in dd.get(di['resources_key'], {}).items():
             prod[r] += di['production'] * c
     text += f"\n⛏️ *Добывающиеся дронами ресурсы:*\nМедь: {prod['Медь']}/ч\nСвинец: {prod['Свинец']}/ч\nУголь: {prod['Уголь']}/ч\nПесок: {prod['Песок']}/ч\nТитан: {prod['Титан']}/ч\nТорий: {prod['Торий']}/ч\n\nРесурсы автоматически перемещаются в твой инвентарь!"
-    await safe_edit_message(q, text, parse_mode='Markdown', reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="drone_back")]]))
+    await send_or_edit(q, text, parse_mode='Markdown', reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="drone_back")]]))
 
 async def drone_back(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await drones_command(update, context)
@@ -641,7 +644,7 @@ async def mine_build_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
         can = all(inv.get(r, 0) >= c for r, c in di['cost'].items())
         kb.append([InlineKeyboardButton(f"{di['emoji']} {dn} {'✅' if can else '❌'}", callback_data=f"mine_build_{dn}")])
     kb.append([InlineKeyboardButton("⬅️ Назад", callback_data="mine_back")])
-    await safe_edit_message(q, "Выбери бур, который хочешь построить:", reply_markup=InlineKeyboardMarkup(kb))
+    await send_or_edit(q, "Выбери бур, который хочешь построить:", reply_markup=InlineKeyboardMarkup(kb))
 
 async def mine_build_drill(update: Update, context: ContextTypes.DEFAULT_TYPE, dn):
     q = update.callback_query
@@ -655,7 +658,7 @@ async def mine_build_drill(update: Update, context: ContextTypes.DEFAULT_TYPE, d
     inv = context.bot_data['all_inventories'][uid]
     missing = [f"{r} ({inv.get(r, 0)}/{c})" for r, c in di['cost'].items() if inv.get(r, 0) < c]
     if missing:
-        await safe_edit_message(q, f"❌ Недостаточно ресурсов для постройки бура!\n\nНе хватает:\n" + "\n".join(missing), reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="mine_build_menu")]]))
+        await send_or_edit(q, f"❌ Недостаточно ресурсов для постройки бура!\n\nНе хватает:\n" + "\n".join(missing), reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="mine_build_menu")]]))
         return
     for r, c in di['cost'].items():
         inv[r] -= c
@@ -695,7 +698,7 @@ async def mine_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         text += "\n".join(f"{DRILLS[dn]['emoji']} {dn}: {c} шт." for dn, c in md['drills'].items()) + "\n"
     text += f"\n📈 *Доход ресурсов:* {prod}/Ч\n\n📦 *Накоплено ресурсов:*\n" + "\n".join(f"{r}: {amt} шт." for r, amt in md.get('stored', {}).items())
-    await safe_edit_message(q, text, parse_mode='Markdown', reply_markup=InlineKeyboardMarkup([
+    await send_or_edit(q, text, parse_mode='Markdown', reply_markup=InlineKeyboardMarkup([
         [InlineKeyboardButton("💰 Собрать ресурсы", callback_data="mine_collect")],
         [InlineKeyboardButton("⬅️ Назад", callback_data="mine_back")]
     ]))
@@ -721,7 +724,7 @@ async def mine_collect(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def mine_back(update: Update, context: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
-    await safe_edit_message(q, "🏭 *Шахта*\n\nЗарабатывай пассивные ресурсы во время АФК при помощи буров!\n\nСтоимость строительства буров:\n⚙️Медный бур (25 Медь) 15Рес/Ч\n⚙️Пневматический бур (35 Медь, 10 Графит) 60Рес/Ч\n⚙️Лазерный бур (120 Медь, 40 Кремний, 20 Титан) 360Рес/ч\n⚙️Воздушная бур. установка (250 Медь, 250 Свинец, 120 Кремний, 100 Титан, 50 Торий) 1800 Рес/Ч\n🏗Epiroc Pit Viper 351 (800 Медь, 400 Кремний, 250 Титан, 100 Фазовая ткань) 6000Рес/Ч\n🏗Sandvik Pantera DP1600i (2000 Свинец, 1500 Кремний, 1500 Титан, 400 Фазовая ткань, 400 Кинетический сплав) 31600Рес/Ч", parse_mode='Markdown', reply_markup=InlineKeyboardMarkup([
+    await send_or_edit(q, "🏭 *Шахта*\n\nЗарабатывай пассивные ресурсы во время АФК при помощи буров!\n\nСтоимость строительства буров:\n⚙️Медный бур (25 Медь) 15Рес/Ч\n⚙️Пневматический бур (35 Медь, 10 Графит) 60Рес/Ч\n⚙️Лазерный бур (120 Медь, 40 Кремний, 20 Титан) 360Рес/ч\n⚙️Воздушная бур. установка (250 Медь, 250 Свинец, 120 Кремний, 100 Титан, 50 Торий) 1800 Рес/Ч\n🏗Epiroc Pit Viper 351 (800 Медь, 400 Кремний, 250 Титан, 100 Фазовая ткань) 6000Рес/Ч\n🏗Sandvik Pantera DP1600i (2000 Свинец, 1500 Кремний, 1500 Титан, 400 Фазовая ткань, 400 Кинетический сплав) 31600Рес/Ч", parse_mode='Markdown', reply_markup=InlineKeyboardMarkup([
         [InlineKeyboardButton("🛠 Построить бур", callback_data="mine_build_menu")],
         [InlineKeyboardButton("🏭 Моя шахта", callback_data="mine_info")]
     ]))
@@ -798,7 +801,7 @@ async def upgrade_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton(f"⏱️ Кулдаун -15с ({get_upgrade_cost(up['cooldown_level'])}🔮)", callback_data=f"upgrade_cooldown_{get_upgrade_cost(up['cooldown_level'])}")]
     ])
     if update.callback_query:
-        await safe_edit_message(update.callback_query, text, parse_mode='Markdown', reply_markup=kb)
+        await send_or_edit(update.callback_query, text, parse_mode='Markdown', reply_markup=kb)
     else:
         await update.message.reply_text(text, parse_mode='Markdown', reply_markup=kb)
 
@@ -819,25 +822,25 @@ async def upgrade_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if data.startswith("upgrade_mining_"):
         cost = int(data.split("_")[2])
         if art < cost:
-            await safe_edit_message(q, f"❌ Недостаточно артефактов! Нужно {cost}🔮, у вас {art}🔮\n\nВаши артефакты: {art}", parse_mode='Markdown', reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="upgrade_back")]]))
+            await send_or_edit(q, f"❌ Недостаточно артефактов! Нужно {cost}🔮, у вас {art}🔮\n\nВаши артефакты: {art}", parse_mode='Markdown', reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="upgrade_back")]]))
             return
         inv['artifacts'] -= cost
         up['mining_level'] += 1
         up['mining_multiplier'] *= 1.5
-        await safe_edit_message(q, f"✅ Улучшение куплено за {cost}🔮 Артефактов!\n\n🔝 Производство увеличено в 1.5 раза!\nТекущий множитель: x{up['mining_multiplier']:.1f}\n\nВаши артефакты: {inv['artifacts']}", parse_mode='Markdown', reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="upgrade_back")]]))
+        await send_or_edit(q, f"✅ Улучшение куплено за {cost}🔮 Артефактов!\n\n🔝 Производство увеличено в 1.5 раза!\nТекущий множитель: x{up['mining_multiplier']:.1f}\n\nВаши артефакты: {inv['artifacts']}", parse_mode='Markdown', reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="upgrade_back")]]))
     elif data.startswith("upgrade_cooldown_"):
         cost = int(data.split("_")[2])
         cur_cd = max(MIN_COOLDOWN, BASE_COOLDOWN - up['cooldown_reduction'] * 15)
         if cur_cd <= MIN_COOLDOWN:
-            await safe_edit_message(q, f"❌ Кулдаун уже достиг минимального значения {MIN_COOLDOWN} секунд!\n\nВаши артефакты: {art}", parse_mode='Markdown', reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="upgrade_back")]]))
+            await send_or_edit(q, f"❌ Кулдаун уже достиг минимального значения {MIN_COOLDOWN} секунд!\n\nВаши артефакты: {art}", parse_mode='Markdown', reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="upgrade_back")]]))
             return
         if art < cost:
-            await safe_edit_message(q, f"❌ Недостаточно артефактов! Нужно {cost}🔮, у вас {art}🔮\n\nВаши артефакты: {art}", parse_mode='Markdown', reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="upgrade_back")]]))
+            await send_or_edit(q, f"❌ Недостаточно артефактов! Нужно {cost}🔮, у вас {art}🔮\n\nВаши артефакты: {art}", parse_mode='Markdown', reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="upgrade_back")]]))
             return
         inv['artifacts'] -= cost
         up['cooldown_level'] += 1
         up['cooldown_reduction'] += 1
-        await safe_edit_message(q, f"✅ Улучшение куплено за {cost}🔮 Артефактов!\n\n⏱️ Кулдаун уменьшен на 15 секунд!\nТекущий кулдаун: {max(MIN_COOLDOWN, BASE_COOLDOWN - up['cooldown_reduction'] * 15)} сек\n\nВаши артефакты: {inv['artifacts']}", parse_mode='Markdown', reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="upgrade_back")]]))
+        await send_or_edit(q, f"✅ Улучшение куплено за {cost}🔮 Артефактов!\n\n⏱️ Кулдаун уменьшен на 15 секунд!\nТекущий кулдаун: {max(MIN_COOLDOWN, BASE_COOLDOWN - up['cooldown_reduction'] * 15)} сек\n\nВаши артефакты: {inv['artifacts']}", parse_mode='Markdown', reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="upgrade_back")]]))
 
 # ========== ЕЖЕДНЕВНЫЙ ПОДАРОК ==========
 
@@ -1049,6 +1052,7 @@ async def handle_new_chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 def main():
     app = Application.builder().token(TOKEN).build()
+    
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("mine", mine))
     app.add_handler(CommandHandler("inventory", inventory_command))
