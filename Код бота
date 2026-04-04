@@ -1,7 +1,6 @@
 import logging
 import random
 import time
-import asyncio
 from telegram import Update, ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ContextTypes
 
@@ -80,12 +79,12 @@ DRILLS = {
     }
 }
 
-# Дроны
+# Дроны с обновлённой производительностью
 DRONES = {
     "Моно": {
         "research_cost": 1500,
         "buy_cost": 100,
-        "production": 5,
+        "production": 1,
         "research_key": "mono_researched",
         "count_key": "mono_count",
         "resources_key": "mono_resources"
@@ -93,7 +92,7 @@ DRONES = {
     "Поли": {
         "research_cost": 12500,
         "buy_cost": 1000,
-        "production": 75,
+        "production": 9,
         "research_key": "poly_researched",
         "count_key": "poly_count",
         "resources_key": "poly_resources"
@@ -101,7 +100,7 @@ DRONES = {
     "Мега": {
         "research_cost": 85000,
         "buy_cost": 7500,
-        "production": 525,
+        "production": 65,
         "research_key": "mega_researched",
         "count_key": "mega_count",
         "resources_key": "mega_resources"
@@ -109,7 +108,7 @@ DRONES = {
     "Квад": {
         "research_cost": 500000,
         "buy_cost": 45000,
-        "production": 3675,
+        "production": 380,
         "research_key": "quad_researched",
         "count_key": "quad_count",
         "resources_key": "quad_resources"
@@ -117,7 +116,7 @@ DRONES = {
     "Окт": {
         "research_cost": 12500000,
         "buy_cost": 1000000,
-        "production": 80000,
+        "production": 8500,
         "research_key": "oct_researched",
         "count_key": "oct_count",
         "resources_key": "oct_resources"
@@ -249,7 +248,7 @@ def get_wave_composition(wave):
     for w in sorted(WAVES.keys()):
         if wave <= w:
             return WAVES[w]
-    return WAVES[499]  # Для волн 500+
+    return WAVES[499]
 
 def get_wave_damage(wave):
     """Возвращает общий урон от волны"""
@@ -258,6 +257,29 @@ def get_wave_damage(wave):
     for unit_name, count in composition:
         total_damage += ENEMY_UNITS.get(unit_name, 0) * count
     return total_damage
+
+def update_waves_for_all_players(context):
+    """Обновляет волны для всех игроков"""
+    current_time = time.time()
+    
+    if 'sector' not in context.bot_data:
+        return
+    
+    for user_id, sector_data in context.bot_data['sector'].items():
+        if sector_data.get('wave', 0) == 0:
+            continue
+        
+        last_attack = sector_data.get('last_attack_time', 0)
+        if current_time - last_attack >= 60:
+            sector_data['last_attack_time'] = current_time
+            
+            wave_composition = get_wave_composition(sector_data['wave'])
+            wave_damage = get_wave_damage(sector_data['wave'])
+            
+            sector_data['last_wave_composition'] = wave_composition
+            sector_data['last_wave_damage'] = wave_damage
+            sector_data['weapons'] = sector_data.get('weapons', 0) - wave_damage
+            sector_data['wave'] += 1
 
 # Шансы для ежедневного подарка
 COIN_CHANCES = [
@@ -461,38 +483,27 @@ async def sector_my_base(update: Update, context: ContextTypes.DEFAULT_TYPE):
             'weapons': 0,
             'turrets': {},
             'units': {},
-            'wave': 0,
-            'last_attack_time': 0,
+            'wave': 1,
+            'last_attack_time': time.time(),
             'last_wave_damage': 0,
             'last_wave_composition': None
         }
     
     sector_data = context.bot_data['sector'][user_id]
     
-    # Проверяем, нужно ли запустить волну
     current_time = time.time()
-    if sector_data['wave'] == 0:
-        # Первое открытие - начинаем волны
-        sector_data['wave'] = 1
-        sector_data['last_attack_time'] = current_time
-    elif sector_data['wave'] > 0:
-        # Проверяем, прошла ли минута с последней атаки
-        if current_time - sector_data['last_attack_time'] >= 60:
-            sector_data['last_attack_time'] = current_time
-            
-            # Получаем состав волны
-            wave_composition = get_wave_composition(sector_data['wave'])
-            wave_damage = get_wave_damage(sector_data['wave'])
-            
-            # Сохраняем информацию о прошедшей волне
-            sector_data['last_wave_composition'] = wave_composition
-            sector_data['last_wave_damage'] = wave_damage
-            
-            # Наносим урон базе
-            sector_data['weapons'] -= wave_damage
-            
-            # Увеличиваем номер волны
-            sector_data['wave'] += 1
+    
+    # Обновляем волны
+    while current_time - sector_data.get('last_attack_time', current_time) >= 60:
+        sector_data['last_attack_time'] = sector_data.get('last_attack_time', current_time) + 60
+        
+        wave_composition = get_wave_composition(sector_data['wave'])
+        wave_damage = get_wave_damage(sector_data['wave'])
+        
+        sector_data['last_wave_composition'] = wave_composition
+        sector_data['last_wave_damage'] = wave_damage
+        sector_data['weapons'] = sector_data.get('weapons', 0) - wave_damage
+        sector_data['wave'] += 1
     
     base_text = f"🌐 *База игрока {user_name}:*\n\n"
     base_text += f"🛡 Ядро: {sector_data['core']}\n"
@@ -503,32 +514,27 @@ async def sector_my_base(update: Update, context: ContextTypes.DEFAULT_TYPE):
         weapons_display += " ❗️"
     base_text += f"💥 Вооружение базы: {weapons_display}\n\n"
     
-    if sector_data['turrets']:
+    if sector_data.get('turrets'):
         base_text += "🔫 *Турели:*\n"
         for turret, count in sector_data['turrets'].items():
             base_text += f"{turret} - {count} шт. 🛡{count * 10} Защиты\n"
         base_text += "\n"
     
-    if sector_data['units']:
+    if sector_data.get('units'):
         base_text += "🤖 *Юниты:*\n"
         for unit, count in sector_data['units'].items():
             base_text += f"{unit} - {count} шт. ⚔️{count * 5} Атаки\n"
         base_text += "\n"
     
     base_text += "📊 *Статус:*\n"
+    base_text += "🔴 База подвергается атаке, уничтожьте вражеские базы, чтобы предотвратить волны\n"
+    remaining = 60 - (current_time - sector_data['last_attack_time'])
+    if remaining < 0:
+        remaining = 0
+    minutes = remaining // 60
+    seconds = int(remaining % 60)
+    base_text += f"⚔️ Следующая волна через: {minutes} мин {seconds} сек\n"
     
-    if sector_data['wave'] == 0:
-        base_text += "🔴 База подвергается атаке, уничтожьте вражеские базы, чтобы предотвратить волны\n"
-    else:
-        base_text += "🔴 База подвергается атаке, уничтожьте вражеские базы, чтобы предотвратить волны\n"
-        remaining = 60 - (current_time - sector_data['last_attack_time'])
-        if remaining < 0:
-            remaining = 0
-        minutes = remaining // 60
-        seconds = int(remaining % 60)
-        base_text += f"⚔️ Следующая волна через: {minutes} мин {seconds} сек\n"
-    
-    # Показываем последнюю прошедшую волну
     if sector_data.get('last_wave_composition'):
         wave_num = sector_data['wave'] - 1
         base_text += f"\n💀 *База была подвержена атаке!*\n"
@@ -559,7 +565,7 @@ async def sector_my_base(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         await query.edit_message_text(base_text, parse_mode='Markdown', reply_markup=reply_markup)
     except Exception as e:
-        if "Message is not modified" in str(e):
+        if "Message is not modified" in str(e) or "message is not modified" in str(e).lower():
             pass
         else:
             raise e
@@ -580,8 +586,8 @@ async def sector_upgrade_core(update: Update, context: ContextTypes.DEFAULT_TYPE
             'weapons': 0,
             'turrets': {},
             'units': {},
-            'wave': 0,
-            'last_attack_time': 0,
+            'wave': 1,
+            'last_attack_time': time.time(),
             'last_wave_damage': 0,
             'last_wave_composition': None
         }
@@ -598,13 +604,12 @@ async def sector_upgrade_core(update: Update, context: ContextTypes.DEFAULT_TYPE
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
+    text = "Построить ядро Штаб за 4000 Медь, 4000 Свинец, 1500 Кремний?"
+    
     try:
-        await query.edit_message_text(
-            "Построить ядро Штаб за 4000 Медь, 4000 Свинец, 1500 Кремний?",
-            reply_markup=reply_markup
-        )
+        await query.edit_message_text(text, reply_markup=reply_markup)
     except Exception as e:
-        if "Message is not modified" in str(e):
+        if "Message is not modified" in str(e) or "message is not modified" in str(e).lower():
             pass
         else:
             raise e
@@ -653,8 +658,8 @@ async def sector_upgrade_core_confirm(update: Update, context: ContextTypes.DEFA
             'weapons': 0,
             'turrets': {},
             'units': {},
-            'wave': 0,
-            'last_attack_time': 0,
+            'wave': 1,
+            'last_attack_time': time.time(),
             'last_wave_damage': 0,
             'last_wave_composition': None
         }
@@ -683,8 +688,8 @@ async def sector_upgrade_core_atom(update: Update, context: ContextTypes.DEFAULT
             'weapons': 0,
             'turrets': {},
             'units': {},
-            'wave': 0,
-            'last_attack_time': 0,
+            'wave': 1,
+            'last_attack_time': time.time(),
             'last_wave_damage': 0,
             'last_wave_composition': None
         }
@@ -701,13 +706,12 @@ async def sector_upgrade_core_atom(update: Update, context: ContextTypes.DEFAULT
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
+    text = "Построить ядро Атом за 12000 Медь, 12000 Свинец, 8000 Кремний, 4500 Торий, 500 Кинетический сплав?"
+    
     try:
-        await query.edit_message_text(
-            "Построить ядро Атом за 12000 Медь, 12000 Свинец, 8000 Кремний, 4500 Торий, 500 Кинетический сплав?",
-            reply_markup=reply_markup
-        )
+        await query.edit_message_text(text, reply_markup=reply_markup)
     except Exception as e:
-        if "Message is not modified" in str(e):
+        if "Message is not modified" in str(e) or "message is not modified" in str(e).lower():
             pass
         else:
             raise e
@@ -766,8 +770,8 @@ async def sector_upgrade_core_atom_confirm(update: Update, context: ContextTypes
             'weapons': 0,
             'turrets': {},
             'units': {},
-            'wave': 0,
-            'last_attack_time': 0,
+            'wave': 1,
+            'last_attack_time': time.time(),
             'last_wave_damage': 0,
             'last_wave_composition': None
         }
@@ -1109,7 +1113,7 @@ async def drones_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     reply_markup = InlineKeyboardMarkup(keyboard)
     
-    text = f"🕹 *Дронстанция*\n\nИсследуйте и используйте дроны чтобы добывать недостающие ресурсы!\n\nПроизводительность дронов:\n🕹Моно - 5Рес/Ч\n🕹Поли - 75Рес/Ч\n🕹Мега - 525Рес/Ч\n🕹Квад - 3675Рес/Ч\n🕹Окт - 80000Рес/Ч\n\n🪙 Монеты: {coins}."
+    text = f"🕹 *Дронстанция*\n\nИсследуйте и используйте дроны чтобы добывать недостающие ресурсы!\n\nПроизводительность дронов:\n🕹Моно - 1Рес/Ч\n🕹Поли - 9Рес/Ч\n🕹Мега - 65Рес/Ч\n🕹Квад - 380Рес/Ч\n🕹Окт - 8500Рес/Ч\n\n🪙 Монеты: {coins}."
     
     if update.callback_query:
         await update.callback_query.edit_message_text(text, parse_mode='Markdown', reply_markup=reply_markup)
