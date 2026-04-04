@@ -1,6 +1,7 @@
 import logging
 import random
 import time
+import asyncio
 from telegram import Update, ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ContextTypes
 
@@ -87,7 +88,7 @@ DRONES = {
         "production": 5,
         "research_key": "mono_researched",
         "count_key": "mono_count",
-        "resource_key": "mono_resource"
+        "resources_key": "mono_resources"
     },
     "Поли": {
         "research_cost": 12500,
@@ -95,7 +96,7 @@ DRONES = {
         "production": 75,
         "research_key": "poly_researched",
         "count_key": "poly_count",
-        "resource_key": "poly_resource"
+        "resources_key": "poly_resources"
     },
     "Мега": {
         "research_cost": 85000,
@@ -103,7 +104,7 @@ DRONES = {
         "production": 525,
         "research_key": "mega_researched",
         "count_key": "mega_count",
-        "resource_key": "mega_resource"
+        "resources_key": "mega_resources"
     },
     "Квад": {
         "research_cost": 500000,
@@ -111,7 +112,7 @@ DRONES = {
         "production": 3675,
         "research_key": "quad_researched",
         "count_key": "quad_count",
-        "resource_key": "quad_resource"
+        "resources_key": "quad_resources"
     },
     "Окт": {
         "research_cost": 12500000,
@@ -119,7 +120,7 @@ DRONES = {
         "production": 80000,
         "research_key": "oct_researched",
         "count_key": "oct_count",
-        "resource_key": "oct_resource"
+        "resources_key": "oct_resources"
     }
 }
 
@@ -155,6 +156,29 @@ UNIQUE_ITEMS = {
     "Логический процессор": 0.1,
     "Тетративный реконструктор": 0.05,
     "Большой логический процессор": 0.01
+}
+
+UNIQUE_ITEMS_EMOJI = {
+    "Сломанный медный бур": "⚫️",
+    "Конвейер": "⚫️",
+    "Помпа": "⚫️",
+    "Силовой узел": "⚫️",
+    "Генератор внутреннего сгорания": "🔵",
+    "Кремниевая плавильня": "🔵",
+    "Паровой генератор": "🔵",
+    "Пластановый компрессор": "🔵",
+    "Радиоизотопный термоэлектрический генератор": "🔵",
+    "Фазовый ткач": "🔵",
+    "Умножающий реконструктор": "🟣",
+    "Ториевый реактор": "🟣",
+    "Сверхприводный проектор": "🟣",
+    "Малый логический процессор": "🟣",
+    "Силовой проектор": "🟡",
+    "Импульсный реактор": "🟡",
+    "Экспоненциальный реконструктор": "🟡",
+    "Логический процессор": "🟡",
+    "Тетративный реконструктор": "🌌",
+    "Большой логический процессор": "🌌"
 }
 
 def get_random_resource():
@@ -304,7 +328,10 @@ async def daygift_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     gift_text = f"🎁 *Ежедневный подарок открыт!*\n\nВы получили:\n🪙 Монеты: {coins}\n🔮 Артефакты: {artifacts}"
     
     if unique_items:
-        gift_text += "\n\n⚙️ *Уникальные предметы:*\n• " + "\n• ".join(unique_items)
+        gift_text += "\n\n⚙️ *Уникальные предметы:*"
+        for item in unique_items:
+            emoji = UNIQUE_ITEMS_EMOJI.get(item, "⚙️")
+            gift_text += f"\n{emoji} {item}"
     
     await update.message.reply_text(gift_text, parse_mode='Markdown', reply_markup=get_main_keyboard())
 
@@ -443,8 +470,62 @@ async def upgrade_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="upgrade_back")]])
         )
 
+async def update_drone_resources(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Фоновая задача для обновления ресурсов дронов"""
+    user_id = update.effective_user.id
+    
+    if 'drones' not in context.bot_data:
+        context.bot_data['drones'] = {}
+    
+    if user_id not in context.bot_data['drones']:
+        context.bot_data['drones'][user_id] = {
+            'mono_researched': False,
+            'poly_researched': False,
+            'mega_researched': False,
+            'quad_researched': False,
+            'oct_researched': False,
+            'mono_count': 0,
+            'poly_count': 0,
+            'mega_count': 0,
+            'quad_count': 0,
+            'oct_count': 0,
+            'mono_resources': {},
+            'poly_resources': {},
+            'mega_resources': {},
+            'quad_resources': {},
+            'oct_resources': {},
+            'last_update': time.time()
+        }
+    
+    drones_data = context.bot_data['drones'][user_id]
+    
+    current_time = time.time()
+    last_update = drones_data.get('last_update', current_time)
+    elapsed_seconds = current_time - last_update
+    
+    if elapsed_seconds > 0 and elapsed_seconds <= 86400:
+        if 'all_inventories' in context.bot_data and user_id in context.bot_data['all_inventories']:
+            inventory = context.bot_data['all_inventories'][user_id]
+            
+            for drone_name, drone_info in DRONES.items():
+                resources_key = drone_info['resources_key']
+                resources = drones_data.get(resources_key, {})
+                production = drone_info['production']
+                
+                for resource, count in resources.items():
+                    if count > 0:
+                        amount = int((production * count / 3600) * elapsed_seconds)
+                        amount = min(amount, 1000000)
+                        if amount > 0:
+                            inventory[resource] = inventory.get(resource, 0) + amount
+    
+    drones_data['last_update'] = current_time
+
 async def drones_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
+    
+    # Обновляем ресурсы дронов
+    await update_drone_resources(update, context)
     
     if 'all_inventories' not in context.bot_data:
         context.bot_data['all_inventories'] = {}
@@ -470,11 +551,11 @@ async def drones_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             'mega_count': 0,
             'quad_count': 0,
             'oct_count': 0,
-            'mono_resource': None,
-            'poly_resource': None,
-            'mega_resource': None,
-            'quad_resource': None,
-            'oct_resource': None,
+            'mono_resources': {},
+            'poly_resources': {},
+            'mega_resources': {},
+            'quad_resources': {},
+            'oct_resources': {},
             'last_update': time.time()
         }
     
@@ -530,11 +611,11 @@ async def drone_research(update: Update, context: ContextTypes.DEFAULT_TYPE, dro
             'mega_count': 0,
             'quad_count': 0,
             'oct_count': 0,
-            'mono_resource': None,
-            'poly_resource': None,
-            'mega_resource': None,
-            'quad_resource': None,
-            'oct_resource': None,
+            'mono_resources': {},
+            'poly_resources': {},
+            'mega_resources': {},
+            'quad_resources': {},
+            'oct_resources': {},
             'last_update': time.time()
         }
     
@@ -586,11 +667,11 @@ async def drone_buy(update: Update, context: ContextTypes.DEFAULT_TYPE, drone_na
             'mega_count': 0,
             'quad_count': 0,
             'oct_count': 0,
-            'mono_resource': None,
-            'poly_resource': None,
-            'mega_resource': None,
-            'quad_resource': None,
-            'oct_resource': None,
+            'mono_resources': {},
+            'poly_resources': {},
+            'mega_resources': {},
+            'quad_resources': {},
+            'oct_resources': {},
             'last_update': time.time(),
             'pending_drone': None
         }
@@ -651,11 +732,11 @@ async def drone_buy_cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
             'mega_count': 0,
             'quad_count': 0,
             'oct_count': 0,
-            'mono_resource': None,
-            'poly_resource': None,
-            'mega_resource': None,
-            'quad_resource': None,
-            'oct_resource': None,
+            'mono_resources': {},
+            'poly_resources': {},
+            'mega_resources': {},
+            'quad_resources': {},
+            'oct_resources': {},
             'last_update': time.time(),
             'pending_drone': None
         }
@@ -686,11 +767,11 @@ async def drone_set_resource(update: Update, context: ContextTypes.DEFAULT_TYPE,
             'mega_count': 0,
             'quad_count': 0,
             'oct_count': 0,
-            'mono_resource': None,
-            'poly_resource': None,
-            'mega_resource': None,
-            'quad_resource': None,
-            'oct_resource': None,
+            'mono_resources': {},
+            'poly_resources': {},
+            'mega_resources': {},
+            'quad_resources': {},
+            'oct_resources': {},
             'last_update': time.time(),
             'pending_drone': None
         }
@@ -715,11 +796,13 @@ async def drone_set_resource(update: Update, context: ContextTypes.DEFAULT_TYPE,
     inventory['coins'] -= pending_cost
     
     drone_info = DRONES[drone_name]
-    resource_key = drone_info['resource_key']
+    resources_key = drone_info['resources_key']
     count_key = drone_info['count_key']
     
     # Добавляем дрон с выбранным ресурсом
-    drones_data[resource_key] = resource
+    resources = drones_data.get(resources_key, {})
+    resources[resource] = resources.get(resource, 0) + 1
+    drones_data[resources_key] = resources
     drones_data[count_key] = drones_data.get(count_key, 0) + 1
     drones_data['pending_drone'] = None
     drones_data['pending_cost'] = None
@@ -732,6 +815,9 @@ async def drone_stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     user_id = update.effective_user.id
     user_name = update.effective_user.first_name
+    
+    # Обновляем ресурсы дронов
+    await update_drone_resources(update, context)
     
     if 'drones' not in context.bot_data:
         context.bot_data['drones'] = {}
@@ -748,35 +834,15 @@ async def drone_stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
             'mega_count': 0,
             'quad_count': 0,
             'oct_count': 0,
-            'mono_resource': None,
-            'poly_resource': None,
-            'mega_resource': None,
-            'quad_resource': None,
-            'oct_resource': None,
-            'last_update': time.time(),
-            'pending_drone': None
+            'mono_resources': {},
+            'poly_resources': {},
+            'mega_resources': {},
+            'quad_resources': {},
+            'oct_resources': {},
+            'last_update': time.time()
         }
     
     drones_data = context.bot_data['drones'][user_id]
-    
-    current_time = time.time()
-    last_update = drones_data.get('last_update', current_time)
-    elapsed_seconds = current_time - last_update
-    
-    if elapsed_seconds > 0 and elapsed_seconds <= 86400:
-        if 'all_inventories' in context.bot_data and user_id in context.bot_data['all_inventories']:
-            inventory = context.bot_data['all_inventories'][user_id]
-            
-            for drone_name, drone_info in DRONES.items():
-                count = drones_data.get(drone_info['count_key'], 0)
-                resource = drones_data.get(drone_info['resource_key'])
-                if count > 0 and resource:
-                    production = int((drone_info['production'] * count / 3600) * elapsed_seconds)
-                    production = min(production, 1000000)
-                    if production > 0:
-                        inventory[resource] = inventory.get(resource, 0) + production
-    
-    drones_data['last_update'] = current_time
     
     stats_text = f"🕹 *Дроны игрока {user_name}:*\n\n"
     
@@ -785,11 +851,16 @@ async def drone_stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
     }
     
     for drone_name, drone_info in DRONES.items():
-        count = drones_data.get(drone_info['count_key'], 0)
-        resource = drones_data.get(drone_info['resource_key'])
-        stats_text += f"{drone_name} - {count}\n"
-        if resource and count > 0:
-            resource_production[resource] += drone_info['production'] * count
+        count_key = drone_info['count_key']
+        resources_key = drone_info['resources_key']
+        resources = drones_data.get(resources_key, {})
+        total_count = drones_data.get(count_key, 0)
+        production = drone_info['production']
+        
+        stats_text += f"{drone_name} - {total_count}\n"
+        
+        for resource, count in resources.items():
+            resource_production[resource] += production * count
     
     stats_text += f"\n⛏️ *Добывающиеся дронами ресурсы:*\n"
     stats_text += f"Медь: {resource_production['Медь']}/ч\n"
@@ -823,11 +894,11 @@ async def drone_back(update: Update, context: ContextTypes.DEFAULT_TYPE):
             'mega_count': 0,
             'quad_count': 0,
             'oct_count': 0,
-            'mono_resource': None,
-            'poly_resource': None,
-            'mega_resource': None,
-            'quad_resource': None,
-            'oct_resource': None,
+            'mono_resources': {},
+            'poly_resources': {},
+            'mega_resources': {},
+            'quad_resources': {},
+            'oct_resources': {},
             'last_update': time.time(),
             'pending_drone': None
         }
