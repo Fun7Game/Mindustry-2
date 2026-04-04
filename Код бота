@@ -1,6 +1,7 @@
 import logging
 import random
 import time
+import asyncio
 from telegram import Update, ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ContextTypes
 
@@ -122,6 +123,141 @@ DRONES = {
         "resources_key": "oct_resources"
     }
 }
+
+# Вражеские юниты и их урон
+ENEMY_UNITS = {
+    "Кинжал": 5,
+    "Булава": 20,
+    "Крепость": 100,
+    "Скипетр": 750,
+    "Власть": 5000,
+    "Нова": 10,
+    "Пульсар": 20,
+    "Квазар": 120,
+    "Парус": 1000,
+    "Ворон": 4000,
+    "Ползун": 15,
+    "Атракс": 30,
+    "Спайрокт": 100,
+    "Аркид": 1200,
+    "Токсопид": 6000,
+    "Вспышка": 5,
+    "Горизонт": 25,
+    "Зенит": 120,
+    "Затемь": 800,
+    "Затмение": 4500
+}
+
+# Состав волн
+WAVES = {
+    1: [("Кинжал", 1)],
+    5: [("Кинжал", 1)],
+    6: [("Вспышка", 3)],
+    10: [("Вспышка", 3)],
+    11: [("Кинжал", 2), ("Нова", 1)],
+    15: [("Кинжал", 2), ("Нова", 1)],
+    16: [("Булава", 3)],
+    19: [("Булава", 3)],
+    20: [("Спайрокт", 1)],
+    21: [("Пульсар", 3), ("Кинжал", 5)],
+    25: [("Пульсар", 3), ("Кинжал", 5)],
+    26: [("Вспышка", 10), ("Горизонт", 3)],
+    30: [("Вспышка", 10), ("Горизонт", 3)],
+    31: [("Пульсар", 5), ("Нова", 10)],
+    35: [("Пульсар", 5), ("Нова", 10)],
+    36: [("Булава", 3), ("Кинжал", 10), ("Ползун", 5)],
+    39: [("Булава", 3), ("Кинжал", 10), ("Ползун", 5)],
+    40: [("Крепость", 3)],
+    41: [("Атракс", 3), ("Горизонт", 5), ("Ползун", 10)],
+    45: [("Атракс", 3), ("Горизонт", 5), ("Ползун", 10)],
+    46: [("Кинжал", 15), ("Вспышка", 20), ("Булава", 5)],
+    50: [("Кинжал", 15), ("Вспышка", 20), ("Булава", 5)],
+    51: [("Кинжал", 25), ("Зенит", 1), ("Пульсар", 10)],
+    55: [("Кинжал", 25), ("Зенит", 1), ("Пульсар", 10)],
+    56: [("Квазар", 3), ("Крепость", 3), ("Вспышка", 30)],
+    59: [("Квазар", 3), ("Крепость", 3), ("Вспышка", 30)],
+    60: [("Скипетр", 1)],
+    61: [("Квазар", 5), ("Горизонт", 15), ("Кинжал", 30), ("Нова", 20)],
+    65: [("Квазар", 5), ("Горизонт", 15), ("Кинжал", 30), ("Нова", 20)],
+    66: [("Крепость", 5), ("Ползун", 30), ("Атракс", 10)],
+    69: [("Крепость", 5), ("Ползун", 30), ("Атракс", 10)],
+    70: [("Зенит", 5), ("Спайрокт", 5)],
+    75: [("Зенит", 5), ("Спайрокт", 5)],
+    76: [("Квазар", 10), ("Пульсар", 20)],
+    79: [("Квазар", 10), ("Пульсар", 20)],
+    80: [("Парус", 2)],
+    81: [("Крепость", 10), ("Зенит", 10)],
+    85: [("Крепость", 10), ("Зенит", 10)],
+    86: [("Квазар", 15)],
+    90: [("Квазар", 15)],
+    91: [("Спайрокт", 10), ("Атракс", 30)],
+    95: [("Спайрокт", 10), ("Атракс", 30)],
+    96: [("Скипетр", 1), ("Квазар", 5)],
+    99: [("Скипетр", 1), ("Квазар", 5)],
+    100: [("Власть", 1)],
+    101: [("Зенит", 15)],
+    110: [("Зенит", 15)],
+    111: [("Скипетр", 1), ("Крепость", 15)],
+    120: [("Скипетр", 1), ("Крепость", 15)],
+    121: [("Спайрокт", 25)],
+    130: [("Спайрокт", 25)],
+    131: [("Парус", 1), ("Квазар", 10)],
+    140: [("Парус", 1), ("Квазар", 10)],
+    141: [("Затемь", 3)],
+    149: [("Затемь", 3)],
+    150: [("Затмение", 1)],
+    151: [("Крепость", 25), ("Зенит", 25)],
+    170: [("Крепость", 25), ("Зенит", 25)],
+    171: [("Аркид", 1), ("Квазар", 15)],
+    190: [("Аркид", 1), ("Квазар", 15)],
+    191: [("Скипетр", 3), ("Спайрокт", 20)],
+    199: [("Скипетр", 3), ("Спайрокт", 20)],
+    200: [("Токсопид", 1)],
+    201: [("Парус", 3), ("Квазар", 25)],
+    220: [("Парус", 3), ("Квазар", 25)],
+    221: [("Скипетр", 3), ("Зенит", 25)],
+    240: [("Скипетр", 3), ("Зенит", 25)],
+    241: [("Аркид", 5)],
+    249: [("Аркид", 5)],
+    250: [("Ворон", 1), ("Парус", 3)],
+    251: [("Скипетр", 5)],
+    299: [("Скипетр", 5)],
+    300: [("Власть", 3)],
+    301: [("Затемь", 5)],
+    349: [("Затемь", 5)],
+    350: [("Затмение", 3)],
+    351: [("Аркид", 5)],
+    399: [("Аркид", 5)],
+    400: [("Токсопид", 3)],
+    401: [("Парус", 5)],
+    449: [("Парус", 5)],
+    450: [("Ворон", 3)],
+    451: [("Затмение", 2), ("Скипетр", 10)],
+    460: [("Затмение", 2), ("Скипетр", 10)],
+    461: [("Ворон", 3), ("Аркид", 10)],
+    470: [("Ворон", 3), ("Аркид", 10)],
+    471: [("Токсопид", 2), ("Парус", 10)],
+    480: [("Токсопид", 2), ("Парус", 10)],
+    481: [("Власть", 3), ("Затемь", 10)],
+    490: [("Власть", 3), ("Затемь", 10)],
+    491: [("Токсопид", 5), ("Скипетр", 5), ("Парус", 5)],
+    499: [("Токсопид", 5), ("Скипетр", 5), ("Парус", 5)],
+}
+
+def get_wave_composition(wave):
+    """Возвращает состав волны для заданного номера"""
+    for w in sorted(WAVES.keys()):
+        if wave <= w:
+            return WAVES[w]
+    return WAVES[499]  # Для волн 500+
+
+def get_wave_damage(wave):
+    """Возвращает общий урон от волны"""
+    composition = get_wave_composition(wave)
+    total_damage = 0
+    for unit_name, count in composition:
+        total_damage += ENEMY_UNITS.get(unit_name, 0) * count
+    return total_damage
 
 # Шансы для ежедневного подарка
 COIN_CHANCES = [
@@ -324,14 +460,48 @@ async def sector_my_base(update: Update, context: ContextTypes.DEFAULT_TYPE):
             'core': 'Осколок',
             'weapons': 0,
             'turrets': {},
-            'units': {}
+            'units': {},
+            'wave': 0,
+            'last_attack_time': 0,
+            'last_wave_damage': 0,
+            'last_wave_composition': None
         }
     
     sector_data = context.bot_data['sector'][user_id]
     
+    # Проверяем, нужно ли запустить волну
+    current_time = time.time()
+    if sector_data['wave'] == 0:
+        # Первое открытие - начинаем волны
+        sector_data['wave'] = 1
+        sector_data['last_attack_time'] = current_time
+    elif sector_data['wave'] > 0:
+        # Проверяем, прошла ли минута с последней атаки
+        if current_time - sector_data['last_attack_time'] >= 60:
+            sector_data['last_attack_time'] = current_time
+            
+            # Получаем состав волны
+            wave_composition = get_wave_composition(sector_data['wave'])
+            wave_damage = get_wave_damage(sector_data['wave'])
+            
+            # Сохраняем информацию о прошедшей волне
+            sector_data['last_wave_composition'] = wave_composition
+            sector_data['last_wave_damage'] = wave_damage
+            
+            # Наносим урон базе
+            sector_data['weapons'] -= wave_damage
+            
+            # Увеличиваем номер волны
+            sector_data['wave'] += 1
+    
     base_text = f"🌐 *База игрока {user_name}:*\n\n"
     base_text += f"🛡 Ядро: {sector_data['core']}\n"
-    base_text += f"💥 Вооружение базы: {sector_data['weapons']}\n\n"
+    
+    weapons = sector_data['weapons']
+    weapons_display = f"{weapons}"
+    if weapons < 0:
+        weapons_display += " ❗️"
+    base_text += f"💥 Вооружение базы: {weapons_display}\n\n"
     
     if sector_data['turrets']:
         base_text += "🔫 *Турели:*\n"
@@ -345,18 +515,57 @@ async def sector_my_base(update: Update, context: ContextTypes.DEFAULT_TYPE):
             base_text += f"{unit} - {count} шт. ⚔️{count * 5} Атаки\n"
         base_text += "\n"
     
-    base_text += "📊 Статус: "
+    base_text += "📊 *Статус:*\n"
     
-    keyboard = [
-        [InlineKeyboardButton("🛡 Построить ядро Штаб", callback_data="sector_upgrade_core")],
-        [InlineKeyboardButton("⬅️ Назад", callback_data="sector_back")]
-    ]
+    if sector_data['wave'] == 0:
+        base_text += "🔴 База подвергается атаке, уничтожьте вражеские базы, чтобы предотвратить волны\n"
+    else:
+        base_text += "🔴 База подвергается атаке, уничтожьте вражеские базы, чтобы предотвратить волны\n"
+        remaining = 60 - (current_time - sector_data['last_attack_time'])
+        if remaining < 0:
+            remaining = 0
+        minutes = remaining // 60
+        seconds = int(remaining % 60)
+        base_text += f"⚔️ Следующая волна через: {minutes} мин {seconds} сек\n"
+    
+    # Показываем последнюю прошедшую волну
+    if sector_data.get('last_wave_composition'):
+        wave_num = sector_data['wave'] - 1
+        base_text += f"\n💀 *База была подвержена атаке!*\n"
+        base_text += f"Волна: {wave_num}\n"
+        base_text += "Враг отправил на вас: "
+        unit_parts = []
+        for unit_name, count in sector_data['last_wave_composition']:
+            unit_parts.append(f"{unit_name} {count}шт")
+        base_text += ", ".join(unit_parts) + "\n"
+        
+        damage = sector_data['last_wave_damage']
+        damage_display = f"{damage}"
+        if sector_data['weapons'] < 0:
+            damage_display += " ❗️"
+        base_text += f"💥 База стала уязвимее на {damage_display} Единиц!"
+    
+    # Кнопки
+    keyboard = []
+    
+    if sector_data['core'] == 'Осколок':
+        keyboard.append([InlineKeyboardButton("🛡 Построить ядро Штаб", callback_data="sector_upgrade_core")])
+    elif sector_data['core'] == 'Штаб':
+        keyboard.append([InlineKeyboardButton("🛡 Построить ядро Атом", callback_data="sector_upgrade_core_atom")])
+    
+    keyboard.append([InlineKeyboardButton("⬅️ Назад", callback_data="sector_back")])
     reply_markup = InlineKeyboardMarkup(keyboard)
     
-    await query.edit_message_text(base_text, parse_mode='Markdown', reply_markup=reply_markup)
+    try:
+        await query.edit_message_text(base_text, parse_mode='Markdown', reply_markup=reply_markup)
+    except Exception as e:
+        if "Message is not modified" in str(e):
+            pass
+        else:
+            raise e
 
 async def sector_upgrade_core(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Улучшение ядра"""
+    """Улучшение ядра до Штаба"""
     query = update.callback_query
     await query.answer()
     
@@ -370,16 +579,17 @@ async def sector_upgrade_core(update: Update, context: ContextTypes.DEFAULT_TYPE
             'core': 'Осколок',
             'weapons': 0,
             'turrets': {},
-            'units': {}
+            'units': {},
+            'wave': 0,
+            'last_attack_time': 0,
+            'last_wave_damage': 0,
+            'last_wave_composition': None
         }
     
     sector_data = context.bot_data['sector'][user_id]
     
     if sector_data['core'] != 'Осколок':
-        await query.edit_message_text(
-            "❌ Ядро уже улучшено!",
-            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="sector_my_base")]])
-        )
+        await sector_my_base(update, context)
         return
     
     keyboard = [
@@ -388,13 +598,19 @@ async def sector_upgrade_core(update: Update, context: ContextTypes.DEFAULT_TYPE
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
-    await query.edit_message_text(
-        "Построить ядро Штаб за 4000 Медь, 4000 Свинец, 1500 Кремний?",
-        reply_markup=reply_markup
-    )
+    try:
+        await query.edit_message_text(
+            "Построить ядро Штаб за 4000 Медь, 4000 Свинец, 1500 Кремний?",
+            reply_markup=reply_markup
+        )
+    except Exception as e:
+        if "Message is not modified" in str(e):
+            pass
+        else:
+            raise e
 
 async def sector_upgrade_core_confirm(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Подтверждение улучшения ядра"""
+    """Подтверждение улучшения ядра до Штаба"""
     query = update.callback_query
     await query.answer()
     
@@ -436,11 +652,128 @@ async def sector_upgrade_core_confirm(update: Update, context: ContextTypes.DEFA
             'core': 'Осколок',
             'weapons': 0,
             'turrets': {},
-            'units': {}
+            'units': {},
+            'wave': 0,
+            'last_attack_time': 0,
+            'last_wave_damage': 0,
+            'last_wave_composition': None
         }
     
     sector_data = context.bot_data['sector'][user_id]
     sector_data['core'] = 'Штаб'
+    
+    await query.edit_message_text(
+        "✅ Ядро улучшено!",
+        reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="sector_my_base")]])
+    )
+
+async def sector_upgrade_core_atom(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Улучшение ядра до Атома"""
+    query = update.callback_query
+    await query.answer()
+    
+    user_id = update.effective_user.id
+    
+    if 'sector' not in context.bot_data:
+        context.bot_data['sector'] = {}
+    
+    if user_id not in context.bot_data['sector']:
+        context.bot_data['sector'][user_id] = {
+            'core': 'Осколок',
+            'weapons': 0,
+            'turrets': {},
+            'units': {},
+            'wave': 0,
+            'last_attack_time': 0,
+            'last_wave_damage': 0,
+            'last_wave_composition': None
+        }
+    
+    sector_data = context.bot_data['sector'][user_id]
+    
+    if sector_data['core'] != 'Штаб':
+        await sector_my_base(update, context)
+        return
+    
+    keyboard = [
+        [InlineKeyboardButton("✅ Построить", callback_data="sector_upgrade_core_atom_confirm")],
+        [InlineKeyboardButton("❌ Отменить", callback_data="sector_my_base")]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    
+    try:
+        await query.edit_message_text(
+            "Построить ядро Атом за 12000 Медь, 12000 Свинец, 8000 Кремний, 4500 Торий, 500 Кинетический сплав?",
+            reply_markup=reply_markup
+        )
+    except Exception as e:
+        if "Message is not modified" in str(e):
+            pass
+        else:
+            raise e
+
+async def sector_upgrade_core_atom_confirm(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Подтверждение улучшения ядра до Атома"""
+    query = update.callback_query
+    await query.answer()
+    
+    user_id = update.effective_user.id
+    
+    if 'all_inventories' not in context.bot_data:
+        context.bot_data['all_inventories'] = {}
+    
+    if user_id not in context.bot_data['all_inventories']:
+        context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
+    
+    inventory = context.bot_data['all_inventories'][user_id]
+    
+    # Проверка ресурсов
+    if (inventory.get('Медь', 0) < 12000 or 
+        inventory.get('Свинец', 0) < 12000 or 
+        inventory.get('Кремний', 0) < 8000 or 
+        inventory.get('Торий', 0) < 4500 or 
+        inventory.get('Кинетический сплав', 0) < 500):
+        await query.edit_message_text(
+            "❌ Недостаточно ресурсов для улучшения ядра!",
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="sector_my_base")]])
+        )
+        return
+    
+    # Списываем ресурсы
+    inventory['Медь'] -= 12000
+    inventory['Свинец'] -= 12000
+    inventory['Кремний'] -= 8000
+    inventory['Торий'] -= 4500
+    inventory['Кинетический сплав'] -= 500
+    
+    if inventory['Медь'] == 0:
+        del inventory['Медь']
+    if inventory['Свинец'] == 0:
+        del inventory['Свинец']
+    if inventory['Кремний'] == 0:
+        del inventory['Кремний']
+    if inventory['Торий'] == 0:
+        del inventory['Торий']
+    if inventory['Кинетический сплав'] == 0:
+        del inventory['Кинетический сплав']
+    
+    if 'sector' not in context.bot_data:
+        context.bot_data['sector'] = {}
+    
+    if user_id not in context.bot_data['sector']:
+        context.bot_data['sector'][user_id] = {
+            'core': 'Осколок',
+            'weapons': 0,
+            'turrets': {},
+            'units': {},
+            'wave': 0,
+            'last_attack_time': 0,
+            'last_wave_damage': 0,
+            'last_wave_composition': None
+        }
+    
+    sector_data = context.bot_data['sector'][user_id]
+    sector_data['core'] = 'Атом'
     
     await query.edit_message_text(
         "✅ Ядро улучшено!",
@@ -1819,6 +2152,8 @@ def main():
     app.add_handler(CallbackQueryHandler(sector_back, pattern="sector_back"))
     app.add_handler(CallbackQueryHandler(sector_upgrade_core, pattern="sector_upgrade_core"))
     app.add_handler(CallbackQueryHandler(sector_upgrade_core_confirm, pattern="sector_upgrade_core_confirm"))
+    app.add_handler(CallbackQueryHandler(sector_upgrade_core_atom, pattern="sector_upgrade_core_atom"))
+    app.add_handler(CallbackQueryHandler(sector_upgrade_core_atom_confirm, pattern="sector_upgrade_core_atom_confirm"))
     
     for drone_name in DRONES.keys():
         app.add_handler(CallbackQueryHandler(lambda u, c, dn=drone_name: drone_research(u, c, dn), pattern=f"drone_research_{drone_name}"))
