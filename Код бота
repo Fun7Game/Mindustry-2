@@ -877,18 +877,18 @@ async def sector_my_base(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = []
     
     if sector_data['core'] == 'Осколок':
-        keyboard.append([InlineKeyboardButton("🛡 Построить ядро Штаб", callback_data="sector_upgrade_core")])
+        keyboard.append([InlineKeyboardButton("🛡 Построить ядро Штаб", callback_data="sector_foundation")])
     elif sector_data['core'] == 'Штаб':
-        keyboard.append([InlineKeyboardButton("🛡 Построить ядро Атом", callback_data="sector_upgrade_core_atom")])
+        keyboard.append([InlineKeyboardButton("🛡 Построить ядро Атом", callback_data="sector_nucleus")])
     
     keyboard.append([InlineKeyboardButton("⬅️ Назад", callback_data="sector_back")])
     reply_markup = InlineKeyboardMarkup(keyboard)
     
     await safe_edit_message(query, base_text, parse_mode='Markdown', reply_markup=reply_markup)
 
-# ========== ФУНКЦИИ ДЛЯ ЯДРА ШТАБ И АТОМ ==========
+# ========== ФУНКЦИИ ДЛЯ ЯДРА ШТАБ (FOUNDATION) ==========
 
-async def sector_upgrade_core(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def sector_foundation(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Кнопка 'Построить ядро Штаб' - открывает меню подтверждения"""
     query = update.callback_query
     await query.answer()
@@ -917,15 +917,15 @@ async def sector_upgrade_core(update: Update, context: ContextTypes.DEFAULT_TYPE
         return
     
     keyboard = [
-        [InlineKeyboardButton("✅ Построить", callback_data="sector_upgrade_core_confirm")],
+        [InlineKeyboardButton("✅ Построить", callback_data="sector_build_foundation")],
         [InlineKeyboardButton("❌ Отменить", callback_data="sector_my_base")]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
     await safe_edit_message(query, "Построить ядро Штаб за 4000 Медь, 4000 Свинец, 1500 Кремний?", reply_markup=reply_markup)
 
-async def sector_upgrade_core_confirm(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Кнопка 'Построить' - списывает ресурсы и улучшает ядро"""
+async def sector_build_foundation(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Кнопка 'Построить' - списывает ресурсы и улучшает ядро до Штаба"""
     query = update.callback_query
     await query.answer()
     
@@ -968,9 +968,11 @@ async def sector_upgrade_core_confirm(update: Update, context: ContextTypes.DEFA
     sector_data = context.bot_data['sector'][user_id]
     sector_data['core'] = 'Штаб'
     
-    await safe_edit_message(query, "✅ Ядро улучшено!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="sector_my_base")]]))
+    await safe_edit_message(query, "✅ Ядро улучшено до Штаба!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="sector_my_base")]]))
 
-async def sector_upgrade_core_atom(update: Update, context: ContextTypes.DEFAULT_TYPE):
+# ========== ФУНКЦИИ ДЛЯ ЯДРА АТОМ (NUCLEUS) ==========
+
+async def sector_nucleus(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Кнопка 'Построить ядро Атом' - открывает меню подтверждения"""
     query = update.callback_query
     await query.answer()
@@ -998,14 +1000,14 @@ async def sector_upgrade_core_atom(update: Update, context: ContextTypes.DEFAULT
         return
     
     keyboard = [
-        [InlineKeyboardButton("✅ Построить", callback_data="sector_upgrade_core_atom_confirm")],
+        [InlineKeyboardButton("✅ Построить", callback_data="sector_build_nucleus")],
         [InlineKeyboardButton("❌ Отменить", callback_data="sector_my_base")]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
     await safe_edit_message(query, "Построить ядро Атом за 12000 Медь, 12000 Свинец, 8000 Кремний, 4500 Торий, 500 Кинетический сплав?", reply_markup=reply_markup)
 
-async def sector_upgrade_core_atom_confirm(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def sector_build_nucleus(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Кнопка 'Построить' - списывает ресурсы и улучшает ядро до Атома"""
     query = update.callback_query
     await query.answer()
@@ -1053,7 +1055,7 @@ async def sector_upgrade_core_atom_confirm(update: Update, context: ContextTypes
     sector_data = context.bot_data['sector'][user_id]
     sector_data['core'] = 'Атом'
     
-    await safe_edit_message(query, "✅ Ядро улучшено!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="sector_my_base")]]))
+    await safe_edit_message(query, "✅ Ядро улучшено до Атома!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="sector_my_base")]]))
 
 async def sector_enemy_bases(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -2096,10 +2098,10 @@ def main():
     app.add_handler(CallbackQueryHandler(sector_enemy_bases, pattern="sector_enemy_bases"))
     app.add_handler(CallbackQueryHandler(sector_create, pattern="sector_create"))
     app.add_handler(CallbackQueryHandler(sector_back, pattern="sector_back"))
-    app.add_handler(CallbackQueryHandler(sector_upgrade_core, pattern="sector_upgrade_core"))
-    app.add_handler(CallbackQueryHandler(sector_upgrade_core_confirm, pattern="sector_upgrade_core_confirm"))
-    app.add_handler(CallbackQueryHandler(sector_upgrade_core_atom, pattern="sector_upgrade_core_atom"))
-    app.add_handler(CallbackQueryHandler(sector_upgrade_core_atom_confirm, pattern="sector_upgrade_core_atom_confirm"))
+    app.add_handler(CallbackQueryHandler(sector_foundation, pattern="sector_foundation"))
+    app.add_handler(CallbackQueryHandler(sector_build_foundation, pattern="sector_build_foundation"))
+    app.add_handler(CallbackQueryHandler(sector_nucleus, pattern="sector_nucleus"))
+    app.add_handler(CallbackQueryHandler(sector_build_nucleus, pattern="sector_build_nucleus"))
     app.add_handler(CallbackQueryHandler(sector_create_turrets, pattern="sector_create_turrets"))
     app.add_handler(CallbackQueryHandler(sector_create_units, pattern="sector_create_units"))
     app.add_handler(CallbackQueryHandler(lambda u, c: sector_turret_info(u, c, c.data.replace("sector_turret_", "")), pattern="sector_turret_"))
