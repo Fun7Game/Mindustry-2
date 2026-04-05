@@ -553,7 +553,7 @@ async def sector_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [
         [InlineKeyboardButton("🟡 Моя база", callback_data="sector_my_base")],
         [InlineKeyboardButton("🔴 Вражеские базы", callback_data="sector_enemy_bases")],
-        [InlineKeyboardButton("🛠 Создать турель/юнита", callback_data="sector_create")]
+        [InlineKeyboardButton("🛠 Создать турель/юнита", callback_data="sector_build")]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
@@ -564,21 +564,21 @@ async def sector_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_markup=reply_markup
     )
 
-async def sector_create(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def sector_build(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Меню выбора категории"""
     query = update.callback_query
     await query.answer()
     
     keyboard = [
-        [InlineKeyboardButton("🔫 Турели", callback_data="sector_create_turrets")],
-        [InlineKeyboardButton("🤖 Юниты", callback_data="sector_create_units")],
+        [InlineKeyboardButton("🔫 Турели", callback_data="sector_turret_build")],
+        [InlineKeyboardButton("🤖 Юниты", callback_data="sector_unit_build")],
         [InlineKeyboardButton("⬅️ Назад", callback_data="sector_back")]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
     await safe_edit_message(query, "Выберите категорию:", reply_markup=reply_markup)
 
-async def sector_create_turrets(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def sector_turret_build(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Список турелей"""
     query = update.callback_query
     await query.answer()
@@ -586,17 +586,17 @@ async def sector_create_turrets(update: Update, context: ContextTypes.DEFAULT_TY
     keyboard = []
     for turret_name in TURRETS.keys():
         keyboard.append([InlineKeyboardButton(turret_name, callback_data=f"sector_turret_{turret_name}")])
-    keyboard.append([InlineKeyboardButton("⬅️ Назад", callback_data="sector_create")])
+    keyboard.append([InlineKeyboardButton("⬅️ Назад", callback_data="sector_build")])
     reply_markup = InlineKeyboardMarkup(keyboard)
     
     await safe_edit_message(query, "Выберите турель, которую хотите поместить в чертежи:", reply_markup=reply_markup)
 
-async def sector_create_units(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def sector_unit_build(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Юниты (заглушка)"""
     query = update.callback_query
     await query.answer()
     
-    keyboard = [[InlineKeyboardButton("⬅️ Назад", callback_data="sector_create")]]
+    keyboard = [[InlineKeyboardButton("⬅️ Назад", callback_data="sector_build")]]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
     await safe_edit_message(query, "🤖 *Юниты*\n\nСкоро здесь появятся юниты для создания!", parse_mode='Markdown', reply_markup=reply_markup)
@@ -633,7 +633,7 @@ async def sector_turret_info(update: Update, context: ContextTypes.DEFAULT_TYPE,
                 break
         status = "✅" if can_buy else "❌"
         keyboard.append([InlineKeyboardButton(f"{amount} {status}", callback_data=f"sector_turret_buy_{turret_name}_{amount}")])
-    keyboard.append([InlineKeyboardButton("⬅️ Назад", callback_data="sector_create_turrets")])
+    keyboard.append([InlineKeyboardButton("⬅️ Назад", callback_data="sector_turret_build")])
     reply_markup = InlineKeyboardMarkup(keyboard)
     
     await safe_edit_message(query, text, parse_mode='Markdown', reply_markup=reply_markup)
@@ -651,27 +651,24 @@ async def sector_turret_buy(update: Update, context: ContextTypes.DEFAULT_TYPE, 
         context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
     inventory = context.bot_data['all_inventories'][user_id]
     
-    # Проверка ресурсов
     for resource, cost in turret['cost'].items():
         if inventory.get(resource, 0) < cost * amount:
-            keyboard = [[InlineKeyboardButton("⬅️ Назад", callback_data="sector_create_turrets")]]
+            keyboard = [[InlineKeyboardButton("⬅️ Назад", callback_data="sector_turret_build")]]
             reply_markup = InlineKeyboardMarkup(keyboard)
             await safe_edit_message(query, "❌ Недостаточно ресурсов!", reply_markup=reply_markup)
             return
     
-    # Проверка лимита чертежей (максимум 10)
     if 'drawings' not in context.bot_data:
         context.bot_data['drawings'] = {}
     if user_id not in context.bot_data['drawings']:
         context.bot_data['drawings'][user_id] = []
     
     if len(context.bot_data['drawings'][user_id]) >= 10:
-        keyboard = [[InlineKeyboardButton("⬅️ Назад", callback_data="sector_create")]]
+        keyboard = [[InlineKeyboardButton("⬅️ Назад", callback_data="sector_build")]]
         reply_markup = InlineKeyboardMarkup(keyboard)
         await safe_edit_message(query, "❌ У вас уже максимальное количество чертежей 10/10!", reply_markup=reply_markup)
         return
     
-    # Списываем ресурсы
     for resource, cost in turret['cost'].items():
         inventory[resource] -= cost * amount
         if inventory[resource] == 0:
@@ -684,7 +681,7 @@ async def sector_turret_buy(update: Update, context: ContextTypes.DEFAULT_TYPE, 
         'build_time': turret['build_time']
     })
     
-    keyboard = [[InlineKeyboardButton("⬅️ Назад", callback_data="sector_create_turrets")]]
+    keyboard = [[InlineKeyboardButton("⬅️ Назад", callback_data="sector_turret_build")]]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
     await safe_edit_message(query, f"✅ {turret_name} в количестве {amount} шт. помещена в ваши чертежи!", reply_markup=reply_markup)
@@ -885,13 +882,12 @@ async def sector_my_base(update: Update, context: ContextTypes.DEFAULT_TYPE):
             damage_display += " ❗️"
         base_text += f"💥 База стала уязвимее на {damage_display} Единиц!"
     
-    # Кнопки
     keyboard = []
     
     if sector_data['core'] == 'Осколок':
-        keyboard.append([InlineKeyboardButton("🛡 Построить ядро Штаб", callback_data="sector_upgrade_core")])
+        keyboard.append([InlineKeyboardButton("🛡 Построить ядро Штаб", callback_data="sector_foundation")])
     elif sector_data['core'] == 'Штаб':
-        keyboard.append([InlineKeyboardButton("🛡 Построить ядро Атом", callback_data="sector_upgrade_core_atom")])
+        keyboard.append([InlineKeyboardButton("🛡 Построить ядро Атом", callback_data="sector_nucleus")])
     
     keyboard.append([InlineKeyboardButton("⬅️ Назад", callback_data="sector_back")])
     reply_markup = InlineKeyboardMarkup(keyboard)
@@ -900,7 +896,7 @@ async def sector_my_base(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # ========== ФУНКЦИИ ДЛЯ ЯДРА ШТАБ ==========
 
-async def sector_upgrade_core(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def sector_foundation(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Кнопка 'Построить ядро Штаб' - открывает меню подтверждения"""
     query = update.callback_query
     await query.answer()
@@ -928,14 +924,14 @@ async def sector_upgrade_core(update: Update, context: ContextTypes.DEFAULT_TYPE
         return
     
     keyboard = [
-        [InlineKeyboardButton("✅ Построить", callback_data="sector_upgrade_core_confirm")],
+        [InlineKeyboardButton("✅ Построить", callback_data="sector_build_foundation")],
         [InlineKeyboardButton("❌ Отменить", callback_data="sector_my_base")]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
     await safe_edit_message(query, "Построить ядро Штаб за 4000 Медь, 4000 Свинец, 1500 Кремний?", reply_markup=reply_markup)
 
-async def sector_upgrade_core_confirm(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def sector_build_foundation(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Кнопка 'Построить' - списывает ресурсы и улучшает ядро до Штаба"""
     query = update.callback_query
     await query.answer()
@@ -982,7 +978,7 @@ async def sector_upgrade_core_confirm(update: Update, context: ContextTypes.DEFA
 
 # ========== ФУНКЦИИ ДЛЯ ЯДРА АТОМ ==========
 
-async def sector_upgrade_core_atom(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def sector_nucleus(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Кнопка 'Построить ядро Атом' - открывает меню подтверждения"""
     query = update.callback_query
     await query.answer()
@@ -1010,14 +1006,14 @@ async def sector_upgrade_core_atom(update: Update, context: ContextTypes.DEFAULT
         return
     
     keyboard = [
-        [InlineKeyboardButton("✅ Построить", callback_data="sector_upgrade_core_atom_confirm")],
+        [InlineKeyboardButton("✅ Построить", callback_data="sector_build_nucleus")],
         [InlineKeyboardButton("❌ Отменить", callback_data="sector_my_base")]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
     await safe_edit_message(query, "Построить ядро Атом за 12000 Медь, 12000 Свинец, 8000 Кремний, 4500 Торий, 500 Кинетический сплав?", reply_markup=reply_markup)
 
-async def sector_upgrade_core_atom_confirm(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def sector_build_nucleus(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Кнопка 'Построить' - списывает ресурсы и улучшает ядро до Атома"""
     query = update.callback_query
     await query.answer()
@@ -1084,7 +1080,7 @@ async def sector_back(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [
         [InlineKeyboardButton("🟡 Моя база", callback_data="sector_my_base")],
         [InlineKeyboardButton("🔴 Вражеские базы", callback_data="sector_enemy_bases")],
-        [InlineKeyboardButton("🛠 Создать турель/юнита", callback_data="sector_create")]
+        [InlineKeyboardButton("🛠 Создать турель/юнита", callback_data="sector_build")]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
@@ -2107,14 +2103,14 @@ def main():
     
     app.add_handler(CallbackQueryHandler(sector_my_base, pattern="sector_my_base"))
     app.add_handler(CallbackQueryHandler(sector_enemy_bases, pattern="sector_enemy_bases"))
-    app.add_handler(CallbackQueryHandler(sector_create, pattern="sector_create"))
+    app.add_handler(CallbackQueryHandler(sector_build, pattern="sector_build"))
     app.add_handler(CallbackQueryHandler(sector_back, pattern="sector_back"))
-    app.add_handler(CallbackQueryHandler(sector_upgrade_core, pattern="sector_upgrade_core"))
-    app.add_handler(CallbackQueryHandler(sector_upgrade_core_confirm, pattern="sector_upgrade_core_confirm"))
-    app.add_handler(CallbackQueryHandler(sector_upgrade_core_atom, pattern="sector_upgrade_core_atom"))
-    app.add_handler(CallbackQueryHandler(sector_upgrade_core_atom_confirm, pattern="sector_upgrade_core_atom_confirm"))
-    app.add_handler(CallbackQueryHandler(sector_create_turrets, pattern="sector_create_turrets"))
-    app.add_handler(CallbackQueryHandler(sector_create_units, pattern="sector_create_units"))
+    app.add_handler(CallbackQueryHandler(sector_foundation, pattern="sector_foundation"))
+    app.add_handler(CallbackQueryHandler(sector_build_foundation, pattern="sector_build_foundation"))
+    app.add_handler(CallbackQueryHandler(sector_nucleus, pattern="sector_nucleus"))
+    app.add_handler(CallbackQueryHandler(sector_build_nucleus, pattern="sector_build_nucleus"))
+    app.add_handler(CallbackQueryHandler(sector_turret_build, pattern="sector_turret_build"))
+    app.add_handler(CallbackQueryHandler(sector_unit_build, pattern="sector_unit_build"))
     app.add_handler(CallbackQueryHandler(lambda u, c: sector_turret_info(u, c, u.callback_query.data.replace("sector_turret_", "")), pattern="sector_turret_"))
     app.add_handler(CallbackQueryHandler(lambda u, c: sector_turret_buy(u, c, c.data.split("_")[3], int(c.data.split("_")[4])), pattern="sector_turret_buy_"))
     
