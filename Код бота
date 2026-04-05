@@ -886,7 +886,10 @@ async def sector_my_base(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     await safe_edit_message(query, base_text, parse_mode='Markdown', reply_markup=reply_markup)
 
+# ========== ФУНКЦИИ ДЛЯ ЯДРА ШТАБ И АТОМ ==========
+
 async def sector_upgrade_core(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Кнопка 'Построить ядро Штаб' - открывает меню подтверждения"""
     query = update.callback_query
     await query.answer()
     
@@ -907,6 +910,8 @@ async def sector_upgrade_core(update: Update, context: ContextTypes.DEFAULT_TYPE
         }
     
     sector_data = context.bot_data['sector'][user_id]
+    
+    # Если ядро уже не Осколок - возвращаемся в меню базы
     if sector_data['core'] != 'Осколок':
         await sector_my_base(update, context)
         return
@@ -920,6 +925,7 @@ async def sector_upgrade_core(update: Update, context: ContextTypes.DEFAULT_TYPE
     await safe_edit_message(query, "Построить ядро Штаб за 4000 Медь, 4000 Свинец, 1500 Кремний?", reply_markup=reply_markup)
 
 async def sector_upgrade_core_confirm(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Кнопка 'Построить' - списывает ресурсы и улучшает ядро"""
     query = update.callback_query
     await query.answer()
     
@@ -931,10 +937,12 @@ async def sector_upgrade_core_confirm(update: Update, context: ContextTypes.DEFA
         context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
     inventory = context.bot_data['all_inventories'][user_id]
     
+    # Проверяем ресурсы
     if inventory.get('Медь', 0) < 4000 or inventory.get('Свинец', 0) < 4000 or inventory.get('Кремний', 0) < 1500:
         await safe_edit_message(query, "❌ Недостаточно ресурсов для улучшения ядра!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="sector_my_base")]]))
         return
     
+    # Списываем ресурсы
     inventory['Медь'] -= 4000
     inventory['Свинец'] -= 4000
     inventory['Кремний'] -= 1500
@@ -963,6 +971,7 @@ async def sector_upgrade_core_confirm(update: Update, context: ContextTypes.DEFA
     await safe_edit_message(query, "✅ Ядро улучшено!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="sector_my_base")]]))
 
 async def sector_upgrade_core_atom(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Кнопка 'Построить ядро Атом' - открывает меню подтверждения"""
     query = update.callback_query
     await query.answer()
     
@@ -983,6 +992,7 @@ async def sector_upgrade_core_atom(update: Update, context: ContextTypes.DEFAULT
         }
     
     sector_data = context.bot_data['sector'][user_id]
+    
     if sector_data['core'] != 'Штаб':
         await sector_my_base(update, context)
         return
@@ -996,6 +1006,7 @@ async def sector_upgrade_core_atom(update: Update, context: ContextTypes.DEFAULT
     await safe_edit_message(query, "Построить ядро Атом за 12000 Медь, 12000 Свинец, 8000 Кремний, 4500 Торий, 500 Кинетический сплав?", reply_markup=reply_markup)
 
 async def sector_upgrade_core_atom_confirm(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Кнопка 'Построить' - списывает ресурсы и улучшает ядро до Атома"""
     query = update.callback_query
     await query.answer()
     
