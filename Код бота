@@ -10,12 +10,12 @@ TOKEN = TOKEN = ""
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
 # Базовый кулдаун в секундах (1200 секунд = 20 минут)
-BASE_COOLDOWN = 1200
-MIN_COOLDOWN = 30
+BASE_COOLDOWN = 1
+MIN_COOLDOWN = 1
 
 # Базовые множители добычи
 BASE_MIN_ITEMS = 1
-BASE_MAX_ITEMS = 10
+BASE_MAX_ITEMS = 10000
 BASE_MIN_LIQUID = 100
 BASE_MAX_LIQUID = 1000
 
@@ -578,9 +578,10 @@ async def sector_turret_build(update: Update, context: ContextTypes.DEFAULT_TYPE
     await query.answer()
     
     keyboard = []
-    for turret_name in TURRETS.keys():
-        keyboard.append([InlineKeyboardButton(turret_name, callback_data=f"sector_turret_{turret_name}")])
-    keyboard.append([InlineKeyboardButton("⬅️ Назад", callback_data="sector_build")])
+    turrets_list = list(TURRETS.keys())
+    for i, turret_name in enumerate(turrets_list):
+        keyboard.append([InlineKeyboardButton(turret_name, callback_data=f"sector_turret_{i}")])
+    keyboard.append([InlineKeyboardButton("⬅️  Назад", callback_data="sector_build")])
     reply_markup = InlineKeyboardMarkup(keyboard)
     
     await safe_edit_message(query, "Выберите турель, которую хотите поместить в чертежи:", reply_markup=reply_markup)
@@ -594,10 +595,25 @@ async def sector_unit_build(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     await safe_edit_message(query, "🤖 *Юниты*\n\nСкоро здесь появятся юниты для создания!", parse_mode='Markdown', reply_markup=reply_markup)
 
-async def sector_turret_info(update: Update, context: ContextTypes.DEFAULT_TYPE, turret_name):
+async def sector_turret_info(update: Update, context: ContextTypes.DEFAULT_TYPE, turret_index):
     query = update.callback_query
     await query.answer()
     
+    turrets_list = list(TURRETS.keys())
+    
+    # Получаем индекс
+    try:
+        index = int(turret_index)
+    except ValueError:
+        await safe_edit_message(query, "❌ Ошибка: неверный формат данных!")
+        return
+    
+    # Проверяем, что индекс в пределах списка
+    if index < 0 or index >= len(turrets_list):
+        await safe_edit_message(query, f"❌ Ошибка: турель с индексом {index} не найдена!")
+        return
+    
+    turret_name = turrets_list[index]
     turret = TURRETS[turret_name]
     
     cost_text = ""
@@ -605,10 +621,10 @@ async def sector_turret_info(update: Update, context: ContextTypes.DEFAULT_TYPE,
         cost_text += f"{amount} {resource}, "
     cost_text = cost_text[:-2]
     
-    text = f"🔫 *{turret_name}*\n\n"
-    text += f"💸 Стоимость производства (1 Шт.): {cost_text}\n"
-    text += f"⏳️ Время производства (1 Шт.): {turret['build_time']} Секунд\n"
-    text += f"💥 Вооружение базы (1 Шт.): {turret['defense']} Единиц"
+    text = f"🔫  *{turret_name}*\n\n"
+    text += f"💸  Стоимость производства (1 Шт.): {cost_text}\n"
+    text += f"⏳️  Время производства (1 Шт.): {turret['build_time']} Секунд\n"
+    text += f"💥  Вооружение базы (1 Шт.): {turret['defense']} Единиц"
     
     user_id = update.effective_user.id
     if 'all_inventories' not in context.bot_data:
@@ -625,17 +641,41 @@ async def sector_turret_info(update: Update, context: ContextTypes.DEFAULT_TYPE,
                 can_buy = False
                 break
         status = "✅" if can_buy else "❌"
-        keyboard.append([InlineKeyboardButton(f"{amount} {status}", callback_data=f"sector_turret_buy_{turret_name}_{amount}")])
-    keyboard.append([InlineKeyboardButton("⬅️ Назад", callback_data="sector_turret_build")])
+        keyboard.append([InlineKeyboardButton(f"{amount} {status}", callback_data=f"sector_turret_buy_{index}_{amount}")])
+    keyboard.append([InlineKeyboardButton("⬅️  Назад", callback_data="sector_turret_build")])
     reply_markup = InlineKeyboardMarkup(keyboard)
     
     await safe_edit_message(query, text, parse_mode='Markdown', reply_markup=reply_markup)
 
-async def sector_turret_buy(update: Update, context: ContextTypes.DEFAULT_TYPE, turret_name, amount):
+async def sector_turret_buy(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     
     user_id = update.effective_user.id
+    
+    # Извлекаем индекс турели и количество
+    data = query.data
+    # Формат: sector_turret_buy_0_5
+    parts = data.split("_")
+    # parts[0] = "sector", parts[1] = "turret", parts[2] = "buy", parts[3] = индекс, parts[4] = количество
+    
+    if len(parts) < 5:
+        await safe_edit_message(query, "❌ Ошибка: неверный формат данных!")
+        return
+    
+    try:
+        turret_index = int(parts[3])
+        amount = int(parts[4])
+    except ValueError:
+        await safe_edit_message(query, "❌ Ошибка: неверный формат индекса или количества!")
+        return
+    
+    turrets_list = list(TURRETS.keys())
+    if turret_index < 0 or turret_index >= len(turrets_list):
+        await safe_edit_message(query, "❌ Ошибка: турель не найдена!")
+        return
+    
+    turret_name = turrets_list[turret_index]
     turret = TURRETS[turret_name]
     
     if 'all_inventories' not in context.bot_data:
@@ -644,24 +684,27 @@ async def sector_turret_buy(update: Update, context: ContextTypes.DEFAULT_TYPE, 
         context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
     inventory = context.bot_data['all_inventories'][user_id]
     
+    # Проверка ресурсов
     for resource, cost in turret['cost'].items():
         if inventory.get(resource, 0) < cost * amount:
-            keyboard = [[InlineKeyboardButton("⬅️ Назад", callback_data="sector_turret_build")]]
+            keyboard = [[InlineKeyboardButton("⬅️  Назад", callback_data="sector_turret_build")]]
             reply_markup = InlineKeyboardMarkup(keyboard)
             await safe_edit_message(query, "❌ Недостаточно ресурсов!", reply_markup=reply_markup)
             return
     
+    # Проверка лимита чертежей
     if 'drawings' not in context.bot_data:
         context.bot_data['drawings'] = {}
     if user_id not in context.bot_data['drawings']:
         context.bot_data['drawings'][user_id] = []
     
     if len(context.bot_data['drawings'][user_id]) >= 10:
-        keyboard = [[InlineKeyboardButton("⬅️ Назад", callback_data="sector_build")]]
+        keyboard = [[InlineKeyboardButton("⬅️  Назад", callback_data="sector_build")]]
         reply_markup = InlineKeyboardMarkup(keyboard)
         await safe_edit_message(query, "❌ У вас уже максимальное количество чертежей 10/10!", reply_markup=reply_markup)
         return
     
+    # Списываем ресурсы
     for resource, cost in turret['cost'].items():
         inventory[resource] -= cost * amount
         if inventory[resource] == 0:
@@ -674,7 +717,7 @@ async def sector_turret_buy(update: Update, context: ContextTypes.DEFAULT_TYPE, 
         'build_time': turret['build_time']
     })
     
-    keyboard = [[InlineKeyboardButton("⬅️ Назад", callback_data="sector_turret_build")]]
+    keyboard = [[InlineKeyboardButton("⬅️  Назад", callback_data="sector_turret_build")]]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
     await safe_edit_message(query, f"✅ {turret_name} в количестве {amount} шт. помещена в ваши чертежи!", reply_markup=reply_markup)
@@ -2098,10 +2141,10 @@ def main():
     app.add_handler(CallbackQueryHandler(sector_foundation_build, pattern="sector_foundation_build"))
     app.add_handler(CallbackQueryHandler(sector_nucleus, pattern="sector_nucleus"))
     app.add_handler(CallbackQueryHandler(sector_nucleus_build, pattern="sector_nucleus_build"))
-    app.add_handler(CallbackQueryHandler(sector_turret_build, pattern="sector_turret_build"))
     app.add_handler(CallbackQueryHandler(sector_unit_build, pattern="sector_unit_build"))
+    app.add_handler(CallbackQueryHandler(sector_turret_build, pattern="sector_turret_build"))
     app.add_handler(CallbackQueryHandler(lambda u, c: sector_turret_info(u, c, u.callback_query.data.replace("sector_turret_", "")), pattern="sector_turret_"))
-    app.add_handler(CallbackQueryHandler(lambda u, c: sector_turret_buy(u, c, c.data.split("_")[3], int(c.data.split("_")[4])), pattern="sector_turret_buy_"))
+    app.add_handler(CallbackQueryHandler(sector_turret_buy, pattern="sector_turret_buy_"))
     
     app.add_handler(CallbackQueryHandler(lambda u, c: drawing_start(u, c, int(c.data.replace("drawing_start_", ""))), pattern="drawing_start_"))
     app.add_handler(CallbackQueryHandler(drawing_cancel, pattern="drawing_cancel"))
