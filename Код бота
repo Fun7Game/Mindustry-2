@@ -48,254 +48,72 @@ MINE_RESOURCES = {
 
 # Буры
 DRILLS = {
-    "Медный бур": {
-        "cost": {"Медь": 25},
-        "production": 15,
-        "emoji": "⚙️"
-    },
-    "Пневматический бур": {
-        "cost": {"Медь": 35, "Графит": 10},
-        "production": 60,
-        "emoji": "⚙️"
-    },
-    "Лазерный бур": {
-        "cost": {"Медь": 120, "Кремний": 40, "Титан": 20},
-        "production": 360,
-        "emoji": "⚙️"
-    },
-    "Воздушная бур. установка": {
-        "cost": {"Медь": 250, "Свинец": 250, "Кремний": 120, "Титан": 100, "Торий": 50},
-        "production": 1800,
-        "emoji": "⚙️"
-    },
-    "Epiroc Pit Viper 351": {
-        "cost": {"Медь": 800, "Кремний": 400, "Титан": 250, "Фазовая ткань": 100},
-        "production": 6000,
-        "emoji": "🏗"
-    },
-    "Sandvik Pantera DP1600i": {
-        "cost": {"Свинец": 2000, "Кремний": 1500, "Титан": 1500, "Фазовая ткань": 400, "Кинетический сплав": 400},
-        "production": 31600,
-        "emoji": "🏗"
-    }
+    "Медный бур": {"cost": {"Медь": 25}, "production": 15, "emoji": "⚙️"},
+    "Пневматический бур": {"cost": {"Медь": 35, "Графит": 10}, "production": 60, "emoji": "⚙️"},
+    "Лазерный бур": {"cost": {"Медь": 120, "Кремний": 40, "Титан": 20}, "production": 360, "emoji": "⚙️"},
+    "Воздушная бур. установка": {"cost": {"Медь": 250, "Свинец": 250, "Кремний": 120, "Титан": 100, "Торий": 50}, "production": 1800, "emoji": "⚙️"},
+    "Epiroc Pit Viper 351": {"cost": {"Медь": 800, "Кремний": 400, "Титан": 250, "Фазовая ткань": 100}, "production": 6000, "emoji": "🏗"},
+    "Sandvik Pantera DP1600i": {"cost": {"Свинец": 2000, "Кремний": 1500, "Титан": 1500, "Фазовая ткань": 400, "Кинетический сплав": 400}, "production": 31600, "emoji": "🏗"}
 }
 
 # Дроны
 DRONES = {
-    "Моно": {
-        "research_cost": 1500,
-        "buy_cost": 100,
-        "production": 1,
-        "research_key": "mono_researched",
-        "count_key": "mono_count",
-        "resources_key": "mono_resources"
-    },
-    "Поли": {
-        "research_cost": 12500,
-        "buy_cost": 1000,
-        "production": 9,
-        "research_key": "poly_researched",
-        "count_key": "poly_count",
-        "resources_key": "poly_resources"
-    },
-    "Мега": {
-        "research_cost": 85000,
-        "buy_cost": 7500,
-        "production": 65,
-        "research_key": "mega_researched",
-        "count_key": "mega_count",
-        "resources_key": "mega_resources"
-    },
-    "Квад": {
-        "research_cost": 500000,
-        "buy_cost": 45000,
-        "production": 380,
-        "research_key": "quad_researched",
-        "count_key": "quad_count",
-        "resources_key": "quad_resources"
-    },
-    "Окт": {
-        "research_cost": 12500000,
-        "buy_cost": 1000000,
-        "production": 8500,
-        "research_key": "oct_researched",
-        "count_key": "oct_count",
-        "resources_key": "oct_resources"
-    }
+    "Моно": {"research_cost": 1500, "buy_cost": 100, "production": 1, "research_key": "mono_researched", "count_key": "mono_count", "resources_key": "mono_resources"},
+    "Поли": {"research_cost": 12500, "buy_cost": 1000, "production": 9, "research_key": "poly_researched", "count_key": "poly_count", "resources_key": "poly_resources"},
+    "Мега": {"research_cost": 85000, "buy_cost": 7500, "production": 65, "research_key": "mega_researched", "count_key": "mega_count", "resources_key": "mega_resources"},
+    "Квад": {"research_cost": 500000, "buy_cost": 45000, "production": 380, "research_key": "quad_researched", "count_key": "quad_count", "resources_key": "quad_resources"},
+    "Окт": {"research_cost": 12500000, "buy_cost": 1000000, "production": 8500, "research_key": "oct_researched", "count_key": "oct_count", "resources_key": "oct_resources"}
 }
 
 # Турели
 TURRETS = {
-    "Двойная турель": {
-        "cost": {"Медь": 35},
-        "build_time": 5,
-        "defense": 10
-    },
-    "Рассеиватель": {
-        "cost": {"Медь": 85, "Свинец": 45},
-        "build_time": 12,
-        "defense": 30
-    },
-    "Град": {
-        "cost": {"Медь": 40, "Графит": 17},
-        "build_time": 15,
-        "defense": 50
-    },
-    "Залп": {
-        "cost": {"Медь": 100, "Графит": 80, "Титан": 50},
-        "build_time": 30,
-        "defense": 150
-    },
-    "Копейщик": {
-        "cost": {"Медь": 60, "Свинец": 70, "Титан": 30, "Кремний": 60},
-        "build_time": 40,
-        "defense": 250
-    },
-    "Рябь": {
-        "cost": {"Медь": 150, "Графит": 135, "Титан": 60},
-        "build_time": 60,
-        "defense": 275
-    },
-    "Циклон": {
-        "cost": {"Медь": 200, "Титан": 125, "Пластан": 80},
-        "build_time": 90,
-        "defense": 600
-    },
-    "Взрыватель": {
-        "cost": {"Медь": 225, "Графит": 225, "Торий": 100},
-        "build_time": 120,
-        "defense": 800
-    },
-    "Испепелитель": {
-        "cost": {"Медь": 1200, "Свинец": 350, "Графит": 300, "Кремний": 325, "Кинетический сплав": 325},
-        "build_time": 300,
-        "defense": 5000
-    },
-    "Знамение": {
-        "cost": {"Медь": 1000, "Метастекло": 600, "Кремний": 600, "Пластан": 200, "Кинетический сплав": 300},
-        "build_time": 600,
-        "defense": 10000
-    }
+    "Двойная турель": {"cost": {"Медь": 35}, "build_time": 5, "defense": 10},
+    "Рассеиватель": {"cost": {"Медь": 85, "Свинец": 45}, "build_time": 12, "defense": 30},
+    "Град": {"cost": {"Медь": 40, "Графит": 17}, "build_time": 15, "defense": 50},
+    "Залп": {"cost": {"Медь": 100, "Графит": 80, "Титан": 50}, "build_time": 30, "defense": 150},
+    "Копейщик": {"cost": {"Медь": 60, "Свинец": 70, "Титан": 30, "Кремний": 60}, "build_time": 40, "defense": 250},
+    "Рябь": {"cost": {"Медь": 150, "Графит": 135, "Титан": 60}, "build_time": 60, "defense": 275},
+    "Циклон": {"cost": {"Медь": 200, "Титан": 125, "Пластан": 80}, "build_time": 90, "defense": 600},
+    "Взрыватель": {"cost": {"Медь": 225, "Графит": 225, "Торий": 100}, "build_time": 120, "defense": 800},
+    "Испепелитель": {"cost": {"Медь": 1200, "Свинец": 350, "Графит": 300, "Кремний": 325, "Кинетический сплав": 325}, "build_time": 300, "defense": 5000},
+    "Знамение": {"cost": {"Медь": 1000, "Метастекло": 600, "Кремний": 600, "Пластан": 200, "Кинетический сплав": 300}, "build_time": 600, "defense": 10000}
 }
 
 # Вражеские юниты и их урон
 ENEMY_UNITS = {
-    "Кинжал": 5,
-    "Булава": 20,
-    "Крепость": 100,
-    "Скипетр": 750,
-    "Власть": 5000,
-    "Нова": 10,
-    "Пульсар": 20,
-    "Квазар": 120,
-    "Парус": 1000,
-    "Ворон": 4000,
-    "Ползун": 15,
-    "Атракс": 30,
-    "Спайрокт": 100,
-    "Аркид": 1200,
-    "Токсопид": 6000,
-    "Вспышка": 5,
-    "Горизонт": 25,
-    "Зенит": 120,
-    "Затемь": 800,
-    "Затмение": 4500
+    "Кинжал": 5, "Булава": 20, "Крепость": 100, "Скипетр": 750, "Власть": 5000,
+    "Нова": 10, "Пульсар": 20, "Квазар": 120, "Парус": 1000, "Ворон": 4000,
+    "Ползун": 15, "Атракс": 30, "Спайрокт": 100, "Аркид": 1200, "Токсопид": 6000,
+    "Вспышка": 5, "Горизонт": 25, "Зенит": 120, "Затемь": 800, "Затмение": 4500
 }
 
 # Состав волн
 WAVES = {
-    1: [("Кинжал", 1)],
-    5: [("Кинжал", 1)],
-    6: [("Вспышка", 3)],
-    10: [("Вспышка", 3)],
-    11: [("Кинжал", 2), ("Нова", 1)],
-    15: [("Кинжал", 2), ("Нова", 1)],
-    16: [("Булава", 3)],
-    19: [("Булава", 3)],
-    20: [("Спайрокт", 1)],
-    21: [("Пульсар", 3), ("Кинжал", 5)],
-    25: [("Пульсар", 3), ("Кинжал", 5)],
-    26: [("Вспышка", 10), ("Горизонт", 3)],
-    30: [("Вспышка", 10), ("Горизонт", 3)],
-    31: [("Пульсар", 5), ("Нова", 10)],
-    35: [("Пульсар", 5), ("Нова", 10)],
-    36: [("Булава", 3), ("Кинжал", 10), ("Ползун", 5)],
-    39: [("Булава", 3), ("Кинжал", 10), ("Ползун", 5)],
-    40: [("Крепость", 3)],
-    41: [("Атракс", 3), ("Горизонт", 5), ("Ползун", 10)],
-    45: [("Атракс", 3), ("Горизонт", 5), ("Ползун", 10)],
-    46: [("Кинжал", 15), ("Вспышка", 20), ("Булава", 5)],
-    50: [("Кинжал", 15), ("Вспышка", 20), ("Булава", 5)],
-    51: [("Кинжал", 25), ("Зенит", 1), ("Пульсар", 10)],
-    55: [("Кинжал", 25), ("Зенит", 1), ("Пульсар", 10)],
-    56: [("Квазар", 3), ("Крепость", 3), ("Вспышка", 30)],
-    59: [("Квазар", 3), ("Крепость", 3), ("Вспышка", 30)],
-    60: [("Скипетр", 1)],
-    61: [("Квазар", 5), ("Горизонт", 15), ("Кинжал", 30), ("Нова", 20)],
-    65: [("Квазар", 5), ("Горизонт", 15), ("Кинжал", 30), ("Нова", 20)],
-    66: [("Крепость", 5), ("Ползун", 30), ("Атракс", 10)],
-    69: [("Крепость", 5), ("Ползун", 30), ("Атракс", 10)],
-    70: [("Зенит", 5), ("Спайрокт", 5)],
-    75: [("Зенит", 5), ("Спайрокт", 5)],
-    76: [("Квазар", 10), ("Пульсар", 20)],
-    79: [("Квазар", 10), ("Пульсар", 20)],
-    80: [("Парус", 2)],
-    81: [("Крепость", 10), ("Зенит", 10)],
-    85: [("Крепость", 10), ("Зенит", 10)],
-    86: [("Квазар", 15)],
-    90: [("Квазар", 15)],
-    91: [("Спайрокт", 10), ("Атракс", 30)],
-    95: [("Спайрокт", 10), ("Атракс", 30)],
-    96: [("Скипетр", 1), ("Квазар", 5)],
-    99: [("Скипетр", 1), ("Квазар", 5)],
-    100: [("Власть", 1)],
-    101: [("Зенит", 15)],
-    110: [("Зенит", 15)],
-    111: [("Скипетр", 1), ("Крепость", 15)],
-    120: [("Скипетр", 1), ("Крепость", 15)],
-    121: [("Спайрокт", 25)],
-    130: [("Спайрокт", 25)],
-    131: [("Парус", 1), ("Квазар", 10)],
-    140: [("Парус", 1), ("Квазар", 10)],
-    141: [("Затемь", 3)],
-    149: [("Затемь", 3)],
-    150: [("Затмение", 1)],
-    151: [("Крепость", 25), ("Зенит", 25)],
-    170: [("Крепость", 25), ("Зенит", 25)],
-    171: [("Аркид", 1), ("Квазар", 15)],
-    190: [("Аркид", 1), ("Квазар", 15)],
-    191: [("Скипетр", 3), ("Спайрокт", 20)],
-    199: [("Скипетр", 3), ("Спайрокт", 20)],
-    200: [("Токсопид", 1)],
-    201: [("Парус", 3), ("Квазар", 25)],
-    220: [("Парус", 3), ("Квазар", 25)],
-    221: [("Скипетр", 3), ("Зенит", 25)],
-    240: [("Скипетр", 3), ("Зенит", 25)],
-    241: [("Аркид", 5)],
-    249: [("Аркид", 5)],
-    250: [("Ворон", 1), ("Парус", 3)],
-    251: [("Скипетр", 5)],
-    299: [("Скипетр", 5)],
-    300: [("Власть", 3)],
-    301: [("Затемь", 5)],
-    349: [("Затемь", 5)],
-    350: [("Затмение", 3)],
-    351: [("Аркид", 5)],
-    399: [("Аркид", 5)],
-    400: [("Токсопид", 3)],
-    401: [("Парус", 5)],
-    449: [("Парус", 5)],
-    450: [("Ворон", 3)],
-    451: [("Затмение", 2), ("Скипетр", 10)],
-    460: [("Затмение", 2), ("Скипетр", 10)],
-    461: [("Ворон", 3), ("Аркид", 10)],
-    470: [("Ворон", 3), ("Аркид", 10)],
-    471: [("Токсопид", 2), ("Парус", 10)],
-    480: [("Токсопид", 2), ("Парус", 10)],
-    481: [("Власть", 3), ("Затемь", 10)],
-    490: [("Власть", 3), ("Затемь", 10)],
-    491: [("Токсопид", 5), ("Скипетр", 5), ("Парус", 5)],
-    499: [("Токсопид", 5), ("Скипетр", 5), ("Парус", 5)],
+    1: [("Кинжал", 1)], 5: [("Кинжал", 1)], 6: [("Вспышка", 3)], 10: [("Вспышка", 3)],
+    11: [("Кинжал", 2), ("Нова", 1)], 15: [("Кинжал", 2), ("Нова", 1)], 16: [("Булава", 3)], 19: [("Булава", 3)],
+    20: [("Спайрокт", 1)], 21: [("Пульсар", 3), ("Кинжал", 5)], 25: [("Пульсар", 3), ("Кинжал", 5)],
+    26: [("Вспышка", 10), ("Горизонт", 3)], 30: [("Вспышка", 10), ("Горизонт", 3)],
+    31: [("Пульсар", 5), ("Нова", 10)], 35: [("Пульсар", 5), ("Нова", 10)],
+    36: [("Булава", 3), ("Кинжал", 10), ("Ползун", 5)], 39: [("Булава", 3), ("Кинжал", 10), ("Ползун", 5)],
+    40: [("Крепость", 3)], 41: [("Атракс", 3), ("Горизонт", 5), ("Ползун", 10)], 45: [("Атракс", 3), ("Горизонт", 5), ("Ползун", 10)],
+    46: [("Кинжал", 15), ("Вспышка", 20), ("Булава", 5)], 50: [("Кинжал", 15), ("Вспышка", 20), ("Булава", 5)],
+    51: [("Кинжал", 25), ("Зенит", 1), ("Пульсар", 10)], 55: [("Кинжал", 25), ("Зенит", 1), ("Пульсар", 10)],
+    56: [("Квазар", 3), ("Крепость", 3), ("Вспышка", 30)], 59: [("Квазар", 3), ("Крепость", 3), ("Вспышка", 30)],
+    60: [("Скипетр", 1)], 61: [("Квазар", 5), ("Горизонт", 15), ("Кинжал", 30), ("Нова", 20)], 65: [("Квазар", 5), ("Горизонт", 15), ("Кинжал", 30), ("Нова", 20)],
+    66: [("Крепость", 5), ("Ползун", 30), ("Атракс", 10)], 69: [("Крепость", 5), ("Ползун", 30), ("Атракс", 10)],
+    70: [("Зенит", 5), ("Спайрокт", 5)], 75: [("Зенит", 5), ("Спайрокт", 5)], 76: [("Квазар", 10), ("Пульсар", 20)], 79: [("Квазар", 10), ("Пульсар", 20)],
+    80: [("Парус", 2)], 81: [("Крепость", 10), ("Зенит", 10)], 85: [("Крепость", 10), ("Зенит", 10)], 86: [("Квазар", 15)], 90: [("Квазар", 15)],
+    91: [("Спайрокт", 10), ("Атракс", 30)], 95: [("Спайрокт", 10), ("Атракс", 30)], 96: [("Скипетр", 1), ("Квазар", 5)], 99: [("Скипетр", 1), ("Квазар", 5)],
+    100: [("Власть", 1)], 101: [("Зенит", 15)], 110: [("Зенит", 15)], 111: [("Скипетр", 1), ("Крепость", 15)], 120: [("Скипетр", 1), ("Крепость", 15)],
+    121: [("Спайрокт", 25)], 130: [("Спайрокт", 25)], 131: [("Парус", 1), ("Квазар", 10)], 140: [("Парус", 1), ("Квазар", 10)],
+    141: [("Затемь", 3)], 149: [("Затемь", 3)], 150: [("Затмение", 1)], 151: [("Крепость", 25), ("Зенит", 25)], 170: [("Крепость", 25), ("Зенит", 25)],
+    171: [("Аркид", 1), ("Квазар", 15)], 190: [("Аркид", 1), ("Квазар", 15)], 191: [("Скипетр", 3), ("Спайрокт", 20)], 199: [("Скипетр", 3), ("Спайрокт", 20)],
+    200: [("Токсопид", 1)], 201: [("Парус", 3), ("Квазар", 25)], 220: [("Парус", 3), ("Квазар", 25)], 221: [("Скипетр", 3), ("Зенит", 25)], 240: [("Скипетр", 3), ("Зенит", 25)],
+    241: [("Аркид", 5)], 249: [("Аркид", 5)], 250: [("Ворон", 1), ("Парус", 3)], 251: [("Скипетр", 5)], 299: [("Скипетр", 5)], 300: [("Власть", 3)],
+    301: [("Затемь", 5)], 349: [("Затемь", 5)], 350: [("Затмение", 3)], 351: [("Аркид", 5)], 399: [("Аркид", 5)], 400: [("Токсопид", 3)],
+    401: [("Парус", 5)], 449: [("Парус", 5)], 450: [("Ворон", 3)], 451: [("Затмение", 2), ("Скипетр", 10)], 460: [("Затмение", 2), ("Скипетр", 10)],
+    461: [("Ворон", 3), ("Аркид", 10)], 470: [("Ворон", 3), ("Аркид", 10)], 471: [("Токсопид", 2), ("Парус", 10)], 480: [("Токсопид", 2), ("Парус", 10)],
+    481: [("Власть", 3), ("Затемь", 10)], 490: [("Власть", 3), ("Затемь", 10)], 491: [("Токсопид", 5), ("Скипетр", 5), ("Парус", 5)], 499: [("Токсопид", 5), ("Скипетр", 5), ("Парус", 5)],
 }
 
 def get_wave_composition(wave):
@@ -306,134 +124,86 @@ def get_wave_composition(wave):
 
 def get_wave_damage(wave):
     composition = get_wave_composition(wave)
-    total_damage = 0
-    for unit_name, count in composition:
-        total_damage += ENEMY_UNITS.get(unit_name, 0) * count
-    return total_damage
+    return sum(ENEMY_UNITS.get(unit, 0) * count for unit, count in composition)
 
 # Шансы для ежедневного подарка
-COIN_CHANCES = [
-    (40, 500), (30, 1000), (15, 2000), (7, 5000), (5, 10000),
-    (2, 25000), (0.8, 100000), (0.15, 500000), (0.04, 2500000), (0.01, 10000000)
-]
-
-ARTIFACT_CHANCES = [
-    (40, 0), (30, 1), (15, 2), (7, 3), (5, 5),
-    (2, 10), (0.8, 25), (0.15, 100), (0.04, 500), (0.01, 2000)
-]
+COIN_CHANCES = [(40, 500), (30, 1000), (15, 2000), (7, 5000), (5, 10000), (2, 25000), (0.8, 100000), (0.15, 500000), (0.04, 2500000), (0.01, 10000000)]
+ARTIFACT_CHANCES = [(40, 0), (30, 1), (15, 2), (7, 3), (5, 5), (2, 10), (0.8, 25), (0.15, 100), (0.04, 500), (0.01, 2000)]
 
 UNIQUE_ITEMS = {
-    "Сломанный медный бур": 50,
-    "Конвейер": 50,
-    "Помпа": 25,
-    "Силовой узел": 25,
-    "Генератор внутреннего сгорания": 15,
-    "Кремниевая плавильня": 10,
-    "Паровой генератор": 10,
-    "Пластановый компрессор": 7,
-    "Радиоизотопный термоэлектрический генератор": 5,
-    "Фазовый ткач": 5,
-    "Умножающий реконструктор": 2,
-    "Ториевый реактор": 2,
-    "Сверхприводный проектор": 1,
-    "Малый логический процессор": 1,
-    "Силовой проектор": 0.5,
-    "Импульсный реактор": 0.5,
-    "Экспоненциальный реконструктор": 0.2,
-    "Логический процессор": 0.1,
-    "Тетративный реконструктор": 0.05,
-    "Большой логический процессор": 0.01
+    "Сломанный медный бур": 50, "Конвейер": 50, "Помпа": 25, "Силовой узел": 25,
+    "Генератор внутреннего сгорания": 15, "Кремниевая плавильня": 10, "Паровой генератор": 10,
+    "Пластановый компрессор": 7, "Радиоизотопный термоэлектрический генератор": 5, "Фазовый ткач": 5,
+    "Умножающий реконструктор": 2, "Ториевый реактор": 2, "Сверхприводный проектор": 1, "Малый логический процессор": 1,
+    "Силовой проектор": 0.5, "Импульсный реактор": 0.5, "Экспоненциальный реконструктор": 0.2,
+    "Логический процессор": 0.1, "Тетративный реконструктор": 0.05, "Большой логический процессор": 0.01
 }
 
 UNIQUE_ITEMS_EMOJI = {
-    "Сломанный медный бур": "⚫️",
-    "Конвейер": "⚫️",
-    "Помпа": "⚫️",
-    "Силовой узел": "⚫️",
-    "Генератор внутреннего сгорания": "🔵",
-    "Кремниевая плавильня": "🔵",
-    "Паровой генератор": "🔵",
-    "Пластановый компрессор": "🔵",
-    "Радиоизотопный термоэлектрический генератор": "🔵",
-    "Фазовый ткач": "🔵",
-    "Умножающий реконструктор": "🟣",
-    "Ториевый реактор": "🟣",
-    "Сверхприводный проектор": "🟣",
-    "Малый логический процессор": "🟣",
-    "Силовой проектор": "🟡",
-    "Импульсный реактор": "🟡",
-    "Экспоненциальный реконструктор": "🟡",
-    "Логический процессор": "🟡",
-    "Тетративный реконструктор": "🌌",
-    "Большой логический процессор": "🌌"
+    "Сломанный медный бур": "⚫️", "Конвейер": "⚫️", "Помпа": "⚫️", "Силовой узел": "⚫️",
+    "Генератор внутреннего сгорания": "🔵", "Кремниевая плавильня": "🔵", "Паровой генератор": "🔵",
+    "Пластановый компрессор": "🔵", "Радиоизотопный термоэлектрический генератор": "🔵", "Фазовый ткач": "🔵",
+    "Умножающий реконструктор": "🟣", "Ториевый реактор": "🟣", "Сверхприводный проектор": "🟣", "Малый логический процессор": "🟣",
+    "Силовой проектор": "🟡", "Импульсный реактор": "🟡", "Экспоненциальный реконструктор": "🟡", "Логический процессор": "🟡",
+    "Тетративный реконструктор": "🌌", "Большой логический процессор": "🌌"
 }
 
 def get_random_resource():
     rand = random.random()
-    cumulative = 0
-    for resource, chance in RESOURCES.items():
-        cumulative += chance
-        if rand <= cumulative:
-            return resource
+    cum = 0
+    for r, c in RESOURCES.items():
+        cum += c
+        if rand <= cum:
+            return r
     return "Медь"
 
 def get_mine_resource():
     rand = random.random()
-    cumulative = 0
-    for resource, chance in MINE_RESOURCES.items():
-        cumulative += chance
-        if rand <= cumulative:
-            return resource
+    cum = 0
+    for r, c in MINE_RESOURCES.items():
+        cum += c
+        if rand <= cum:
+            return r
     return "Медь"
 
 def get_random_value(chances):
     rand = random.random() * 100
-    cumulative = 0
+    cum = 0
     for chance, value in chances:
-        cumulative += chance
-        if rand <= cumulative:
+        cum += chance
+        if rand <= cum:
             return value
     return chances[-1][1]
 
 def get_unique_items():
-    obtained = []
-    for item, chance in UNIQUE_ITEMS.items():
-        if random.random() * 100 <= chance:
-            obtained.append(item)
-    return obtained
+    return [item for item, chance in UNIQUE_ITEMS.items() if random.random() * 100 <= chance]
 
 def get_resource_amount(resource, user_data=None):
     if resource in ITEM_RESOURCES:
         if user_data and 'mining_multiplier' in user_data:
-            max_amount = int(BASE_MAX_ITEMS * user_data['mining_multiplier'])
-            min_amount = int(BASE_MIN_ITEMS * user_data['mining_multiplier'])
-            return random.randint(min_amount, max_amount)
+            return random.randint(int(BASE_MIN_ITEMS * user_data['mining_multiplier']), int(BASE_MAX_ITEMS * user_data['mining_multiplier']))
         return random.randint(BASE_MIN_ITEMS, BASE_MAX_ITEMS)
     elif resource in LIQUID_RESOURCES:
         if user_data and 'mining_multiplier' in user_data:
-            max_amount = int(BASE_MAX_LIQUID * user_data['mining_multiplier'])
-            min_amount = int(BASE_MIN_LIQUID * user_data['mining_multiplier'])
-            return random.randint(min_amount, max_amount)
+            return random.randint(int(BASE_MIN_LIQUID * user_data['mining_multiplier']), int(BASE_MAX_LIQUID * user_data['mining_multiplier']))
         return random.randint(BASE_MIN_LIQUID, BASE_MAX_LIQUID)
     return 1
 
 def get_main_keyboard():
-    keyboard = [
-        [KeyboardButton("⛏️ Копать"), KeyboardButton("📦 Инвентарь")],
-        [KeyboardButton("🛠 Крафтинг"), KeyboardButton("🔮 Магазин")],
-        [KeyboardButton("🔝 Улучшения"), KeyboardButton("🏭 Шахта")],
-        [KeyboardButton("🕹 Дронстанция"), KeyboardButton("🎁 Ежедневный подарок")],
-        [KeyboardButton("⚔️ Сектор"), KeyboardButton("📜 Чертежи")]
-    ]
-    return ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+    return ReplyKeyboardMarkup([
+        ["⛏️ Копать", "📦 Инвентарь"],
+        ["🛠 Крафтинг", "🔮 Магазин"],
+        ["🔝 Улучшения", "🏭 Шахта"],
+        ["🕹 Дронстанция", "🎁 Ежедневный подарок"],
+        ["⚔️ Сектор", "📜 Чертежи"]
+    ], resize_keyboard=True)
 
 def get_upgrade_cost(level):
-    return 1 * (2 ** (level)) if level > 0 else 1
+    return 1 * (2 ** level) if level > 0 else 1
 
 # ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
 
 async def safe_edit_message(query, text=None, reply_markup=None, parse_mode=None):
-    """Безопасное редактирование сообщения, игнорирующее ошибку 'Message is not modified'"""
     try:
         if text is not None:
             await query.edit_message_text(text, reply_markup=reply_markup, parse_mode=parse_mode)
@@ -453,1623 +223,907 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.bot_data['sector'] = {}
     if user_id not in context.bot_data['sector']:
         context.bot_data['sector'][user_id] = {
-            'core': 'Осколок',
-            'weapons': 0,
-            'turrets': {},
-            'units': {},
-            'wave': 1,
-            'last_attack_time': time.time(),
-            'last_wave_damage': 0,
-            'last_wave_composition': None
+            'core': 'Осколок', 'weapons': 0, 'turrets': {}, 'units': {},
+            'wave': 1, 'last_attack_time': time.time(), 'last_wave_damage': 0, 'last_wave_composition': None
         }
-    
     await update.message.reply_text(
-        "Привет! Я - Mindustry Копатель Бот.⛏️\n\n"
-        "Если хочешь узнать полный список команд, используй /help",
+        "Привет! Я - Mindustry Копатель Бот.⛏️\n\nЕсли хочешь узнать полный список команд, используй /help",
         reply_markup=get_main_keyboard()
     )
 
 async def craft_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    craft_text = (
-        "🛠 *Крафтинг станция*\n\n"
-        "Графит - 2шт Уголь (0,01🔮/4🪙)\n"
-        "Метастекло - 1шт Песок, 1шт Свинец (0,02🔮/4🪙)\n"
-        "Кремний - 2шт Песок, 1шт Уголь (0,05🔮/5🪙)\n"
-        "Споровый стручок - 200мл Вода (0,01🔮/5🪙)\n"
-        "Пластан - 2шт Титан, 100мл Нефть (0,2🔮/25🪙)\n"
-        "Кинетический сплав - 3шт Медь, 4шт Свинец, 2шт Титан, 3шт Кремний (1🔮/50🪙)\n"
-        "Фазовая ткань - 4шт Торий, 10шт Песок (0,5🔮/100🪙)\n"
-        "Пиротит - 2шт Свинец, 2шт Песок, 1шт Уголь (0,05🔮/10🪙)\n"
-        "Взрывчатая смесь - 1шт Пиротит, 1шт Споровый стручок (0,2🔮/30🪙)\n"
-        "Нефть (100 мл) - 500мл Вода, 2шт Песок (5🪙)\n"
-        "Криогенная жидкость (100 мл) - 100мл Вода, 1шт Титан (10🪙)\n\n"
-        "Графит - graphite\n"
-        "Метастекло - metaglass\n"
-        "Кремний - silicon\n"
-        "Споровый стручок - sporepod\n"
-        "Пластан - plastanium\n"
-        "Кинетический сплав - surgealloy\n"
-        "Фазовая ткань - phasefabric\n"
-        "Пиротит - pyratite\n"
-        "Взрывчатая смесь - blastcompound\n"
-        "Нефть - oil\n"
-        "Криогенная жидкость - cryofluid\n\n"
-        "Выбери ресурс в нужном количестве, чтобы скрафтить\n"
-        "Пример: 10 кинетического сплава - /craftsurgealloy 10"
+    await update.message.reply_text(
+        "🛠 *Крафтинг станция*\n\nГрафит - 2шт Уголь (0,01🔮/4🪙)\nМетастекло - 1шт Песок, 1шт Свинец (0,02🔮/4🪙)\nКремний - 2шт Песок, 1шт Уголь (0,05🔮/5🪙)\nСпоровый стручок - 200мл Вода (0,01🔮/5🪙)\nПластан - 2шт Титан, 100мл Нефть (0,2🔮/25🪙)\nКинетический сплав - 3шт Медь, 4шт Свинец, 2шт Титан, 3шт Кремний (1🔮/50🪙)\nФазовая ткань - 4шт Торий, 10шт Песок (0,5🔮/100🪙)\nПиротит - 2шт Свинец, 2шт Песок, 1шт Уголь (0,05🔮/10🪙)\nВзрывчатая смесь - 1шт Пиротит, 1шт Споровый стручок (0,2🔮/30🪙)\nНефть (100 мл) - 500мл Вода, 2шт Песок (5🪙)\nКриогенная жидкость (100 мл) - 100мл Вода, 1шт Титан (10🪙)\n\nГрафит - graphite\nМетастекло - metaglass\nКремний - silicon\nСпоровый стручок - sporepod\nПластан - plastanium\nКинетический сплав - surgealloy\nФазовая ткань - phasefabric\nПиротит - pyratite\nВзрывчатая смесь - blastcompound\nНефть - oil\nКриогенная жидкость - cryofluid\n\nВыбери ресурс в нужном количестве, чтобы скрафтить\nПример: 10 кинетического сплава - /craftsurgealloy 10",
+        parse_mode='Markdown', reply_markup=get_main_keyboard()
     )
-    
-    await update.message.reply_text(craft_text, parse_mode='Markdown', reply_markup=get_main_keyboard())
 
 async def shop_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    shop_text = (
-        "🔮 *Магазин Токсопида* 🕷\n\n"
-        "Обменивай свои добытые и скрафченные ресурсы на 🔮Артефакты или 🪙Монеты, чтобы покупать на них улучшения и добывать еще больше ресурсов!\n\n"
-        "1 Артефакт🔮 = 1000 Монет🪙\n\n"
-        "/buyartifact 1 - купить 1 артефакт\n"
-        "/exchangesurgealloyartifact 1 - обменять 2 Кинетического сплава на 1 Артефакт\n"
-        "/exchangesilicon 5 - обменять 5 Кремния на 25 монет"
+    await update.message.reply_text(
+        "🔮 *Магазин Токсопида* 🕷\n\nОбменивай свои добытые и скрафченные ресурсы на 🔮Артефакты или 🪙Монеты, чтобы покупать на них улучшения и добывать еще больше ресурсов!\n\n1 Артефакт🔮 = 1000 Монет🪙\n\n/buyartifact 1 - купить 1 артефакт\n/exchangesurgealloyartifact 1 - обменять 2 Кинетического сплава на 1 Артефакт\n/exchangesilicon 5 - обменять 5 Кремния на 25 монет",
+        parse_mode='Markdown', reply_markup=get_main_keyboard()
     )
-    
-    await update.message.reply_text(shop_text, parse_mode='Markdown', reply_markup=get_main_keyboard())
 
 async def drawings_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    user_name = update.effective_user.first_name
-    
+    user_id, user_name = update.effective_user.id, update.effective_user.first_name
     if 'drawings' not in context.bot_data:
         context.bot_data['drawings'] = {}
-    
     if user_id not in context.bot_data['drawings']:
         context.bot_data['drawings'][user_id] = []
-    
     drawings = context.bot_data['drawings'][user_id]
-    
     if not drawings:
         await update.message.reply_text(
             f"📜 *Список чертежей игрока {user_name}:*\n\nЧертежи отсутствуют, чтобы создать новый чертеж, загляни в /sector",
-            parse_mode='Markdown',
-            reply_markup=get_main_keyboard()
+            parse_mode='Markdown', reply_markup=get_main_keyboard()
         )
         return
-    
     text = f"📜 *Список чертежей игрока {user_name}:*\n\n"
     keyboard = []
-    
-    for i, drawing in enumerate(drawings, 1):
-        turret_name = drawing['name']
-        count = drawing['count']
-        defense = drawing['defense'] * count
-        build_time = drawing['build_time'] * count
-        text += f"*Чертеж #{i}*\n🔫 {turret_name}\nКоличество: {count} шт.\n💥 Вооружение (общ): {defense} Единиц\n⏳️ Время создания (общ): {build_time} сек\n\n"
-        keyboard.append([InlineKeyboardButton(f"{turret_name} {count}шт. (5🔮)", callback_data=f"drawing_start_{i-1}")])
-    
+    for i, d in enumerate(drawings, 1):
+        text += f"*Чертеж #{i}*\n🔫 {d['name']}\nКоличество: {d['count']} шт.\n💥 Вооружение (общ): {d['defense'] * d['count']} Единиц\n⏳️ Время создания (общ): {d['build_time'] * d['count']} сек\n\n"
+        keyboard.append([InlineKeyboardButton(f"{d['name']} {d['count']}шт. (5🔮)", callback_data=f"drawing_start_{i-1}")])
     text += "Выберите чертеж, который хотите выполнить:"
-    
     await update.message.reply_text(text, parse_mode='Markdown', reply_markup=InlineKeyboardMarkup(keyboard))
 
-# ========== СЕКТОР И ТУРЕЛИ ==========
+# ========== СЕКТОР ==========
 
 async def sector_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    keyboard = [
-        [InlineKeyboardButton("🟡 Моя база", callback_data="sector_my_base")],
-        [InlineKeyboardButton("🔴 Вражеские базы", callback_data="sector_enemy_bases")],
-        [InlineKeyboardButton("🛠 Создать турель/юнита", callback_data="sector_build")]
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    
     await update.message.reply_text(
-        "⚔️ *Сектор*\n\n"
-        "Улучшай защиту своей базы, делай атаки на вражеские сектора чтобы получать ресурсы и разблокировать новые турели/юниты!",
+        "⚔️ *Сектор*\n\nУлучшай защиту своей базы, делай атаки на вражеские сектора чтобы получать ресурсы и разблокировать новые турели/юниты!",
         parse_mode='Markdown',
-        reply_markup=reply_markup
+        reply_markup=InlineKeyboardMarkup([
+            [InlineKeyboardButton("🟡 Моя база", callback_data="sector_my_base")],
+            [InlineKeyboardButton("🔴 Вражеские базы", callback_data="sector_enemy_bases")],
+            [InlineKeyboardButton("🛠 Создать турель/юнита", callback_data="sector_build")]
+        ])
     )
 
 async def sector_build(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Меню выбора категории"""
     query = update.callback_query
     await query.answer()
-    
-    keyboard = [
+    await safe_edit_message(query, "Выберите категорию:", reply_markup=InlineKeyboardMarkup([
         [InlineKeyboardButton("🔫 Турели", callback_data="sector_turret_build")],
         [InlineKeyboardButton("🤖 Юниты", callback_data="sector_unit_build")],
         [InlineKeyboardButton("⬅️ Назад", callback_data="sector_back")]
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    
-    await safe_edit_message(query, "Выберите категорию:", reply_markup=reply_markup)
+    ]))
 
 async def sector_turret_build(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Список турелей"""
     query = update.callback_query
     await query.answer()
-    
-    keyboard = []
-    for turret_name in TURRETS.keys():
-        keyboard.append([InlineKeyboardButton(turret_name, callback_data=f"sector_turret_{turret_name}")])
+    keyboard = [[InlineKeyboardButton(name, callback_data=f"sector_turret_{name}")] for name in TURRETS.keys()]
     keyboard.append([InlineKeyboardButton("⬅️ Назад", callback_data="sector_build")])
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    
-    await safe_edit_message(query, "Выберите турель, которую хотите поместить в чертежи:", reply_markup=reply_markup)
+    await safe_edit_message(query, "Выберите турель, которую хотите поместить в чертежи:", reply_markup=InlineKeyboardMarkup(keyboard))
 
 async def sector_unit_build(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Юниты (заглушка)"""
     query = update.callback_query
     await query.answer()
-    
-    keyboard = [[InlineKeyboardButton("⬅️ Назад", callback_data="sector_build")]]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    
-    await safe_edit_message(query, "🤖 *Юниты*\n\nСкоро здесь появятся юниты для создания!", parse_mode='Markdown', reply_markup=reply_markup)
+    await safe_edit_message(query, "🤖 *Юниты*\n\nСкоро здесь появятся юниты для создания!", parse_mode='Markdown', reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="sector_build")]]))
 
 async def sector_turret_info(update: Update, context: ContextTypes.DEFAULT_TYPE, turret_name):
     query = update.callback_query
     await query.answer()
-    
     turret = TURRETS[turret_name]
-    
-    cost_text = ""
-    for resource, amount in turret['cost'].items():
-        cost_text += f"{amount} {resource}, "
-    cost_text = cost_text[:-2]
-    
-    text = f"🔫 *{turret_name}*\n\n"
-    text += f"💸 Стоимость производства (1 Шт.): {cost_text}\n"
-    text += f"⏳️ Время производства (1 Шт.): {turret['build_time']} Секунд\n"
-    text += f"💥 Вооружение базы (1 Шт.): {turret['defense']} Единиц"
+    cost_text = ", ".join(f"{amt} {res}" for res, amt in turret['cost'].items())
+    text = f"🔫 *{turret_name}*\n\n💸 Стоимость производства (1 Шт.): {cost_text}\n⏳️ Время производства (1 Шт.): {turret['build_time']} Секунд\n💥 Вооружение базы (1 Шт.): {turret['defense']} Единиц"
     
     user_id = update.effective_user.id
     if 'all_inventories' not in context.bot_data:
         context.bot_data['all_inventories'] = {}
     if user_id not in context.bot_data['all_inventories']:
         context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
-    inventory = context.bot_data['all_inventories'][user_id]
+    inv = context.bot_data['all_inventories'][user_id]
     
     keyboard = []
     for amount in [1, 2, 5, 10, 25, 100]:
-        can_buy = True
-        for resource, cost in turret['cost'].items():
-            if inventory.get(resource, 0) < cost * amount:
-                can_buy = False
-                break
-        status = "✅" if can_buy else "❌"
-        keyboard.append([InlineKeyboardButton(f"{amount} {status}", callback_data=f"sector_turret_buy_{turret_name}_{amount}")])
+        can = all(inv.get(res, 0) >= cost * amount for res, cost in turret['cost'].items())
+        keyboard.append([InlineKeyboardButton(f"{amount} {'✅' if can else '❌'}", callback_data=f"sector_turret_buy_{turret_name}_{amount}")])
     keyboard.append([InlineKeyboardButton("⬅️ Назад", callback_data="sector_turret_build")])
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    
-    await safe_edit_message(query, text, parse_mode='Markdown', reply_markup=reply_markup)
+    await safe_edit_message(query, text, parse_mode='Markdown', reply_markup=InlineKeyboardMarkup(keyboard))
 
 async def sector_turret_buy(update: Update, context: ContextTypes.DEFAULT_TYPE, turret_name, amount):
     query = update.callback_query
     await query.answer()
-    
-    user_id = update.effective_user.id
-    turret = TURRETS[turret_name]
-    
+    user_id, turret = update.effective_user.id, TURRETS[turret_name]
     if 'all_inventories' not in context.bot_data:
         context.bot_data['all_inventories'] = {}
     if user_id not in context.bot_data['all_inventories']:
         context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
-    inventory = context.bot_data['all_inventories'][user_id]
-    
-    for resource, cost in turret['cost'].items():
-        if inventory.get(resource, 0) < cost * amount:
-            keyboard = [[InlineKeyboardButton("⬅️ Назад", callback_data="sector_turret_build")]]
-            reply_markup = InlineKeyboardMarkup(keyboard)
-            await safe_edit_message(query, "❌ Недостаточно ресурсов!", reply_markup=reply_markup)
+    inv = context.bot_data['all_inventories'][user_id]
+    for res, cost in turret['cost'].items():
+        if inv.get(res, 0) < cost * amount:
+            await safe_edit_message(query, "❌ Недостаточно ресурсов!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="sector_turret_build")]]))
             return
-    
+    for res, cost in turret['cost'].items():
+        inv[res] -= cost * amount
+        if inv[res] == 0:
+            del inv[res]
     if 'drawings' not in context.bot_data:
         context.bot_data['drawings'] = {}
     if user_id not in context.bot_data['drawings']:
         context.bot_data['drawings'][user_id] = []
-    
     if len(context.bot_data['drawings'][user_id]) >= 10:
-        keyboard = [[InlineKeyboardButton("⬅️ Назад", callback_data="sector_build")]]
-        reply_markup = InlineKeyboardMarkup(keyboard)
-        await safe_edit_message(query, "❌ У вас уже максимальное количество чертежей 10/10!", reply_markup=reply_markup)
+        await safe_edit_message(query, "❌ У вас уже максимальное количество чертежей 10/10!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="sector_build")]]))
         return
-    
-    for resource, cost in turret['cost'].items():
-        inventory[resource] -= cost * amount
-        if inventory[resource] == 0:
-            del inventory[resource]
-    
-    context.bot_data['drawings'][user_id].append({
-        'name': turret_name,
-        'count': amount,
-        'defense': turret['defense'],
-        'build_time': turret['build_time']
-    })
-    
-    keyboard = [[InlineKeyboardButton("⬅️ Назад", callback_data="sector_turret_build")]]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    
-    await safe_edit_message(query, f"✅ {turret_name} в количестве {amount} шт. помещена в ваши чертежи!", reply_markup=reply_markup)
+    context.bot_data['drawings'][user_id].append({'name': turret_name, 'count': amount, 'defense': turret['defense'], 'build_time': turret['build_time']})
+    await safe_edit_message(query, f"✅ {turret_name} в количестве {amount} шт. помещена в ваши чертежи!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="sector_turret_build")]]))
 
-async def drawing_start(update: Update, context: ContextTypes.DEFAULT_TYPE, drawing_index):
+async def drawing_start(update: Update, context: ContextTypes.DEFAULT_TYPE, idx):
     query = update.callback_query
     await query.answer()
-    
     user_id = update.effective_user.id
-    
     if 'all_inventories' not in context.bot_data:
         context.bot_data['all_inventories'] = {}
     if user_id not in context.bot_data['all_inventories']:
         context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
-    inventory = context.bot_data['all_inventories'][user_id]
-    
-    if inventory.get('artifacts', 0) < 5:
+    inv = context.bot_data['all_inventories'][user_id]
+    if inv.get('artifacts', 0) < 5:
         await safe_edit_message(query, "❌ Недостаточно артефактов для начала выполнения чертежа!")
         return
-    
-    inventory['artifacts'] -= 5
-    
+    inv['artifacts'] -= 5
     if 'drawings' not in context.bot_data:
         context.bot_data['drawings'] = {}
     if user_id not in context.bot_data['drawings']:
         context.bot_data['drawings'][user_id] = []
-    
     drawings = context.bot_data['drawings'][user_id]
-    
-    if drawing_index >= len(drawings):
+    if idx >= len(drawings):
         await drawings_command(update, context)
         return
-    
-    drawing = drawings[drawing_index]
-    
+    d = drawings[idx]
     if 'active_drawing' not in context.bot_data:
         context.bot_data['active_drawing'] = {}
-    
-    context.bot_data['active_drawing'][user_id] = {
-        'index': drawing_index,
-        'name': drawing['name'],
-        'count': drawing['count'],
-        'defense': drawing['defense'],
-        'build_time': drawing['build_time'],
-        'start_time': time.time()
-    }
-    
+    context.bot_data['active_drawing'][user_id] = {'index': idx, 'name': d['name'], 'count': d['count'], 'defense': d['defense'], 'build_time': d['build_time'], 'start_time': time.time()}
     asyncio.create_task(complete_drawing(update, context, user_id))
-    
-    text = f"📜 *Активный чертеж:*\n\n"
-    text += f"🔫 {drawing['name']}\n"
-    text += f"Количество: {drawing['count']} шт.\n"
-    text += f"💥 Вооружение (общ): {drawing['defense'] * drawing['count']} Единиц\n"
-    text += f"⏳️ Оставшееся время создания (общ): {drawing['build_time'] * drawing['count']} сек"
-    
-    keyboard = [[InlineKeyboardButton("❌ Отменить чертеж", callback_data="drawing_cancel")]]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    
-    await safe_edit_message(query, text, parse_mode='Markdown', reply_markup=reply_markup)
+    await safe_edit_message(query,
+        f"📜 *Активный чертеж:*\n\n🔫 {d['name']}\nКоличество: {d['count']} шт.\n💥 Вооружение (общ): {d['defense'] * d['count']} Единиц\n⏳️ Оставшееся время создания (общ): {d['build_time'] * d['count']} сек",
+        parse_mode='Markdown', reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("❌ Отменить чертеж", callback_data="drawing_cancel")]]))
 
 async def complete_drawing(update: Update, context: ContextTypes.DEFAULT_TYPE, user_id):
     await asyncio.sleep(1)
-    
     while True:
         if 'active_drawing' not in context.bot_data or user_id not in context.bot_data['active_drawing']:
             return
-        
-        active = context.bot_data['active_drawing'][user_id]
-        elapsed = time.time() - active['start_time']
-        total_time = active['build_time'] * active['count']
-        
-        if elapsed >= total_time:
+        a = context.bot_data['active_drawing'][user_id]
+        if time.time() - a['start_time'] >= a['build_time'] * a['count']:
             if 'sector' not in context.bot_data:
                 context.bot_data['sector'] = {}
             if user_id not in context.bot_data['sector']:
-                context.bot_data['sector'][user_id] = {
-                    'core': 'Осколок',
-                    'weapons': 0,
-                    'turrets': {},
-                    'units': {},
-                    'wave': 1,
-                    'last_attack_time': time.time(),
-                    'last_wave_damage': 0,
-                    'last_wave_composition': None
-                }
-            
-            sector_data = context.bot_data['sector'][user_id]
-            turret_name = active['name']
-            count = active['count']
-            defense_per_turret = active['defense']
-            
-            sector_data['turrets'][turret_name] = sector_data['turrets'].get(turret_name, 0) + count
-            sector_data['weapons'] += defense_per_turret * count
-            
+                context.bot_data['sector'][user_id] = {'core': 'Осколок', 'weapons': 0, 'turrets': {}, 'units': {}, 'wave': 1, 'last_attack_time': time.time(), 'last_wave_damage': 0, 'last_wave_composition': None}
+            sd = context.bot_data['sector'][user_id]
+            sd['turrets'][a['name']] = sd['turrets'].get(a['name'], 0) + a['count']
+            sd['weapons'] += a['defense'] * a['count']
             del context.bot_data['active_drawing'][user_id]
-            
             try:
-                await update.effective_user.send_message(f"✅ Чертеж завершен! {turret_name} в количестве {count} шт. добавлены на базу!")
+                await update.effective_user.send_message(f"✅ Чертеж завершен! {a['name']} в количестве {a['count']} шт. добавлены на базу!")
             except:
                 pass
             break
-        
         await asyncio.sleep(5)
 
 async def drawing_cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
-    
     user_id = update.effective_user.id
-    
     if 'active_drawing' in context.bot_data and user_id in context.bot_data['active_drawing']:
         del context.bot_data['active_drawing'][user_id]
-    
     await drawings_command(update, context)
 
 async def sector_my_base(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
-    
-    user_id = update.effective_user.id
-    user_name = update.effective_user.first_name
-    WAVE_COOLDOWN = 10800
-    
+    user_id, user_name, WAVE_CD = update.effective_user.id, update.effective_user.first_name, 10800
     if 'sector' not in context.bot_data:
         context.bot_data['sector'] = {}
-    
     if user_id not in context.bot_data['sector']:
-        context.bot_data['sector'][user_id] = {
-            'core': 'Осколок',
-            'weapons': 0,
-            'turrets': {},
-            'units': {},
-            'wave': 1,
-            'last_attack_time': time.time(),
-            'last_wave_damage': 0,
-            'last_wave_composition': None
-        }
-    
-    sector_data = context.bot_data['sector'][user_id]
-    current_time = time.time()
-    
-    while current_time - sector_data.get('last_attack_time', current_time) >= WAVE_COOLDOWN:
-        sector_data['last_attack_time'] = sector_data.get('last_attack_time', current_time) + WAVE_COOLDOWN
-        
-        wave_composition = get_wave_composition(sector_data['wave'])
-        wave_damage = get_wave_damage(sector_data['wave'])
-        
-        sector_data['last_wave_composition'] = wave_composition
-        sector_data['last_wave_damage'] = wave_damage
-        sector_data['weapons'] = sector_data.get('weapons', 0) - wave_damage
-        sector_data['wave'] += 1
-    
-    base_text = f"🌐 *База игрока {user_name}:*\n\n"
-    base_text += f"🛡 Ядро: {sector_data['core']}\n"
-    
-    weapons = sector_data['weapons']
-    weapons_display = f"{weapons}"
-    if weapons < 0:
-        weapons_display += " ❗️"
-    base_text += f"💥 Вооружение базы: {weapons_display}\n\n"
-    
-    if sector_data.get('turrets'):
-        base_text += "🔫 *Турели:*\n"
-        for turret, count in sector_data['turrets'].items():
-            defense = TURRETS.get(turret, {}).get('defense', 10)
-            base_text += f"{turret} - {count} шт. 🛡{defense * count} Защиты\n"
-        base_text += "\n"
-    
-    if sector_data.get('units'):
-        base_text += "🤖 *Юниты:*\n"
-        for unit, count in sector_data['units'].items():
-            base_text += f"{unit} - {count} шт. ⚔️{count * 5} Атаки\n"
-        base_text += "\n"
-    
-    base_text += "📊 *Статус:*\n"
-    base_text += "🔴 База подвергается атаке, уничтожьте вражеские базы, чтобы предотвратить волны\n"
-    remaining = WAVE_COOLDOWN - (current_time - sector_data['last_attack_time'])
-    if remaining < 0:
-        remaining = 0
-    hours = int(remaining // 3600)
-    minutes = int((remaining % 3600) // 60)
-    seconds = int(remaining % 60)
-    base_text += f"⚔️ Следующая волна через: {hours} ч {minutes} мин {seconds} сек\n"
-    
-    if sector_data.get('last_wave_composition'):
-        wave_num = sector_data['wave'] - 1
-        base_text += f"\n💀 *База была подвержена атаке!*\n"
-        base_text += f"Волна: {wave_num}\n"
-        base_text += "Враг отправил на вас: "
-        unit_parts = []
-        for unit_name, count in sector_data['last_wave_composition']:
-            unit_parts.append(f"{unit_name} {count}шт")
-        base_text += ", ".join(unit_parts) + "\n"
-        
-        damage = sector_data['last_wave_damage']
-        damage_display = f"{damage}"
-        if sector_data['weapons'] < 0:
-            damage_display += " ❗️"
-        base_text += f"💥 База стала уязвимее на {damage_display} Единиц!"
-    
-    keyboard = []
-    
-    if sector_data['core'] == 'Осколок':
-        keyboard.append([InlineKeyboardButton("🛡 Построить ядро Штаб", callback_data="sector_foundation")])
-    elif sector_data['core'] == 'Штаб':
-        keyboard.append([InlineKeyboardButton("🛡 Построить ядро Атом", callback_data="sector_nucleus")])
-    
-    keyboard.append([InlineKeyboardButton("⬅️ Назад", callback_data="sector_back")])
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    
-    await safe_edit_message(query, base_text, parse_mode='Markdown', reply_markup=reply_markup)
+        context.bot_data['sector'][user_id] = {'core': 'Осколок', 'weapons': 0, 'turrets': {}, 'units': {}, 'wave': 1, 'last_attack_time': time.time(), 'last_wave_damage': 0, 'last_wave_composition': None}
+    sd = context.bot_data['sector'][user_id]
+    ct = time.time()
+    while ct - sd.get('last_attack_time', ct) >= WAVE_CD:
+        sd['last_attack_time'] = sd.get('last_attack_time', ct) + WAVE_CD
+        comp = get_wave_composition(sd['wave'])
+        dmg = get_wave_damage(sd['wave'])
+        sd['last_wave_composition'], sd['last_wave_damage'] = comp, dmg
+        sd['weapons'] -= dmg
+        sd['wave'] += 1
+    text = f"🌐 *База игрока {user_name}:*\n\n🛡 Ядро: {sd['core']}\n💥 Вооружение базы: {sd['weapons']}{' ❗️' if sd['weapons'] < 0 else ''}\n\n"
+    if sd.get('turrets'):
+        text += "🔫 *Турели:*\n" + "\n".join(f"{t} - {c} шт. 🛡{TURRETS.get(t, {}).get('defense', 10) * c} Защиты" for t, c in sd['turrets'].items()) + "\n\n"
+    if sd.get('units'):
+        text += "🤖 *Юниты:*\n" + "\n".join(f"{u} - {c} шт. ⚔️{c * 5} Атаки" for u, c in sd['units'].items()) + "\n\n"
+    rem = WAVE_CD - (ct - sd['last_attack_time'])
+    if rem < 0:
+        rem = 0
+    text += f"📊 *Статус:*\n🔴 База подвергается атаке\n⚔️ Следующая волна через: {rem//3600} ч {(rem%3600)//60} мин {int(rem%60)} сек\n"
+    if sd.get('last_wave_composition'):
+        text += f"\n💀 *База была подвержена атаке!*\nВолна: {sd['wave']-1}\nВраг отправил на вас: " + ", ".join(f"{u} {c}шт" for u, c in sd['last_wave_composition']) + f"\n💥 База стала уязвимее на {sd['last_wave_damage']}{' ❗️' if sd['weapons'] < 0 else ''} Единиц!"
+    kb = []
+    if sd['core'] == 'Осколок':
+        kb.append([InlineKeyboardButton("🛡 Построить ядро Штаб", callback_data="sector_foundation")])
+    elif sd['core'] == 'Штаб':
+        kb.append([InlineKeyboardButton("🛡 Построить ядро Атом", callback_data="sector_nucleus")])
+    kb.append([InlineKeyboardButton("⬅️ Назад", callback_data="sector_back")])
+    await safe_edit_message(query, text, parse_mode='Markdown', reply_markup=InlineKeyboardMarkup(kb))
 
-# ========== ФУНКЦИИ ДЛЯ ЯДРА ШТАБ ==========
+# ========== ФУНКЦИИ ДЛЯ ЯДРА ШТАБ (FOUNDATION) ==========
 
 async def sector_foundation(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Кнопка 'Построить ядро Штаб' - открывает меню подтверждения"""
     query = update.callback_query
     await query.answer()
-    
     user_id = update.effective_user.id
-    
     if 'sector' not in context.bot_data:
         context.bot_data['sector'] = {}
     if user_id not in context.bot_data['sector']:
-        context.bot_data['sector'][user_id] = {
-            'core': 'Осколок',
-            'weapons': 0,
-            'turrets': {},
-            'units': {},
-            'wave': 1,
-            'last_attack_time': time.time(),
-            'last_wave_damage': 0,
-            'last_wave_composition': None
-        }
-    
-    sector_data = context.bot_data['sector'][user_id]
-    
-    if sector_data['core'] != 'Осколок':
+        context.bot_data['sector'][user_id] = {'core': 'Осколок', 'weapons': 0, 'turrets': {}, 'units': {}, 'wave': 1, 'last_attack_time': time.time(), 'last_wave_damage': 0, 'last_wave_composition': None}
+    sd = context.bot_data['sector'][user_id]
+    if sd['core'] != 'Осколок':
         await sector_my_base(update, context)
         return
-    
-    keyboard = [
+    await safe_edit_message(query, "Построить ядро Штаб за 4000 Медь, 4000 Свинец, 1500 Кремний?", reply_markup=InlineKeyboardMarkup([
         [InlineKeyboardButton("✅ Построить", callback_data="sector_build_foundation")],
         [InlineKeyboardButton("❌ Отменить", callback_data="sector_my_base")]
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    
-    await safe_edit_message(query, "Построить ядро Штаб за 4000 Медь, 4000 Свинец, 1500 Кремний?", reply_markup=reply_markup)
+    ]))
 
 async def sector_build_foundation(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Кнопка 'Построить' - списывает ресурсы и улучшает ядро до Штаба"""
     query = update.callback_query
     await query.answer()
-    
     user_id = update.effective_user.id
-    
     if 'all_inventories' not in context.bot_data:
         context.bot_data['all_inventories'] = {}
     if user_id not in context.bot_data['all_inventories']:
         context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
-    inventory = context.bot_data['all_inventories'][user_id]
-    
-    if inventory.get('Медь', 0) < 4000 or inventory.get('Свинец', 0) < 4000 or inventory.get('Кремний', 0) < 1500:
+    inv = context.bot_data['all_inventories'][user_id]
+    if inv.get('Медь', 0) < 4000 or inv.get('Свинец', 0) < 4000 or inv.get('Кремний', 0) < 1500:
         await safe_edit_message(query, "❌ Недостаточно ресурсов для улучшения ядра!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="sector_my_base")]]))
         return
-    
-    inventory['Медь'] -= 4000
-    inventory['Свинец'] -= 4000
-    inventory['Кремний'] -= 1500
-    
-    if inventory['Медь'] == 0: del inventory['Медь']
-    if inventory['Свинец'] == 0: del inventory['Свинец']
-    if inventory['Кремний'] == 0: del inventory['Кремний']
-    
+    for res, amt in [('Медь', 4000), ('Свинец', 4000), ('Кремний', 1500)]:
+        inv[res] -= amt
+        if inv[res] == 0:
+            del inv[res]
     if 'sector' not in context.bot_data:
         context.bot_data['sector'] = {}
     if user_id not in context.bot_data['sector']:
-        context.bot_data['sector'][user_id] = {
-            'core': 'Осколок',
-            'weapons': 0,
-            'turrets': {},
-            'units': {},
-            'wave': 1,
-            'last_attack_time': time.time(),
-            'last_wave_damage': 0,
-            'last_wave_composition': None
-        }
-    
-    sector_data = context.bot_data['sector'][user_id]
-    sector_data['core'] = 'Штаб'
-    sector_data['weapons'] += 3000
-    
+        context.bot_data['sector'][user_id] = {'core': 'Осколок', 'weapons': 0, 'turrets': {}, 'units': {}, 'wave': 1, 'last_attack_time': time.time(), 'last_wave_damage': 0, 'last_wave_composition': None}
+    sd = context.bot_data['sector'][user_id]
+    sd['core'] = 'Штаб'
+    sd['weapons'] += 3000
     await safe_edit_message(query, "✅ Ядро улучшено до Штаба! +3000 к вооружению базы!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="sector_my_base")]]))
 
-# ========== ФУНКЦИИ ДЛЯ ЯДРА АТОМ ==========
+# ========== ФУНКЦИИ ДЛЯ ЯДРА АТОМ (NUCLEUS) ==========
 
 async def sector_nucleus(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Кнопка 'Построить ядро Атом' - открывает меню подтверждения"""
     query = update.callback_query
     await query.answer()
-    
     user_id = update.effective_user.id
-    
     if 'sector' not in context.bot_data:
         context.bot_data['sector'] = {}
     if user_id not in context.bot_data['sector']:
-        context.bot_data['sector'][user_id] = {
-            'core': 'Осколок',
-            'weapons': 0,
-            'turrets': {},
-            'units': {},
-            'wave': 1,
-            'last_attack_time': time.time(),
-            'last_wave_damage': 0,
-            'last_wave_composition': None
-        }
-    
-    sector_data = context.bot_data['sector'][user_id]
-    
-    if sector_data['core'] != 'Штаб':
+        context.bot_data['sector'][user_id] = {'core': 'Осколок', 'weapons': 0, 'turrets': {}, 'units': {}, 'wave': 1, 'last_attack_time': time.time(), 'last_wave_damage': 0, 'last_wave_composition': None}
+    sd = context.bot_data['sector'][user_id]
+    if sd['core'] != 'Штаб':
         await sector_my_base(update, context)
         return
-    
-    keyboard = [
+    await safe_edit_message(query, "Построить ядро Атом за 12000 Медь, 12000 Свинец, 8000 Кремний, 4500 Торий, 500 Кинетический сплав?", reply_markup=InlineKeyboardMarkup([
         [InlineKeyboardButton("✅ Построить", callback_data="sector_build_nucleus")],
         [InlineKeyboardButton("❌ Отменить", callback_data="sector_my_base")]
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    
-    await safe_edit_message(query, "Построить ядро Атом за 12000 Медь, 12000 Свинец, 8000 Кремний, 4500 Торий, 500 Кинетический сплав?", reply_markup=reply_markup)
+    ]))
 
 async def sector_build_nucleus(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Кнопка 'Построить' - списывает ресурсы и улучшает ядро до Атома"""
     query = update.callback_query
     await query.answer()
-    
     user_id = update.effective_user.id
-    
     if 'all_inventories' not in context.bot_data:
         context.bot_data['all_inventories'] = {}
     if user_id not in context.bot_data['all_inventories']:
         context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
-    inventory = context.bot_data['all_inventories'][user_id]
-    
-    if (inventory.get('Медь', 0) < 12000 or inventory.get('Свинец', 0) < 12000 or 
-        inventory.get('Кремний', 0) < 8000 or inventory.get('Торий', 0) < 4500 or 
-        inventory.get('Кинетический сплав', 0) < 500):
+    inv = context.bot_data['all_inventories'][user_id]
+    if (inv.get('Медь', 0) < 12000 or inv.get('Свинец', 0) < 12000 or inv.get('Кремний', 0) < 8000 or inv.get('Торий', 0) < 4500 or inv.get('Кинетический сплав', 0) < 500):
         await safe_edit_message(query, "❌ Недостаточно ресурсов для улучшения ядра!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="sector_my_base")]]))
         return
-    
-    inventory['Медь'] -= 12000
-    inventory['Свинец'] -= 12000
-    inventory['Кремний'] -= 8000
-    inventory['Торий'] -= 4500
-    inventory['Кинетический сплав'] -= 500
-    
-    if inventory['Медь'] == 0: del inventory['Медь']
-    if inventory['Свинец'] == 0: del inventory['Свинец']
-    if inventory['Кремний'] == 0: del inventory['Кремний']
-    if inventory['Торий'] == 0: del inventory['Торий']
-    if inventory['Кинетический сплав'] == 0: del inventory['Кинетический сплав']
-    
+    for res, amt in [('Медь', 12000), ('Свинец', 12000), ('Кремний', 8000), ('Торий', 4500), ('Кинетический сплав', 500)]:
+        inv[res] -= amt
+        if inv[res] == 0:
+            del inv[res]
     if 'sector' not in context.bot_data:
         context.bot_data['sector'] = {}
     if user_id not in context.bot_data['sector']:
-        context.bot_data['sector'][user_id] = {
-            'core': 'Осколок',
-            'weapons': 0,
-            'turrets': {},
-            'units': {},
-            'wave': 1,
-            'last_attack_time': time.time(),
-            'last_wave_damage': 0,
-            'last_wave_composition': None
-        }
-    
-    sector_data = context.bot_data['sector'][user_id]
-    sector_data['core'] = 'Атом'
-    sector_data['weapons'] += 10000
-    
+        context.bot_data['sector'][user_id] = {'core': 'Осколок', 'weapons': 0, 'turrets': {}, 'units': {}, 'wave': 1, 'last_attack_time': time.time(), 'last_wave_damage': 0, 'last_wave_composition': None}
+    sd = context.bot_data['sector'][user_id]
+    sd['core'] = 'Атом'
+    sd['weapons'] += 10000
     await safe_edit_message(query, "✅ Ядро улучшено до Атома! +10000 к вооружению базы!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="sector_my_base")]]))
 
 async def sector_enemy_bases(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
-    
-    keyboard = [[InlineKeyboardButton("⬅️ Назад", callback_data="sector_back")]]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    
-    await safe_edit_message(query, "🔴 *Вражеские базы*\n\nСкоро здесь появятся вражеские сектора для атаки!", parse_mode='Markdown', reply_markup=reply_markup)
+    await safe_edit_message(query, "🔴 *Вражеские базы*\n\nСкоро здесь появятся вражеские сектора для атаки!", parse_mode='Markdown', reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="sector_back")]]))
 
 async def sector_back(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
-    
-    keyboard = [
-        [InlineKeyboardButton("🟡 Моя база", callback_data="sector_my_base")],
-        [InlineKeyboardButton("🔴 Вражеские базы", callback_data="sector_enemy_bases")],
-        [InlineKeyboardButton("🛠 Создать турель/юнита", callback_data="sector_build")]
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    
-    await safe_edit_message(query, "⚔️ *Сектор*\n\nУлучшай защиту своей базы, делай атаки на вражеские сектора чтобы получать ресурсы и разблокировать новые турели/юниты!", parse_mode='Markdown', reply_markup=reply_markup)
+    await safe_edit_message(query,
+        "⚔️ *Сектор*\n\nУлучшай защиту своей базы, делай атаки на вражеские сектора чтобы получать ресурсы и разблокировать новые турели/юниты!",
+        parse_mode='Markdown',
+        reply_markup=InlineKeyboardMarkup([
+            [InlineKeyboardButton("🟡 Моя база", callback_data="sector_my_base")],
+            [InlineKeyboardButton("🔴 Вражеские базы", callback_data="sector_enemy_bases")],
+            [InlineKeyboardButton("🛠 Создать турель/юнита", callback_data="sector_build")]
+        ])
+    )
 
 # ========== ДРОНЫ ==========
 
 async def update_drone_resources(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    
+    uid = update.effective_user.id
     if 'drones' not in context.bot_data:
         context.bot_data['drones'] = {}
-    if user_id not in context.bot_data['drones']:
-        context.bot_data['drones'][user_id] = {
-            'mono_researched': False, 'poly_researched': False, 'mega_researched': False, 'quad_researched': False, 'oct_researched': False,
-            'mono_count': 0, 'poly_count': 0, 'mega_count': 0, 'quad_count': 0, 'oct_count': 0,
-            'mono_resources': {}, 'poly_resources': {}, 'mega_resources': {}, 'quad_resources': {}, 'oct_resources': {},
-            'last_update': time.time()
-        }
-    
-    drones_data = context.bot_data['drones'][user_id]
-    current_time = time.time()
-    last_update = drones_data.get('last_update', current_time)
-    elapsed_seconds = current_time - last_update
-    
-    if elapsed_seconds > 0 and elapsed_seconds <= 86400:
-        if 'all_inventories' in context.bot_data and user_id in context.bot_data['all_inventories']:
-            inventory = context.bot_data['all_inventories'][user_id]
-            for drone_name, drone_info in DRONES.items():
-                resources_key = drone_info['resources_key']
-                resources = drones_data.get(resources_key, {})
-                production = drone_info['production']
-                for resource, count in resources.items():
-                    if count > 0:
-                        amount = int((production * count / 3600) * elapsed_seconds)
-                        amount = min(amount, 1000000)
-                        if amount > 0:
-                            inventory[resource] = inventory.get(resource, 0) + amount
-    
-    drones_data['last_update'] = current_time
+    if uid not in context.bot_data['drones']:
+        context.bot_data['drones'][uid] = {k: ({} if 'resources' in k else False if 'researched' in k else 0) for k in ['mono_researched','poly_researched','mega_researched','quad_researched','oct_researched','mono_count','poly_count','mega_count','quad_count','oct_count','mono_resources','poly_resources','mega_resources','quad_resources','oct_resources']}
+        context.bot_data['drones'][uid]['last_update'] = time.time()
+    dd = context.bot_data['drones'][uid]
+    ct, lu = time.time(), dd.get('last_update', time.time())
+    if 0 < ct - lu <= 86400 and 'all_inventories' in context.bot_data and uid in context.bot_data['all_inventories']:
+        inv = context.bot_data['all_inventories'][uid]
+        for dn, di in DRONES.items():
+            res = dd.get(di['resources_key'], {})
+            prod = di['production']
+            for r, c in res.items():
+                if c > 0:
+                    amt = min(int((prod * c / 3600) * (ct - lu)), 1000000)
+                    if amt > 0:
+                        inv[r] = inv.get(r, 0) + amt
+    dd['last_update'] = ct
 
 async def drones_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
+    uid = update.effective_user.id
     await update_drone_resources(update, context)
-    
-    if 'all_inventories' not in context.bot_data:
-        context.bot_data['all_inventories'] = {}
-    if user_id not in context.bot_data['all_inventories']:
-        context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
-    inventory = context.bot_data['all_inventories'][user_id]
-    coins = inventory.get('coins', 0)
-    
-    if 'drones' not in context.bot_data:
-        context.bot_data['drones'] = {}
-    if user_id not in context.bot_data['drones']:
-        context.bot_data['drones'][user_id] = {
-            'mono_researched': False, 'poly_researched': False, 'mega_researched': False, 'quad_researched': False, 'oct_researched': False,
-            'mono_count': 0, 'poly_count': 0, 'mega_count': 0, 'quad_count': 0, 'oct_count': 0,
-            'mono_resources': {}, 'poly_resources': {}, 'mega_resources': {}, 'quad_resources': {}, 'oct_resources': {},
-            'last_update': time.time()
-        }
-    
-    drones_data = context.bot_data['drones'][user_id]
-    
-    keyboard = []
-    for drone_name, drone_info in DRONES.items():
-        research_key = drone_info['research_key']
-        if not drones_data.get(research_key, False):
-            keyboard.append([InlineKeyboardButton(f"🔍 Исследовать дрон {drone_name} ({drone_info['research_cost']}🪙)", callback_data=f"drone_research_{drone_name}")])
+    if 'all_inventories' not in context.bot_data or uid not in context.bot_data['all_inventories']:
+        context.bot_data['all_inventories'][uid] = {'coins': 0, 'artifacts': 0}
+    coins = context.bot_data['all_inventories'][uid].get('coins', 0)
+    if 'drones' not in context.bot_data or uid not in context.bot_data['drones']:
+        context.bot_data['drones'][uid] = {k: ({} if 'resources' in k else False if 'researched' in k else 0) for k in ['mono_researched','poly_researched','mega_researched','quad_researched','oct_researched','mono_count','poly_count','mega_count','quad_count','oct_count','mono_resources','poly_resources','mega_resources','quad_resources','oct_resources']}
+        context.bot_data['drones'][uid]['last_update'] = time.time()
+    dd = context.bot_data['drones'][uid]
+    kb = []
+    for dn, di in DRONES.items():
+        if not dd.get(di['research_key'], False):
+            kb.append([InlineKeyboardButton(f"🔍 Исследовать дрон {dn} ({di['research_cost']}🪙)", callback_data=f"drone_research_{dn}")])
         else:
-            keyboard.append([InlineKeyboardButton(f"🛒 Купить {drone_name} ({drone_info['buy_cost']}🪙)", callback_data=f"drone_buy_{drone_name}")])
-    keyboard.append([InlineKeyboardButton("📊 Статистика дронов", callback_data="drone_stats")])
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    
+            kb.append([InlineKeyboardButton(f"🛒 Купить {dn} ({di['buy_cost']}🪙)", callback_data=f"drone_buy_{dn}")])
+    kb.append([InlineKeyboardButton("📊 Статистика дронов", callback_data="drone_stats")])
     text = f"🕹 *Дронстанция*\n\nИсследуйте и используйте дроны чтобы добывать недостающие ресурсы!\n\nПроизводительность дронов:\n🕹Моно - 1Рес/Ч\n🕹Поли - 9Рес/Ч\n🕹Мега - 65Рес/Ч\n🕹Квад - 380Рес/Ч\n🕹Окт - 8500Рес/Ч\n\n🪙 Монеты: {coins}."
-    
     if update.callback_query:
-        await safe_edit_message(update.callback_query, text, parse_mode='Markdown', reply_markup=reply_markup)
+        await safe_edit_message(update.callback_query, text, parse_mode='Markdown', reply_markup=InlineKeyboardMarkup(kb))
     else:
-        await update.message.reply_text(text, parse_mode='Markdown', reply_markup=reply_markup)
+        await update.message.reply_text(text, parse_mode='Markdown', reply_markup=InlineKeyboardMarkup(kb))
 
-async def drone_research(update: Update, context: ContextTypes.DEFAULT_TYPE, drone_name):
-    query = update.callback_query
-    await query.answer()
-    user_id = update.effective_user.id
-    
-    if 'all_inventories' not in context.bot_data:
-        context.bot_data['all_inventories'] = {}
-    if user_id not in context.bot_data['all_inventories']:
-        context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
-    inventory = context.bot_data['all_inventories'][user_id]
-    coins = inventory.get('coins', 0)
-    
-    if 'drones' not in context.bot_data:
-        context.bot_data['drones'] = {}
-    if user_id not in context.bot_data['drones']:
-        context.bot_data['drones'][user_id] = {
-            'mono_researched': False, 'poly_researched': False, 'mega_researched': False, 'quad_researched': False, 'oct_researched': False,
-            'mono_count': 0, 'poly_count': 0, 'mega_count': 0, 'quad_count': 0, 'oct_count': 0,
-            'mono_resources': {}, 'poly_resources': {}, 'mega_resources': {}, 'quad_resources': {}, 'oct_resources': {},
-            'last_update': time.time()
-        }
-    
-    drones_data = context.bot_data['drones'][user_id]
-    drone_info = DRONES[drone_name]
-    research_key = drone_info['research_key']
-    research_cost = drone_info['research_cost']
-    
-    if not drones_data.get(research_key, False):
-        if coins < research_cost:
-            await safe_edit_message(query, f"❌ Недостаточно монет для исследования дрона {drone_name}!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="drone_back")]]))
+async def drone_research(update: Update, context: ContextTypes.DEFAULT_TYPE, dn):
+    q = update.callback_query
+    await q.answer()
+    uid = update.effective_user.id
+    if 'all_inventories' not in context.bot_data or uid not in context.bot_data['all_inventories']:
+        context.bot_data['all_inventories'][uid] = {'coins': 0, 'artifacts': 0}
+    inv = context.bot_data['all_inventories'][uid]
+    di = DRONES[dn]
+    if 'drones' not in context.bot_data or uid not in context.bot_data['drones']:
+        context.bot_data['drones'][uid] = {k: ({} if 'resources' in k else False if 'researched' in k else 0) for k in ['mono_researched','poly_researched','mega_researched','quad_researched','oct_researched','mono_count','poly_count','mega_count','quad_count','oct_count','mono_resources','poly_resources','mega_resources','quad_resources','oct_resources']}
+        context.bot_data['drones'][uid]['last_update'] = time.time()
+    dd = context.bot_data['drones'][uid]
+    if not dd.get(di['research_key'], False):
+        if inv.get('coins', 0) < di['research_cost']:
+            await safe_edit_message(q, f"❌ Недостаточно монет для исследования дрона {dn}!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="drone_back")]]))
             return
-        inventory['coins'] -= research_cost
-        drones_data[research_key] = True
+        inv['coins'] -= di['research_cost']
+        dd[di['research_key']] = True
         await drones_command(update, context)
 
-async def drone_buy(update: Update, context: ContextTypes.DEFAULT_TYPE, drone_name):
-    query = update.callback_query
-    await query.answer()
-    user_id = update.effective_user.id
-    
-    if 'all_inventories' not in context.bot_data:
-        context.bot_data['all_inventories'] = {}
-    if user_id not in context.bot_data['all_inventories']:
-        context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
-    inventory = context.bot_data['all_inventories'][user_id]
-    coins = inventory.get('coins', 0)
-    
-    if 'drones' not in context.bot_data:
-        context.bot_data['drones'] = {}
-    if user_id not in context.bot_data['drones']:
-        context.bot_data['drones'][user_id] = {
-            'mono_researched': False, 'poly_researched': False, 'mega_researched': False, 'quad_researched': False, 'oct_researched': False,
-            'mono_count': 0, 'poly_count': 0, 'mega_count': 0, 'quad_count': 0, 'oct_count': 0,
-            'mono_resources': {}, 'poly_resources': {}, 'mega_resources': {}, 'quad_resources': {}, 'oct_resources': {},
-            'last_update': time.time(), 'pending_drone': None
-        }
-    
-    drones_data = context.bot_data['drones'][user_id]
-    drone_info = DRONES[drone_name]
-    research_key = drone_info['research_key']
-    buy_cost = drone_info['buy_cost']
-    
-    if not drones_data.get(research_key, False):
-        await safe_edit_message(query, f"❌ Сначала исследуйте дрона {drone_name}!")
+async def drone_buy(update: Update, context: ContextTypes.DEFAULT_TYPE, dn):
+    q = update.callback_query
+    await q.answer()
+    uid = update.effective_user.id
+    if 'all_inventories' not in context.bot_data or uid not in context.bot_data['all_inventories']:
+        context.bot_data['all_inventories'][uid] = {'coins': 0, 'artifacts': 0}
+    inv = context.bot_data['all_inventories'][uid]
+    di = DRONES[dn]
+    if 'drones' not in context.bot_data or uid not in context.bot_data['drones']:
+        context.bot_data['drones'][uid] = {k: ({} if 'resources' in k else False if 'researched' in k else 0) for k in ['mono_researched','poly_researched','mega_researched','quad_researched','oct_researched','mono_count','poly_count','mega_count','quad_count','oct_count','mono_resources','poly_resources','mega_resources','quad_resources','oct_resources']}
+        context.bot_data['drones'][uid]['last_update'] = time.time()
+    dd = context.bot_data['drones'][uid]
+    if not dd.get(di['research_key'], False):
+        await safe_edit_message(q, f"❌ Сначала исследуйте дрона {dn}!")
         return
-    if coins < buy_cost:
-        await safe_edit_message(query, f"❌ Недостаточно монет для покупки дрона {drone_name}!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="drone_back")]]))
+    if inv.get('coins', 0) < di['buy_cost']:
+        await safe_edit_message(q, f"❌ Недостаточно монет для покупки дрона {dn}!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="drone_back")]]))
         return
-    
-    drones_data['pending_drone'] = drone_name
-    drones_data['pending_cost'] = buy_cost
-    
-    keyboard = [
-        [InlineKeyboardButton("Медь", callback_data=f"drone_resource_{drone_name}_Медь")],
-        [InlineKeyboardButton("Свинец", callback_data=f"drone_resource_{drone_name}_Свинец")],
-        [InlineKeyboardButton("Уголь", callback_data=f"drone_resource_{drone_name}_Уголь")],
-        [InlineKeyboardButton("Песок", callback_data=f"drone_resource_{drone_name}_Песок")],
-        [InlineKeyboardButton("Титан", callback_data=f"drone_resource_{drone_name}_Титан")],
-        [InlineKeyboardButton("Торий", callback_data=f"drone_resource_{drone_name}_Торий")],
-        [InlineKeyboardButton("❌ Отменить", callback_data="drone_buy_cancel")]
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    
-    await safe_edit_message(query, f"Выберите ресурс, который будет добывать дрон {drone_name}\n\nВыбирайте с умом, позже это нельзя будет изменить!", reply_markup=reply_markup)
+    dd['pending_drone'] = dn
+    dd['pending_cost'] = di['buy_cost']
+    kb = [[InlineKeyboardButton(r, callback_data=f"drone_resource_{dn}_{r}")] for r in ["Медь","Свинец","Уголь","Песок","Титан","Торий"]]
+    kb.append([InlineKeyboardButton("❌ Отменить", callback_data="drone_buy_cancel")])
+    await safe_edit_message(q, f"Выберите ресурс, который будет добывать дрон {dn}\n\nВыбирайте с умом, позже это нельзя будет изменить!", reply_markup=InlineKeyboardMarkup(kb))
 
 async def drone_buy_cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    user_id = update.effective_user.id
-    
-    if 'drones' not in context.bot_data:
-        context.bot_data['drones'] = {}
-    if user_id not in context.bot_data['drones']:
-        context.bot_data['drones'][user_id] = {
-            'mono_researched': False, 'poly_researched': False, 'mega_researched': False, 'quad_researched': False, 'oct_researched': False,
-            'mono_count': 0, 'poly_count': 0, 'mega_count': 0, 'quad_count': 0, 'oct_count': 0,
-            'mono_resources': {}, 'poly_resources': {}, 'mega_resources': {}, 'quad_resources': {}, 'oct_resources': {},
-            'last_update': time.time(), 'pending_drone': None
-        }
-    
-    drones_data = context.bot_data['drones'][user_id]
-    drones_data['pending_drone'] = None
+    q = update.callback_query
+    await q.answer()
+    uid = update.effective_user.id
+    if 'drones' not in context.bot_data or uid not in context.bot_data['drones']:
+        context.bot_data['drones'][uid] = {k: ({} if 'resources' in k else False if 'researched' in k else 0) for k in ['mono_researched','poly_researched','mega_researched','quad_researched','oct_researched','mono_count','poly_count','mega_count','quad_count','oct_count','mono_resources','poly_resources','mega_resources','quad_resources','oct_resources']}
+        context.bot_data['drones'][uid]['last_update'] = time.time()
+    dd = context.bot_data['drones'][uid]
+    dd['pending_drone'] = None
     await drones_command(update, context)
 
-async def drone_set_resource(update: Update, context: ContextTypes.DEFAULT_TYPE, drone_name, resource):
-    query = update.callback_query
-    await query.answer()
-    user_id = update.effective_user.id
-    
-    if 'drones' not in context.bot_data:
-        context.bot_data['drones'] = {}
-    if user_id not in context.bot_data['drones']:
-        context.bot_data['drones'][user_id] = {
-            'mono_researched': False, 'poly_researched': False, 'mega_researched': False, 'quad_researched': False, 'oct_researched': False,
-            'mono_count': 0, 'poly_count': 0, 'mega_count': 0, 'quad_count': 0, 'oct_count': 0,
-            'mono_resources': {}, 'poly_resources': {}, 'mega_resources': {}, 'quad_resources': {}, 'oct_resources': {},
-            'last_update': time.time(), 'pending_drone': None
-        }
-    
-    drones_data = context.bot_data['drones'][user_id]
-    if drones_data.get('pending_drone') != drone_name:
+async def drone_set_resource(update: Update, context: ContextTypes.DEFAULT_TYPE, dn, res):
+    q = update.callback_query
+    await q.answer()
+    uid = update.effective_user.id
+    if 'drones' not in context.bot_data or uid not in context.bot_data['drones']:
+        context.bot_data['drones'][uid] = {k: ({} if 'resources' in k else False if 'researched' in k else 0) for k in ['mono_researched','poly_researched','mega_researched','quad_researched','oct_researched','mono_count','poly_count','mega_count','quad_count','oct_count','mono_resources','poly_resources','mega_resources','quad_resources','oct_resources']}
+        context.bot_data['drones'][uid]['last_update'] = time.time()
+    dd = context.bot_data['drones'][uid]
+    if dd.get('pending_drone') != dn:
         await drones_command(update, context)
         return
-    
-    if 'all_inventories' not in context.bot_data:
-        context.bot_data['all_inventories'] = {}
-    if user_id not in context.bot_data['all_inventories']:
-        context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
-    inventory = context.bot_data['all_inventories'][user_id]
-    pending_cost = drones_data.get('pending_cost', 0)
-    inventory['coins'] -= pending_cost
-    
-    drone_info = DRONES[drone_name]
-    resources_key = drone_info['resources_key']
-    count_key = drone_info['count_key']
-    resources = drones_data.get(resources_key, {})
-    resources[resource] = resources.get(resource, 0) + 1
-    drones_data[resources_key] = resources
-    drones_data[count_key] = drones_data.get(count_key, 0) + 1
-    drones_data['pending_drone'] = None
-    drones_data['pending_cost'] = None
-    
+    if 'all_inventories' not in context.bot_data or uid not in context.bot_data['all_inventories']:
+        context.bot_data['all_inventories'][uid] = {'coins': 0, 'artifacts': 0}
+    inv = context.bot_data['all_inventories'][uid]
+    inv['coins'] -= dd.get('pending_cost', 0)
+    di = DRONES[dn]
+    res_key, cnt_key = di['resources_key'], di['count_key']
+    cur = dd.get(res_key, {})
+    cur[res] = cur.get(res, 0) + 1
+    dd[res_key] = cur
+    dd[cnt_key] = dd.get(cnt_key, 0) + 1
+    dd['pending_drone'] = None
     await drones_command(update, context)
 
 async def drone_stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    user_id = update.effective_user.id
-    user_name = update.effective_user.first_name
+    q = update.callback_query
+    await q.answer()
+    uid, uname = update.effective_user.id, update.effective_user.first_name
     await update_drone_resources(update, context)
-    
-    if 'drones' not in context.bot_data:
-        context.bot_data['drones'] = {}
-    if user_id not in context.bot_data['drones']:
-        context.bot_data['drones'][user_id] = {
-            'mono_researched': False, 'poly_researched': False, 'mega_researched': False, 'quad_researched': False, 'oct_researched': False,
-            'mono_count': 0, 'poly_count': 0, 'mega_count': 0, 'quad_count': 0, 'oct_count': 0,
-            'mono_resources': {}, 'poly_resources': {}, 'mega_resources': {}, 'quad_resources': {}, 'oct_resources': {},
-            'last_update': time.time()
-        }
-    
-    drones_data = context.bot_data['drones'][user_id]
-    stats_text = f"🕹 *Дроны игрока {user_name}:*\n\n"
-    resource_production = {"Медь": 0, "Свинец": 0, "Уголь": 0, "Песок": 0, "Титан": 0, "Торий": 0}
-    
-    for drone_name, drone_info in DRONES.items():
-        count_key = drone_info['count_key']
-        resources_key = drone_info['resources_key']
-        resources = drones_data.get(resources_key, {})
-        total_count = drones_data.get(count_key, 0)
-        production = drone_info['production']
-        stats_text += f"{drone_name} - {total_count}\n"
-        for resource, count in resources.items():
-            resource_production[resource] += production * count
-    
-    stats_text += f"\n⛏️ *Добывающиеся дронами ресурсы:*\n"
-    stats_text += f"Медь: {resource_production['Медь']}/ч\n"
-    stats_text += f"Свинец: {resource_production['Свинец']}/ч\n"
-    stats_text += f"Уголь: {resource_production['Уголь']}/ч\n"
-    stats_text += f"Песок: {resource_production['Песок']}/ч\n"
-    stats_text += f"Титан: {resource_production['Титан']}/ч\n"
-    stats_text += f"Торий: {resource_production['Торий']}/ч\n\n"
-    stats_text += f"Ресурсы автоматически перемещаются в твой инвентарь!"
-    
-    keyboard = [[InlineKeyboardButton("⬅️ Назад", callback_data="drone_back")]]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    
-    await safe_edit_message(query, stats_text, parse_mode='Markdown', reply_markup=reply_markup)
+    if 'drones' not in context.bot_data or uid not in context.bot_data['drones']:
+        context.bot_data['drones'][uid] = {k: ({} if 'resources' in k else False if 'researched' in k else 0) for k in ['mono_researched','poly_researched','mega_researched','quad_researched','oct_researched','mono_count','poly_count','mega_count','quad_count','oct_count','mono_resources','poly_resources','mega_resources','quad_resources','oct_resources']}
+        context.bot_data['drones'][uid]['last_update'] = time.time()
+    dd = context.bot_data['drones'][uid]
+    prod = {"Медь":0,"Свинец":0,"Уголь":0,"Песок":0,"Титан":0,"Торий":0}
+    text = f"🕹 *Дроны игрока {uname}:*\n\n"
+    for dn, di in DRONES.items():
+        cnt = dd.get(di['count_key'], 0)
+        text += f"{dn} - {cnt}\n"
+        for r, c in dd.get(di['resources_key'], {}).items():
+            prod[r] += di['production'] * c
+    text += f"\n⛏️ *Добывающиеся дронами ресурсы:*\nМедь: {prod['Медь']}/ч\nСвинец: {prod['Свинец']}/ч\nУголь: {prod['Уголь']}/ч\nПесок: {prod['Песок']}/ч\nТитан: {prod['Титан']}/ч\nТорий: {prod['Торий']}/ч\n\nРесурсы автоматически перемещаются в твой инвентарь!"
+    await safe_edit_message(q, text, parse_mode='Markdown', reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="drone_back")]]))
 
 async def drone_back(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    
-    if 'drones' not in context.bot_data:
-        context.bot_data['drones'] = {}
-    if user_id not in context.bot_data['drones']:
-        context.bot_data['drones'][user_id] = {
-            'mono_researched': False, 'poly_researched': False, 'mega_researched': False, 'quad_researched': False, 'oct_researched': False,
-            'mono_count': 0, 'poly_count': 0, 'mega_count': 0, 'quad_count': 0, 'oct_count': 0,
-            'mono_resources': {}, 'poly_resources': {}, 'mega_resources': {}, 'quad_resources': {}, 'oct_resources': {},
-            'last_update': time.time(), 'pending_drone': None
-        }
-    
-    drones_data = context.bot_data['drones'][user_id]
-    drones_data['pending_drone'] = None
     await drones_command(update, context)
 
 # ========== ШАХТА ==========
 
 async def mineshaft_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    
-    if 'mines' not in context.bot_data:
-        context.bot_data['mines'] = {}
-    if user_id not in context.bot_data['mines']:
-        context.bot_data['mines'][user_id] = {'drills': {}, 'stored': {}, 'last_update': time.time()}
-    
-    keyboard = [
-        [InlineKeyboardButton("🛠 Построить бур", callback_data="mine_build_menu")],
-        [InlineKeyboardButton("🏭 Моя шахта", callback_data="mine_info")]
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    
     await update.message.reply_text(
         "🏭 *Шахта*\n\nЗарабатывай пассивные ресурсы во время АФК при помощи буров!\n\nСтоимость строительства буров:\n⚙️Медный бур (25 Медь) 15Рес/Ч\n⚙️Пневматический бур (35 Медь, 10 Графит) 60Рес/Ч\n⚙️Лазерный бур (120 Медь, 40 Кремний, 20 Титан) 360Рес/ч\n⚙️Воздушная бур. установка (250 Медь, 250 Свинец, 120 Кремний, 100 Титан, 50 Торий) 1800 Рес/Ч\n🏗Epiroc Pit Viper 351 (800 Медь, 400 Кремний, 250 Титан, 100 Фазовая ткань) 6000Рес/Ч\n🏗Sandvik Pantera DP1600i (2000 Свинец, 1500 Кремний, 1500 Титан, 400 Фазовая ткань, 400 Кинетический сплав) 31600Рес/Ч",
         parse_mode='Markdown',
-        reply_markup=reply_markup
+        reply_markup=InlineKeyboardMarkup([
+            [InlineKeyboardButton("🛠 Построить бур", callback_data="mine_build_menu")],
+            [InlineKeyboardButton("🏭 Моя шахта", callback_data="mine_info")]
+        ])
     )
 
 async def mine_build_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    user_id = update.effective_user.id
-    
-    if 'all_inventories' not in context.bot_data:
-        context.bot_data['all_inventories'] = {}
-    if user_id not in context.bot_data['all_inventories']:
-        context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
-    inventory = context.bot_data['all_inventories'][user_id]
-    
-    keyboard = []
-    for drill_name, drill_info in DRILLS.items():
-        can_build = True
-        for resource, cost in drill_info["cost"].items():
-            if inventory.get(resource, 0) < cost:
-                can_build = False
-                break
-        status = "✅" if can_build else "❌"
-        keyboard.append([InlineKeyboardButton(f"{drill_info['emoji']} {drill_name} {status}", callback_data=f"mine_build_{drill_name}")])
-    keyboard.append([InlineKeyboardButton("⬅️ Назад", callback_data="mine_back")])
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    
-    await safe_edit_message(query, "Выбери бур, который хочешь построить:", reply_markup=reply_markup)
+    q = update.callback_query
+    await q.answer()
+    uid = update.effective_user.id
+    if 'all_inventories' not in context.bot_data or uid not in context.bot_data['all_inventories']:
+        context.bot_data['all_inventories'][uid] = {'coins': 0, 'artifacts': 0}
+    inv = context.bot_data['all_inventories'][uid]
+    kb = []
+    for dn, di in DRILLS.items():
+        can = all(inv.get(r, 0) >= c for r, c in di['cost'].items())
+        kb.append([InlineKeyboardButton(f"{di['emoji']} {dn} {'✅' if can else '❌'}", callback_data=f"mine_build_{dn}")])
+    kb.append([InlineKeyboardButton("⬅️ Назад", callback_data="mine_back")])
+    await safe_edit_message(q, "Выбери бур, который хочешь построить:", reply_markup=InlineKeyboardMarkup(kb))
 
-async def mine_build_drill(update: Update, context: ContextTypes.DEFAULT_TYPE, drill_name):
-    query = update.callback_query
-    await query.answer()
-    user_id = update.effective_user.id
-    
-    if drill_name not in DRILLS:
+async def mine_build_drill(update: Update, context: ContextTypes.DEFAULT_TYPE, dn):
+    q = update.callback_query
+    await q.answer()
+    uid = update.effective_user.id
+    if dn not in DRILLS:
         return
-    drill_info = DRILLS[drill_name]
-    
-    if 'all_inventories' not in context.bot_data:
-        context.bot_data['all_inventories'] = {}
-    if user_id not in context.bot_data['all_inventories']:
-        context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
-    inventory = context.bot_data['all_inventories'][user_id]
-    
-    missing_resources = []
-    for resource, cost in drill_info["cost"].items():
-        if inventory.get(resource, 0) < cost:
-            missing_resources.append(f"{resource} ({inventory.get(resource, 0)}/{cost})")
-    
-    if missing_resources:
-        keyboard = [[InlineKeyboardButton("⬅️ Назад", callback_data="mine_build_menu")]]
-        reply_markup = InlineKeyboardMarkup(keyboard)
-        await safe_edit_message(query, f"❌ Недостаточно ресурсов для постройки бура!\n\nНе хватает:\n" + "\n".join(missing_resources), reply_markup=reply_markup)
+    di = DRILLS[dn]
+    if 'all_inventories' not in context.bot_data or uid not in context.bot_data['all_inventories']:
+        context.bot_data['all_inventories'][uid] = {'coins': 0, 'artifacts': 0}
+    inv = context.bot_data['all_inventories'][uid]
+    missing = [f"{r} ({inv.get(r, 0)}/{c})" for r, c in di['cost'].items() if inv.get(r, 0) < c]
+    if missing:
+        await safe_edit_message(q, f"❌ Недостаточно ресурсов для постройки бура!\n\nНе хватает:\n" + "\n".join(missing), reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="mine_build_menu")]]))
         return
-    
-    for resource, cost in drill_info["cost"].items():
-        inventory[resource] -= cost
-        if inventory[resource] == 0:
-            del inventory[resource]
-    
+    for r, c in di['cost'].items():
+        inv[r] -= c
+        if inv[r] == 0:
+            del inv[r]
     if 'mines' not in context.bot_data:
         context.bot_data['mines'] = {}
-    if user_id not in context.bot_data['mines']:
-        context.bot_data['mines'][user_id] = {'drills': {}, 'stored': {}, 'last_update': time.time()}
-    
-    if 'last_update' not in context.bot_data['mines'][user_id]:
-        context.bot_data['mines'][user_id]['last_update'] = time.time()
-    
-    if drill_name not in context.bot_data['mines'][user_id]['drills']:
-        context.bot_data['mines'][user_id]['drills'][drill_name] = 0
-    
-    context.bot_data['mines'][user_id]['drills'][drill_name] += 1
+    if uid not in context.bot_data['mines']:
+        context.bot_data['mines'][uid] = {'drills': {}, 'stored': {}, 'last_update': time.time()}
+    md = context.bot_data['mines'][uid]
+    md['drills'][dn] = md['drills'].get(dn, 0) + 1
     await mine_build_menu(update, context)
 
 async def mine_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    user_id = update.effective_user.id
-    user_name = update.effective_user.first_name
-    
-    if 'mines' not in context.bot_data:
-        context.bot_data['mines'] = {}
-    if user_id not in context.bot_data['mines']:
-        context.bot_data['mines'][user_id] = {'drills': {}, 'stored': {}, 'last_update': time.time()}
-    
-    mine_data = context.bot_data['mines'][user_id]
-    drills = mine_data.get('drills', {})
-    current_time = time.time()
-    last_update = mine_data.get('last_update', current_time)
-    elapsed_seconds = current_time - last_update
-    
-    if elapsed_seconds > 0 and elapsed_seconds <= 86400:
-        total_production_per_hour = 0
-        for drill_name, count in drills.items():
-            if drill_name in DRILLS:
-                total_production_per_hour += DRILLS[drill_name]["production"] * count
-        
-        if total_production_per_hour > 0:
-            total_production_per_second = total_production_per_hour / 3600
-            total_resources = int(total_production_per_second * elapsed_seconds)
-            total_resources = min(total_resources, 1000000000)
-            if total_resources > 0:
-                if 'stored' not in mine_data:
-                    mine_data['stored'] = {}
-                for _ in range(total_resources):
-                    resource = get_mine_resource()
-                    mine_data['stored'][resource] = mine_data['stored'].get(resource, 0) + 1
-    
-    mine_data['last_update'] = current_time
-    total_production = 0
-    for drill_name, count in drills.items():
-        if drill_name in DRILLS:
-            total_production += DRILLS[drill_name]["production"] * count
-    stored = mine_data.get('stored', {})
-    
-    info_text = f"🏗 *Буры игрока {user_name}:*\n\n"
-    if not drills:
-        info_text += "Нет построенных буров!\n"
+    q = update.callback_query
+    await q.answer()
+    uid, uname = update.effective_user.id, update.effective_user.first_name
+    if 'mines' not in context.bot_data or uid not in context.bot_data['mines']:
+        context.bot_data['mines'][uid] = {'drills': {}, 'stored': {}, 'last_update': time.time()}
+    md = context.bot_data['mines'][uid]
+    ct, lu = time.time(), md.get('last_update', time.time())
+    if 0 < ct - lu <= 86400:
+        prod = sum(DRILLS[dn]['production'] * c for dn, c in md.get('drills', {}).items())
+        if prod > 0:
+            total = min(int((prod / 3600) * (ct - lu)), 1000000000)
+            if total > 0:
+                if 'stored' not in md:
+                    md['stored'] = {}
+                for _ in range(total):
+                    r = get_mine_resource()
+                    md['stored'][r] = md['stored'].get(r, 0) + 1
+    md['last_update'] = ct
+    prod = sum(DRILLS[dn]['production'] * c for dn, c in md.get('drills', {}).items())
+    text = f"🏗 *Буры игрока {uname}:*\n\n"
+    if not md.get('drills'):
+        text += "Нет построенных буров!\n"
     else:
-        for drill_name, count in drills.items():
-            info_text += f"{DRILLS[drill_name]['emoji']} {drill_name}: {count} шт.\n"
-    info_text += f"\n📈 *Доход ресурсов:* {total_production}/Ч\n\n📦 *Накоплено ресурсов:*\n"
-    for resource in ["Медь", "Свинец", "Уголь", "Песок", "Титан", "Торий"]:
-        amount = stored.get(resource, 0)
-        info_text += f"{resource}: {amount} шт.\n"
-    
-    keyboard = [
+        text += "\n".join(f"{DRILLS[dn]['emoji']} {dn}: {c} шт." for dn, c in md['drills'].items()) + "\n"
+    text += f"\n📈 *Доход ресурсов:* {prod}/Ч\n\n📦 *Накоплено ресурсов:*\n" + "\n".join(f"{r}: {amt} шт." for r, amt in md.get('stored', {}).items())
+    await safe_edit_message(q, text, parse_mode='Markdown', reply_markup=InlineKeyboardMarkup([
         [InlineKeyboardButton("💰 Собрать ресурсы", callback_data="mine_collect")],
         [InlineKeyboardButton("⬅️ Назад", callback_data="mine_back")]
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    
-    await safe_edit_message(query, info_text, parse_mode='Markdown', reply_markup=reply_markup)
+    ]))
 
 async def mine_collect(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    user_id = update.effective_user.id
-    
-    if 'mines' not in context.bot_data:
-        context.bot_data['mines'] = {}
-    if user_id not in context.bot_data['mines']:
-        context.bot_data['mines'][user_id] = {'drills': {}, 'stored': {}, 'last_update': time.time()}
-    
-    mine_data = context.bot_data['mines'][user_id]
-    stored = mine_data.get('stored', {})
-    
-    if not stored:
+    q = update.callback_query
+    await q.answer()
+    uid = update.effective_user.id
+    if 'mines' not in context.bot_data or uid not in context.bot_data['mines']:
+        context.bot_data['mines'][uid] = {'drills': {}, 'stored': {}, 'last_update': time.time()}
+    md = context.bot_data['mines'][uid]
+    if not md.get('stored'):
         await mine_info(update, context)
         return
-    
-    if 'all_inventories' not in context.bot_data:
-        context.bot_data['all_inventories'] = {}
-    if user_id not in context.bot_data['all_inventories']:
-        context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
-    
-    inventory = context.bot_data['all_inventories'][user_id]
-    for resource, amount in stored.items():
-        inventory[resource] = inventory.get(resource, 0) + amount
-    mine_data['stored'] = {}
+    if 'all_inventories' not in context.bot_data or uid not in context.bot_data['all_inventories']:
+        context.bot_data['all_inventories'][uid] = {'coins': 0, 'artifacts': 0}
+    inv = context.bot_data['all_inventories'][uid]
+    for r, amt in md['stored'].items():
+        inv[r] = inv.get(r, 0) + amt
+    md['stored'] = {}
     await mine_info(update, context)
 
 async def mine_back(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    
-    keyboard = [
-        [InlineKeyboardButton("🛠 Построить бур", callback_data="mine_build_menu")],
-        [InlineKeyboardButton("🏭 Моя шахта", callback_data="mine_info")]
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    
-    await safe_edit_message(query, "🏭 *Шахта*\n\nЗарабатывай пассивные ресурсы во время АФК при помощи буров!\n\nСтоимость строительства буров:\n⚙️Медный бур (25 Медь) 15Рес/Ч\n⚙️Пневматический бур (35 Медь, 10 Графит) 60Рес/Ч\n⚙️Лазерный бур (120 Медь, 40 Кремний, 20 Титан) 360Рес/ч\n⚙️Воздушная бур. установка (250 Медь, 250 Свинец, 120 Кремний, 100 Титан, 50 Торий) 1800 Рес/Ч\n🏗Epiroc Pit Viper 351 (800 Медь, 400 Кремний, 250 Титан, 100 Фазовая ткань) 6000Рес/Ч\n🏗Sandvik Pantera DP1600i (2000 Свинец, 1500 Кремний, 1500 Титан, 400 Фазовая ткань, 400 Кинетический сплав) 31600Рес/Ч", parse_mode='Markdown', reply_markup=reply_markup)
+    q = update.callback_query
+    await q.answer()
+    await safe_edit_message(q,
+        "🏭 *Шахта*\n\nЗарабатывай пассивные ресурсы во время АФК при помощи буров!\n\nСтоимость строительства буров:\n⚙️Медный бур (25 Медь) 15Рес/Ч\n⚙️Пневматический бур (35 Медь, 10 Графит) 60Рес/Ч\n⚙️Лазерный бур (120 Медь, 40 Кремний, 20 Титан) 360Рес/ч\n⚙️Воздушная бур. установка (250 Медь, 250 Свинец, 120 Кремний, 100 Титан, 50 Торий) 1800 Рес/Ч\n🏗Epiroc Pit Viper 351 (800 Медь, 400 Кремний, 250 Титан, 100 Фазовая ткань) 6000Рес/Ч\n🏗Sandvik Pantera DP1600i (2000 Свинец, 1500 Кремний, 1500 Титан, 400 Фазовая ткань, 400 Кинетический сплав) 31600Рес/Ч",
+        parse_mode='Markdown',
+        reply_markup=InlineKeyboardMarkup([
+            [InlineKeyboardButton("🛠 Построить бур", callback_data="mine_build_menu")],
+            [InlineKeyboardButton("🏭 Моя шахта", callback_data="mine_info")]
+        ])
+    )
 
 # ========== КОПАНИЕ ==========
 
 async def mine(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    
+    uid = update.effective_user.id
     if 'upgrades' not in context.bot_data:
         context.bot_data['upgrades'] = {}
-    if user_id not in context.bot_data['upgrades']:
-        context.bot_data['upgrades'][user_id] = {
-            'mining_multiplier': 1.0,
-            'cooldown_reduction': 0,
-            'mining_level': 0,
-            'cooldown_level': 0
-        }
-    
-    upgrades = context.bot_data['upgrades'][user_id]
-    current_cooldown = max(MIN_COOLDOWN, BASE_COOLDOWN - upgrades['cooldown_reduction'] * 15)
-    
+    if uid not in context.bot_data['upgrades']:
+        context.bot_data['upgrades'][uid] = {'mining_multiplier': 1.0, 'cooldown_reduction': 0, 'mining_level': 0, 'cooldown_level': 0}
+    up = context.bot_data['upgrades'][uid]
+    cd = max(MIN_COOLDOWN, BASE_COOLDOWN - up['cooldown_reduction'] * 15)
     if 'cooldowns' not in context.bot_data:
         context.bot_data['cooldowns'] = {}
-    
-    current_time = time.time()
-    last_use = context.bot_data['cooldowns'].get(user_id, 0)
-    time_passed = current_time - last_use
-    
-    if time_passed < current_cooldown:
-        remaining = int(current_cooldown - time_passed)
-        
-        if remaining >= 3600:
-            hours = remaining // 3600
-            minutes = (remaining % 3600) // 60
-            seconds = remaining % 60
-            time_text = f"{hours} ч {minutes} мин {seconds} сек"
-        elif remaining >= 60:
-            minutes = remaining // 60
-            seconds = remaining % 60
-            time_text = f"{minutes} мин {seconds} сек"
+    ct = time.time()
+    if ct - context.bot_data['cooldowns'].get(uid, 0) < cd:
+        rem = int(cd - (ct - context.bot_data['cooldowns'].get(uid, 0)))
+        if rem >= 3600:
+            t = f"{rem//3600} ч {(rem%3600)//60} мин {rem%60} сек"
+        elif rem >= 60:
+            t = f"{rem//60} мин {rem%60} сек"
         else:
-            time_text = f"{remaining} сек"
-        
-        await update.message.reply_text(
-            f"❌ Ты уже недавно копал ресурсы!\n\n"
-            f"Возвращайся через {time_text}."
-        )
+            t = f"{rem} сек"
+        await update.message.reply_text(f"❌ Ты уже недавно копал ресурсы!\n\nВозвращайся через {t}.")
         return
-    
-    context.bot_data['cooldowns'][user_id] = current_time
-    
-    resource = get_random_resource()
-    amount = get_resource_amount(resource, upgrades)
-    
-    if resource == "Кинетический сплав":
-        result_text = f"💥 *НЕВЕРОЯТНАЯ УДАЧА!*\n\nТы обнаружил заброшенную шахту и нашел контейнер с {amount} шт. Кинетическим сплавом! Мои поздравления!"
-        
-        if 'all_inventories' not in context.bot_data:
-            context.bot_data['all_inventories'] = {}
-        if user_id not in context.bot_data['all_inventories']:
-            context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
-        if resource not in context.bot_data['all_inventories'][user_id]:
-            context.bot_data['all_inventories'][user_id][resource] = 0
-        context.bot_data['all_inventories'][user_id][resource] += amount
-        
-        await update.message.reply_text(result_text, parse_mode='Markdown')
-        return
-    
-    mining_messages = [
-        "⛏️ Вы ударили киркой по земле и добыли",
-        "⛏️ Вы поставили бур и добыли",
-        "⛏️ Исследуя местность, вы обнаружили и добыли"
-    ]
-    
-    selected_message = random.choice(mining_messages)
-    
-    if resource in ITEM_RESOURCES:
-        unit = "шт"
+    context.bot_data['cooldowns'][uid] = ct
+    res = get_random_resource()
+    amt = get_resource_amount(res, up)
+    if res == "Кинетический сплав":
+        text = f"💥 *НЕВЕРОЯТНАЯ УДАЧА!*\n\nТы обнаружил заброшенную шахту и нашел контейнер с {amt} шт. Кинетическим сплавом! Мои поздравления!"
     else:
-        unit = "мл"
-    
-    result_text = f"{selected_message} {resource} {amount} {unit}!"
-    
+        text = f"{random.choice(['⛏️ Вы ударили киркой по земле и добыли', '⛏️ Вы поставили бур и добыли', '⛏️ Исследуя местность, вы обнаружили и добыли'])} {res} {amt} {'шт' if res in ITEM_RESOURCES else 'мл'}!"
     if 'all_inventories' not in context.bot_data:
         context.bot_data['all_inventories'] = {}
-    if user_id not in context.bot_data['all_inventories']:
-        context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
-    if resource not in context.bot_data['all_inventories'][user_id]:
-        context.bot_data['all_inventories'][user_id][resource] = 0
-    context.bot_data['all_inventories'][user_id][resource] += amount
-    
-    await update.message.reply_text(result_text)
+    if uid not in context.bot_data['all_inventories']:
+        context.bot_data['all_inventories'][uid] = {'coins': 0, 'artifacts': 0}
+    context.bot_data['all_inventories'][uid][res] = context.bot_data['all_inventories'][uid].get(res, 0) + amt
+    await update.message.reply_text(text, parse_mode='Markdown' if res == "Кинетический сплав" else None)
 
 async def inventory_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    user_name = update.effective_user.first_name
-    
+    uid, uname = update.effective_user.id, update.effective_user.first_name
     if 'all_inventories' not in context.bot_data:
         context.bot_data['all_inventories'] = {}
-    if user_id not in context.bot_data['all_inventories']:
-        context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
-    
-    inventory = context.bot_data['all_inventories'][user_id]
-    
-    coins = inventory.get('coins', 0)
-    artifacts = inventory.get('artifacts', 0)
-    
-    inventory_text = f"📦 Инвентарь игрока {user_name}:\n\n"
-    inventory_text += f"🔮 Артефакты: {artifacts} шт.\n"
-    inventory_text += f"🪙 Монеты: {coins} шт.\n\n"
-    
-    other_items = {k: v for k, v in inventory.items() if k not in ['coins', 'artifacts']}
-    
-    if not other_items:
-        inventory_text += "Других ресурсов нет!"
+    if uid not in context.bot_data['all_inventories']:
+        context.bot_data['all_inventories'][uid] = {'coins': 0, 'artifacts': 0}
+    inv = context.bot_data['all_inventories'][uid]
+    text = f"📦 Инвентарь игрока {uname}:\n\n🔮 Артефакты: {inv.get('artifacts', 0)} шт.\n🪙 Монеты: {inv.get('coins', 0)} шт.\n\n"
+    other = {k: v for k, v in inv.items() if k not in ['coins', 'artifacts']}
+    if not other:
+        text += "Других ресурсов нет!"
     else:
-        for resource, amount in other_items.items():
-            if resource in LIQUID_DISPLAY:
-                inventory_text += f"• {resource}: {amount} мл\n"
-            else:
-                inventory_text += f"• {resource}: {amount} шт.\n"
-    
-    await update.message.reply_text(inventory_text, reply_markup=get_main_keyboard())
+        text += "\n".join(f"• {r}: {v} {'мл' if r in LIQUID_DISPLAY else 'шт.'}" for r, v in other.items())
+    await update.message.reply_text(text, reply_markup=get_main_keyboard())
 
 # ========== УЛУЧШЕНИЯ ==========
 
 async def upgrade_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    
+    uid = update.effective_user.id
     if 'all_inventories' not in context.bot_data:
         context.bot_data['all_inventories'] = {}
-    if user_id not in context.bot_data['all_inventories']:
-        context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
-    
-    inventory = context.bot_data['all_inventories'][user_id]
-    artifacts = inventory.get('artifacts', 0)
-    
+    if uid not in context.bot_data['all_inventories']:
+        context.bot_data['all_inventories'][uid] = {'coins': 0, 'artifacts': 0}
+    inv = context.bot_data['all_inventories'][uid]
     if 'upgrades' not in context.bot_data:
         context.bot_data['upgrades'] = {}
-    if user_id not in context.bot_data['upgrades']:
-        context.bot_data['upgrades'][user_id] = {
-            'mining_multiplier': 1.0,
-            'cooldown_reduction': 0,
-            'mining_level': 0,
-            'cooldown_level': 0
-        }
-    
-    upgrades = context.bot_data['upgrades'][user_id]
-    mining_cost = get_upgrade_cost(upgrades['mining_level'])
-    cooldown_cost = get_upgrade_cost(upgrades['cooldown_level'])
-    
-    keyboard = [
-        [InlineKeyboardButton(f"🔝 Производство x1.5 ({mining_cost}🔮)", callback_data=f"upgrade_mining_{mining_cost}")],
-        [InlineKeyboardButton(f"⏱️ Кулдаун -15с ({cooldown_cost}🔮)", callback_data=f"upgrade_cooldown_{cooldown_cost}")]
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    
-    text = f"🔝 *Улучшение добычи*\n\n• Используй 🔮 Артефакты чтобы увеличивать доход копания в х1.5 раза каждый раз\n• Используй 🔮 Артефакты чтобы сокращать кулдаун копания на 15 секунд каждый раз\n\nВаши артефакты: {artifacts}"
-    
+    if uid not in context.bot_data['upgrades']:
+        context.bot_data['upgrades'][uid] = {'mining_multiplier': 1.0, 'cooldown_reduction': 0, 'mining_level': 0, 'cooldown_level': 0}
+    up = context.bot_data['upgrades'][uid]
+    text = f"🔝 *Улучшение добычи*\n\n• Используй 🔮 Артефакты чтобы увеличивать доход копания в х1.5 раза каждый раз\n• Используй 🔮 Артефакты чтобы сокращать кулдаун копания на 15 секунд каждый раз\n\nВаши артефакты: {inv.get('artifacts', 0)}"
+    kb = InlineKeyboardMarkup([
+        [InlineKeyboardButton(f"🔝 Производство x1.5 ({get_upgrade_cost(up['mining_level'])}🔮)", callback_data=f"upgrade_mining_{get_upgrade_cost(up['mining_level'])}")],
+        [InlineKeyboardButton(f"⏱️ Кулдаун -15с ({get_upgrade_cost(up['cooldown_level'])}🔮)", callback_data=f"upgrade_cooldown_{get_upgrade_cost(up['cooldown_level'])}")]
+    ])
     if update.callback_query:
-        await safe_edit_message(update.callback_query, text, parse_mode='Markdown', reply_markup=reply_markup)
+        await safe_edit_message(update.callback_query, text, parse_mode='Markdown', reply_markup=kb)
     else:
-        await update.message.reply_text(text, parse_mode='Markdown', reply_markup=reply_markup)
+        await update.message.reply_text(text, parse_mode='Markdown', reply_markup=kb)
 
 async def upgrade_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    
-    user_id = update.effective_user.id
-    data = query.data
-    
+    q = update.callback_query
+    await q.answer()
+    uid, data = update.effective_user.id, q.data
     if data == "upgrade_back":
         await upgrade_command(update, context)
         return
-    
-    if 'all_inventories' not in context.bot_data:
-        context.bot_data['all_inventories'] = {}
-    if user_id not in context.bot_data['all_inventories']:
-        context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
-    
-    inventory = context.bot_data['all_inventories'][user_id]
-    artifacts = inventory.get('artifacts', 0)
-    
-    if 'upgrades' not in context.bot_data:
-        context.bot_data['upgrades'] = {}
-    if user_id not in context.bot_data['upgrades']:
-        context.bot_data['upgrades'][user_id] = {
-            'mining_multiplier': 1.0,
-            'cooldown_reduction': 0,
-            'mining_level': 0,
-            'cooldown_level': 0
-        }
-    
-    upgrades = context.bot_data['upgrades'][user_id]
-    
+    if 'all_inventories' not in context.bot_data or uid not in context.bot_data['all_inventories']:
+        context.bot_data['all_inventories'][uid] = {'coins': 0, 'artifacts': 0}
+    inv = context.bot_data['all_inventories'][uid]
+    art = inv.get('artifacts', 0)
+    if 'upgrades' not in context.bot_data or uid not in context.bot_data['upgrades']:
+        context.bot_data['upgrades'][uid] = {'mining_multiplier': 1.0, 'cooldown_reduction': 0, 'mining_level': 0, 'cooldown_level': 0}
+    up = context.bot_data['upgrades'][uid]
     if data.startswith("upgrade_mining_"):
         cost = int(data.split("_")[2])
-        
-        if artifacts < cost:
-            await safe_edit_message(query, f"❌ Недостаточно артефактов! Нужно {cost}🔮, у вас {artifacts}🔮\n\nВаши артефакты: {artifacts}", parse_mode='Markdown', reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="upgrade_back")]]))
+        if art < cost:
+            await safe_edit_message(q, f"❌ Недостаточно артефактов! Нужно {cost}🔮, у вас {art}🔮\n\nВаши артефакты: {art}", parse_mode='Markdown', reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="upgrade_back")]]))
             return
-        
-        inventory['artifacts'] -= cost
-        upgrades['mining_level'] += 1
-        upgrades['mining_multiplier'] *= 1.5
-        
-        await safe_edit_message(query, f"✅ Улучшение куплено за {cost}🔮 Артефактов!\n\n🔝 Производство увеличено в 1.5 раза!\nТекущий множитель: x{upgrades['mining_multiplier']:.1f}\n\nВаши артефакты: {inventory['artifacts']}", parse_mode='Markdown', reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="upgrade_back")]]))
-        
+        inv['artifacts'] -= cost
+        up['mining_level'] += 1
+        up['mining_multiplier'] *= 1.5
+        await safe_edit_message(q, f"✅ Улучшение куплено за {cost}🔮 Артефактов!\n\n🔝 Производство увеличено в 1.5 раза!\nТекущий множитель: x{up['mining_multiplier']:.1f}\n\nВаши артефакты: {inv['artifacts']}", parse_mode='Markdown', reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="upgrade_back")]]))
     elif data.startswith("upgrade_cooldown_"):
         cost = int(data.split("_")[2])
-        current_cooldown = max(MIN_COOLDOWN, BASE_COOLDOWN - upgrades['cooldown_reduction'] * 15)
-        
-        if current_cooldown <= MIN_COOLDOWN:
-            await safe_edit_message(query, f"❌ Кулдаун уже достиг минимального значения {MIN_COOLDOWN} секунд!\n\nВаши артефакты: {artifacts}", parse_mode='Markdown', reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="upgrade_back")]]))
+        cur_cd = max(MIN_COOLDOWN, BASE_COOLDOWN - up['cooldown_reduction'] * 15)
+        if cur_cd <= MIN_COOLDOWN:
+            await safe_edit_message(q, f"❌ Кулдаун уже достиг минимального значения {MIN_COOLDOWN} секунд!\n\nВаши артефакты: {art}", parse_mode='Markdown', reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="upgrade_back")]]))
             return
-        
-        if artifacts < cost:
-            await safe_edit_message(query, f"❌ Недостаточно артефактов! Нужно {cost}🔮, у вас {artifacts}🔮\n\nВаши артефакты: {artifacts}", parse_mode='Markdown', reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="upgrade_back")]]))
+        if art < cost:
+            await safe_edit_message(q, f"❌ Недостаточно артефактов! Нужно {cost}🔮, у вас {art}🔮\n\nВаши артефакты: {art}", parse_mode='Markdown', reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="upgrade_back")]]))
             return
-        
-        inventory['artifacts'] -= cost
-        upgrades['cooldown_level'] += 1
-        upgrades['cooldown_reduction'] += 1
-        
-        new_cooldown = max(MIN_COOLDOWN, BASE_COOLDOWN - upgrades['cooldown_reduction'] * 15)
-        
-        await safe_edit_message(query, f"✅ Улучшение куплено за {cost}🔮 Артефактов!\n\n⏱️ Кулдаун уменьшен на 15 секунд!\nТекущий кулдаун: {new_cooldown} сек\n\nВаши артефакты: {inventory['artifacts']}", parse_mode='Markdown', reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="upgrade_back")]]))
+        inv['artifacts'] -= cost
+        up['cooldown_level'] += 1
+        up['cooldown_reduction'] += 1
+        await safe_edit_message(q, f"✅ Улучшение куплено за {cost}🔮 Артефактов!\n\n⏱️ Кулдаун уменьшен на 15 секунд!\nТекущий кулдаун: {max(MIN_COOLDOWN, BASE_COOLDOWN - up['cooldown_reduction'] * 15)} сек\n\nВаши артефакты: {inv['artifacts']}", parse_mode='Markdown', reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="upgrade_back")]]))
 
 # ========== ЕЖЕДНЕВНЫЙ ПОДАРОК ==========
 
 async def daygift_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = update.effective_user.id
-    
+    uid = update.effective_user.id
     if 'last_gift' not in context.bot_data:
         context.bot_data['last_gift'] = {}
-    
-    last_time = context.bot_data['last_gift'].get(user_id, 0)
-    current_time = time.time()
-    
-    if current_time - last_time < 86400:
-        remaining = int(86400 - (current_time - last_time))
-        hours = remaining // 3600
-        minutes = (remaining % 3600) // 60
-        seconds = remaining % 60
-        await update.message.reply_text(f"❌ Ты уже получал ежедневный подарок!\n\nСледующий подарок будет доступен через {hours} ч {minutes} мин {seconds} сек.")
+    lt = context.bot_data['last_gift'].get(uid, 0)
+    ct = time.time()
+    if ct - lt < 86400:
+        rem = int(86400 - (ct - lt))
+        await update.message.reply_text(f"❌ Ты уже получал ежедневный подарок!\n\nСледующий подарок будет доступен через {rem//3600} ч {(rem%3600)//60} мин {rem%60} сек.")
         return
-    
-    context.bot_data['last_gift'][user_id] = current_time
-    
-    coins = get_random_value(COIN_CHANCES)
-    artifacts = get_random_value(ARTIFACT_CHANCES)
-    unique_items = get_unique_items()
-    
-    if 'all_inventories' not in context.bot_data:
-        context.bot_data['all_inventories'] = {}
-    if user_id not in context.bot_data['all_inventories']:
-        context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
-    
-    inventory = context.bot_data['all_inventories'][user_id]
-    inventory['coins'] = inventory.get('coins', 0) + coins
-    inventory['artifacts'] = inventory.get('artifacts', 0) + artifacts
-    
-    gift_text = f"🎁 *Ежедневный подарок открыт!*\n\nВы получили:\n🪙 Монеты: {coins}\n🔮 Артефакты: {artifacts}"
-    
-    if unique_items:
-        gift_text += "\n\n⚙️ *Уникальные предметы:*"
-        for item in unique_items:
-            emoji = UNIQUE_ITEMS_EMOJI.get(item, "⚙️")
-            gift_text += f"\n{emoji} {item}"
-    
-    await update.message.reply_text(gift_text, parse_mode='Markdown', reply_markup=get_main_keyboard())
+    context.bot_data['last_gift'][uid] = ct
+    coins, arts = get_random_value(COIN_CHANCES), get_random_value(ARTIFACT_CHANCES)
+    uniq = get_unique_items()
+    if 'all_inventories' not in context.bot_data or uid not in context.bot_data['all_inventories']:
+        context.bot_data['all_inventories'][uid] = {'coins': 0, 'artifacts': 0}
+    inv = context.bot_data['all_inventories'][uid]
+    inv['coins'] = inv.get('coins', 0) + coins
+    inv['artifacts'] = inv.get('artifacts', 0) + arts
+    text = f"🎁 *Ежедневный подарок открыт!*\n\nВы получили:\n🪙 Монеты: {coins}\n🔮 Артефакты: {arts}"
+    if uniq:
+        text += "\n\n⚙️ *Уникальные предметы:*\n" + "\n".join(f"{UNIQUE_ITEMS_EMOJI.get(i, '⚙️')} {i}" for i in uniq)
+    await update.message.reply_text(text, parse_mode='Markdown', reply_markup=get_main_keyboard())
 
 # ========== ОБМЕНЫ И КРАФТ ==========
 
 CRAFT_RECIPES = {
-    "graphite": {"name": "Графит", "type": "item", "amount_per_craft": 1, "resources": {"Уголь": 2}},
-    "metaglass": {"name": "Метастекло", "type": "item", "amount_per_craft": 1, "resources": {"Песок": 1, "Свинец": 1}},
-    "silicon": {"name": "Кремний", "type": "item", "amount_per_craft": 1, "resources": {"Песок": 2, "Уголь": 1}},
-    "sporepod": {"name": "Споровый стручок", "type": "item", "amount_per_craft": 1, "resources": {"Вода": 200}},
-    "plastanium": {"name": "Пластан", "type": "item", "amount_per_craft": 1, "resources": {"Титан": 2, "Нефть": 100}},
-    "surgealloy": {"name": "Кинетический сплав", "type": "item", "amount_per_craft": 1, "resources": {"Медь": 3, "Свинец": 4, "Титан": 2, "Кремний": 3}},
-    "phasefabric": {"name": "Фазовая ткань", "type": "item", "amount_per_craft": 1, "resources": {"Торий": 4, "Песок": 10}},
-    "pyratite": {"name": "Пиротит", "type": "item", "amount_per_craft": 1, "resources": {"Свинец": 2, "Песок": 2, "Уголь": 1}},
-    "blastcompound": {"name": "Взрывчатая смесь", "type": "item", "amount_per_craft": 1, "resources": {"Пиротит": 1, "Споровый стручок": 1}},
-    "oil": {"name": "Нефть", "type": "liquid", "amount_per_craft": 100, "resources": {"Вода": 500, "Песок": 2}},
-    "cryofluid": {"name": "Криогенная жидкость", "type": "liquid", "amount_per_craft": 100, "resources": {"Вода": 100, "Титан": 1}}
+    "graphite": {"name": "Графит", "type": "item", "amount": 1, "res": {"Уголь": 2}},
+    "metaglass": {"name": "Метастекло", "type": "item", "amount": 1, "res": {"Песок": 1, "Свинец": 1}},
+    "silicon": {"name": "Кремний", "type": "item", "amount": 1, "res": {"Песок": 2, "Уголь": 1}},
+    "sporepod": {"name": "Споровый стручок", "type": "item", "amount": 1, "res": {"Вода": 200}},
+    "plastanium": {"name": "Пластан", "type": "item", "amount": 1, "res": {"Титан": 2, "Нефть": 100}},
+    "surgealloy": {"name": "Кинетический сплав", "type": "item", "amount": 1, "res": {"Медь": 3, "Свинец": 4, "Титан": 2, "Кремний": 3}},
+    "phasefabric": {"name": "Фазовая ткань", "type": "item", "amount": 1, "res": {"Торий": 4, "Песок": 10}},
+    "pyratite": {"name": "Пиротит", "type": "item", "amount": 1, "res": {"Свинец": 2, "Песок": 2, "Уголь": 1}},
+    "blastcompound": {"name": "Взрывчатая смесь", "type": "item", "amount": 1, "res": {"Пиротит": 1, "Споровый стручок": 1}},
+    "oil": {"name": "Нефть", "type": "liquid", "amount": 100, "res": {"Вода": 500, "Песок": 2}},
+    "cryofluid": {"name": "Криогенная жидкость", "type": "liquid", "amount": 100, "res": {"Вода": 100, "Титан": 1}}
 }
 
-ARTIFACT_EXCHANGE = {
-    "Графит": 100, "Метастекло": 50, "Кремний": 20, "Споровый стручок": 100,
-    "Пластан": 5, "Кинетический сплав": 1, "Фазовая ткань": 2, "Пиротит": 20, "Взрывчатая смесь": 5
-}
+ARTIFACT_EXCHANGE = {"Графит": 100, "Метастекло": 50, "Кремний": 20, "Споровый стручок": 100, "Пластан": 5, "Кинетический сплав": 1, "Фазовая ткань": 2, "Пиротит": 20, "Взрывчатая смесь": 5}
+COIN_EXCHANGE = {"Медь": 1, "Свинец": 1, "Песок": 1, "Уголь": 1, "Вода": 0.01, "Нефть": 0.05, "Криогенная жидкость": 0.1, "Титан": 2, "Торий": 5, "Графит": 4, "Метастекло": 4, "Кремний": 5, "Споровый стручок": 5, "Пластан": 25, "Кинетический сплав": 50, "Фазовая ткань": 100, "Пиротит": 10, "Взрывчатая смесь": 30}
 
-COIN_EXCHANGE = {
-    "Медь": 1, "Свинец": 1, "Песок": 1, "Уголь": 1, "Вода": 0.01, "Нефть": 0.05,
-    "Криогенная жидкость": 0.1, "Титан": 2, "Торий": 5, "Графит": 4, "Метастекло": 4,
-    "Кремний": 5, "Споровый стручок": 5, "Пластан": 25, "Кинетический сплав": 50,
-    "Фазовая ткань": 100, "Пиротит": 10, "Взрывчатая смесь": 30
-}
-
-async def buy_artifact(update: Update, context: ContextTypes.DEFAULT_TYPE, amount_str):
-    user_id = update.effective_user.id
-    
-    if 'all_inventories' not in context.bot_data:
-        context.bot_data['all_inventories'] = {}
-    if user_id not in context.bot_data['all_inventories']:
-        context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
-    
-    inventory = context.bot_data['all_inventories'][user_id]
-    
-    if amount_str == "all":
-        amount = inventory.get('coins', 0) // 1000
-        if amount == 0:
+async def buy_artifact(update: Update, context: ContextTypes.DEFAULT_TYPE, amt_str):
+    uid = update.effective_user.id
+    if 'all_inventories' not in context.bot_data or uid not in context.bot_data['all_inventories']:
+        context.bot_data['all_inventories'][uid] = {'coins': 0, 'artifacts': 0}
+    inv = context.bot_data['all_inventories'][uid]
+    if amt_str == "all":
+        amt = inv.get('coins', 0) // 1000
+        if amt == 0:
             await update.message.reply_text("❌ Недостаточно монет!")
             return
     else:
         try:
-            amount = int(amount_str)
-            if amount <= 0:
+            amt = int(amt_str)
+            if amt <= 0:
                 raise ValueError
         except ValueError:
             await update.message.reply_text("Выбери нужное количество артефактов\nПример: /buyartifact 1")
             return
-    
-    total_cost = amount * 1000
-    if inventory.get('coins', 0) < total_cost:
+    if inv.get('coins', 0) < amt * 1000:
         await update.message.reply_text("❌ Недостаточно монет!")
         return
-    
-    inventory['coins'] -= total_cost
-    inventory['artifacts'] = inventory.get('artifacts', 0) + amount
-    await update.message.reply_text(f"✅ Вы купили 🔮 Артефакты в количестве {amount} шт!")
+    inv['coins'] -= amt * 1000
+    inv['artifacts'] = inv.get('artifacts', 0) + amt
+    await update.message.reply_text(f"✅ Вы купили 🔮 Артефакты в количестве {amt} шт!")
 
-async def exchange_artifact(update: Update, context: ContextTypes.DEFAULT_TYPE, resource_name, amount_str):
-    user_id = update.effective_user.id
-    
-    if resource_name not in ARTIFACT_EXCHANGE:
+async def exchange_artifact(update: Update, context: ContextTypes.DEFAULT_TYPE, res, amt_str):
+    uid = update.effective_user.id
+    if res not in ARTIFACT_EXCHANGE:
         await update.message.reply_text("Этот ресурс нельзя обменять на артефакты!")
         return
-    
-    if 'all_inventories' not in context.bot_data:
-        context.bot_data['all_inventories'] = {}
-    if user_id not in context.bot_data['all_inventories']:
-        context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
-    
-    inventory = context.bot_data['all_inventories'][user_id]
-    required_per_artifact = ARTIFACT_EXCHANGE[resource_name]
-    
-    if resource_name not in inventory:
+    if 'all_inventories' not in context.bot_data or uid not in context.bot_data['all_inventories']:
+        context.bot_data['all_inventories'][uid] = {'coins': 0, 'artifacts': 0}
+    inv = context.bot_data['all_inventories'][uid]
+    need = ARTIFACT_EXCHANGE[res]
+    if res not in inv:
         await update.message.reply_text("❌ Недостаточно ресурсов!")
         return
-    
-    if amount_str == "all":
-        amount = inventory[resource_name] // required_per_artifact
-        if amount == 0:
+    if amt_str == "all":
+        amt = inv[res] // need
+        if amt == 0:
             await update.message.reply_text("❌ Недостаточно ресурсов!")
             return
     else:
         try:
-            amount = int(amount_str)
-            if amount <= 0:
+            amt = int(amt_str)
+            if amt <= 0:
                 raise ValueError
         except ValueError:
-            await update.message.reply_text(f"Выбери нужное количество для обмена\nПример: /exchange{resource_name}artifact 1")
+            await update.message.reply_text(f"Выбери нужное количество для обмена\nПример: /exchange{res}artifact 1")
             return
-    
-    required_total = required_per_artifact * amount
-    if inventory[resource_name] < required_total:
+    if inv[res] < need * amt:
         await update.message.reply_text("❌ Недостаточно ресурсов!")
         return
-    
-    inventory[resource_name] -= required_total
-    if inventory[resource_name] == 0:
-        del inventory[resource_name]
-    
-    inventory['artifacts'] = inventory.get('artifacts', 0) + amount
-    await update.message.reply_text(f"✅ Вы обменяли {required_total} {resource_name} на {amount} 🔮 Артефактов!")
+    inv[res] -= need * amt
+    if inv[res] == 0:
+        del inv[res]
+    inv['artifacts'] = inv.get('artifacts', 0) + amt
+    await update.message.reply_text(f"✅ Вы обменяли {need * amt} {res} на {amt} 🔮 Артефактов!")
 
-async def exchange_coins(update: Update, context: ContextTypes.DEFAULT_TYPE, resource_name, amount_str):
-    user_id = update.effective_user.id
-    
-    if resource_name not in COIN_EXCHANGE:
+async def exchange_coins(update: Update, context: ContextTypes.DEFAULT_TYPE, res, amt_str):
+    uid = update.effective_user.id
+    if res not in COIN_EXCHANGE:
         await update.message.reply_text("Этот ресурс нельзя обменять на монеты!")
         return
-    
-    if 'all_inventories' not in context.bot_data:
-        context.bot_data['all_inventories'] = {}
-    if user_id not in context.bot_data['all_inventories']:
-        context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
-    
-    inventory = context.bot_data['all_inventories'][user_id]
-    coin_value = COIN_EXCHANGE[resource_name]
-    
-    if resource_name not in inventory:
+    if 'all_inventories' not in context.bot_data or uid not in context.bot_data['all_inventories']:
+        context.bot_data['all_inventories'][uid] = {'coins': 0, 'artifacts': 0}
+    inv = context.bot_data['all_inventories'][uid]
+    val = COIN_EXCHANGE[res]
+    if res not in inv:
         await update.message.reply_text("❌ Недостаточно ресурсов!")
         return
-    
-    if amount_str == "all":
-        amount = inventory[resource_name]
-        if resource_name in LIQUID_DISPLAY and resource_name not in ITEM_RESOURCES:
-            amount = int(amount)
-        if amount == 0:
+    if amt_str == "all":
+        amt = inv[res]
+        if res in LIQUID_DISPLAY and res not in ITEM_RESOURCES:
+            amt = int(amt)
+        if amt == 0:
             await update.message.reply_text("❌ Недостаточно ресурсов!")
             return
     else:
         try:
-            amount = int(amount_str)
-            if amount <= 0:
+            amt = int(amt_str)
+            if amt <= 0:
                 raise ValueError
         except ValueError:
-            await update.message.reply_text(f"Выбери нужное количество для обмена\nПример: /exchange{resource_name} 5")
+            await update.message.reply_text(f"Выбери нужное количество для обмена\nПример: /exchange{res} 5")
             return
-    
-    if inventory[resource_name] < amount:
+    if inv[res] < amt:
         await update.message.reply_text("❌ Недостаточно ресурсов!")
         return
-    
-    if coin_value < 1:
-        coins_earned = int(amount * coin_value)
-    else:
-        coins_earned = amount * coin_value
-    
-    inventory[resource_name] -= amount
-    if inventory[resource_name] == 0:
-        del inventory[resource_name]
-    
-    inventory['coins'] = inventory.get('coins', 0) + coins_earned
-    await update.message.reply_text(f"✅ Вы обменяли {amount} {resource_name} на {coins_earned} 🪙 Монет!")
+    earned = int(amt * val) if val < 1 else amt * val
+    inv[res] -= amt
+    if inv[res] == 0:
+        del inv[res]
+    inv['coins'] = inv.get('coins', 0) + earned
+    await update.message.reply_text(f"✅ Вы обменяли {amt} {res} на {earned} 🪙 Монет!")
 
-async def craft_item(update: Update, context: ContextTypes.DEFAULT_TYPE, item_key, amount_str):
-    user_id = update.effective_user.id
-    
-    if item_key not in CRAFT_RECIPES:
+async def craft_item(update: Update, context: ContextTypes.DEFAULT_TYPE, key, amt_str):
+    uid = update.effective_user.id
+    if key not in CRAFT_RECIPES:
         await update.message.reply_text("Неизвестный предмет для крафта!")
         return
-    
-    recipe = CRAFT_RECIPES[item_key]
-    item_name = recipe["name"]
-    item_type = recipe["type"]
-    amount_per_craft = recipe["amount_per_craft"]
-    required_resources = recipe["resources"]
-    
-    if 'all_inventories' not in context.bot_data:
-        context.bot_data['all_inventories'] = {}
-    if user_id not in context.bot_data['all_inventories']:
-        context.bot_data['all_inventories'][user_id] = {'coins': 0, 'artifacts': 0}
-    
-    inventory = context.bot_data['all_inventories'][user_id]
-    
-    if amount_str == "all":
-        max_amount = float('inf')
-        for resource, amount_needed in required_resources.items():
-            if resource in inventory:
-                available = inventory[resource]
-                possible = available // amount_needed
-                max_amount = min(max_amount, possible)
+    rec = CRAFT_RECIPES[key]
+    if 'all_inventories' not in context.bot_data or uid not in context.bot_data['all_inventories']:
+        context.bot_data['all_inventories'][uid] = {'coins': 0, 'artifacts': 0}
+    inv = context.bot_data['all_inventories'][uid]
+    if amt_str == "all":
+        mx = float('inf')
+        for r, n in rec['res'].items():
+            if r in inv:
+                mx = min(mx, inv[r] // n)
             else:
-                max_amount = 0
+                mx = 0
                 break
-        
-        if max_amount == 0:
+        if mx == 0:
             await update.message.reply_text("❌ Недостаточно ресурсов!")
             return
-        amount = max_amount
+        amt = mx
     else:
         try:
-            amount = int(amount_str)
-            if amount <= 0:
+            amt = int(amt_str)
+            if amt <= 0:
                 raise ValueError
         except ValueError:
-            await update.message.reply_text(f"Выбери нужное количество ресурсов\nПример: /craft{item_key} 10")
+            await update.message.reply_text(f"Выбери нужное количество ресурсов\nПример: /craft{key} 10")
             return
-    
-    for resource, amount_needed in required_resources.items():
-        required_total = amount_needed * amount
-        if inventory.get(resource, 0) < required_total:
+    for r, n in rec['res'].items():
+        if inv.get(r, 0) < n * amt:
             await update.message.reply_text("❌ Недостаточно ресурсов!")
             return
-    
-    for resource, amount_needed in required_resources.items():
-        required_total = amount_needed * amount
-        inventory[resource] -= required_total
-        if inventory[resource] == 0:
-            del inventory[resource]
-    
-    crafted_amount = amount * amount_per_craft
-    inventory[item_name] = inventory.get(item_name, 0) + crafted_amount
-    
-    unit = "мл" if item_type == "liquid" else "шт"
-    await update.message.reply_text(f"✅ Вы скрафтили {item_name} в количестве {crafted_amount} {unit}!")
+    for r, n in rec['res'].items():
+        inv[r] -= n * amt
+        if inv[r] == 0:
+            del inv[r]
+    crafted = amt * rec['amount']
+    inv[rec['name']] = inv.get(rec['name'], 0) + crafted
+    unit = "мл" if rec['type'] == "liquid" else "шт"
+    await update.message.reply_text(f"✅ Вы скрафтили {rec['name']} в количестве {crafted} {unit}!")
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    text = update.message.text.lower()
-    
-    if text == "⛏️ копать" or text == "копать":
+    t = update.message.text.lower()
+    if t in ["⛏️ копать", "копать"]:
         await mine(update, context)
-    elif text == "📦 инвентарь":
+    elif t == "📦 инвентарь":
         await inventory_command(update, context)
-    elif text == "🛠 крафтинг":
+    elif t == "🛠 крафтинг":
         await craft_command(update, context)
-    elif text == "🔮 магазин":
+    elif t == "🔮 магазин":
         await shop_command(update, context)
-    elif text == "🔝 улучшения":
+    elif t == "🔝 улучшения":
         await upgrade_command(update, context)
-    elif text == "🏭 шахта":
+    elif t == "🏭 шахта":
         await mineshaft_command(update, context)
-    elif text == "🕹 дронстанция":
+    elif t == "🕹 дронстанция":
         await drones_command(update, context)
-    elif text == "🎁 ежедневный подарок":
+    elif t == "🎁 ежедневный подарок":
         await daygift_command(update, context)
-    elif text == "⚔️ сектор":
+    elif t == "⚔️ сектор":
         await sector_command(update, context)
-    elif text == "📜 чертежи":
+    elif t == "📜 чертежи":
         await drawings_command(update, context)
 
 async def handle_new_chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -2117,56 +1171,24 @@ def main():
     app.add_handler(CallbackQueryHandler(lambda u, c: drawing_start(u, c, int(c.data.replace("drawing_start_", ""))), pattern="drawing_start_"))
     app.add_handler(CallbackQueryHandler(drawing_cancel, pattern="drawing_cancel"))
     
-    for drone_name in DRONES.keys():
-        app.add_handler(CallbackQueryHandler(lambda u, c, dn=drone_name: drone_research(u, c, dn), pattern=f"drone_research_{drone_name}"))
-        app.add_handler(CallbackQueryHandler(lambda u, c, dn=drone_name: drone_buy(u, c, dn), pattern=f"drone_buy_{drone_name}"))
-        app.add_handler(CallbackQueryHandler(lambda u, c, dn=drone_name: drone_set_resource(u, c, dn, u.callback_query.data.split("_")[3]), pattern=f"drone_resource_{drone_name}_"))
+    for dn in DRONES.keys():
+        app.add_handler(CallbackQueryHandler(lambda u, c, d=dn: drone_research(u, c, d), pattern=f"drone_research_{dn}"))
+        app.add_handler(CallbackQueryHandler(lambda u, c, d=dn: drone_buy(u, c, d), pattern=f"drone_buy_{dn}"))
+        app.add_handler(CallbackQueryHandler(lambda u, c, d=dn: drone_set_resource(u, c, d, u.callback_query.data.split("_")[3]), pattern=f"drone_resource_{dn}_"))
     
     app.add_handler(CommandHandler("buyartifact", lambda u, c: buy_artifact(u, c, c.args[0] if c.args else "0")))
     
     # Команды обмена на монеты
-    app.add_handler(CommandHandler("exchangecopper", lambda u, c: exchange_coins(u, c, "Медь", c.args[0] if c.args else "0")))
-    app.add_handler(CommandHandler("exchangelead", lambda u, c: exchange_coins(u, c, "Свинец", c.args[0] if c.args else "0")))
-    app.add_handler(CommandHandler("exchangesand", lambda u, c: exchange_coins(u, c, "Песок", c.args[0] if c.args else "0")))
-    app.add_handler(CommandHandler("exchangecoal", lambda u, c: exchange_coins(u, c, "Уголь", c.args[0] if c.args else "0")))
-    app.add_handler(CommandHandler("exchangewater", lambda u, c: exchange_coins(u, c, "Вода", c.args[0] if c.args else "0")))
-    app.add_handler(CommandHandler("exchangeoil", lambda u, c: exchange_coins(u, c, "Нефть", c.args[0] if c.args else "0")))
-    app.add_handler(CommandHandler("exchangecryofluid", lambda u, c: exchange_coins(u, c, "Криогенная жидкость", c.args[0] if c.args else "0")))
-    app.add_handler(CommandHandler("exchangetitanium", lambda u, c: exchange_coins(u, c, "Титан", c.args[0] if c.args else "0")))
-    app.add_handler(CommandHandler("exchangethorium", lambda u, c: exchange_coins(u, c, "Торий", c.args[0] if c.args else "0")))
-    app.add_handler(CommandHandler("exchangegraphite", lambda u, c: exchange_coins(u, c, "Графит", c.args[0] if c.args else "0")))
-    app.add_handler(CommandHandler("exchangemetaglass", lambda u, c: exchange_coins(u, c, "Метастекло", c.args[0] if c.args else "0")))
-    app.add_handler(CommandHandler("exchangesilicon", lambda u, c: exchange_coins(u, c, "Кремний", c.args[0] if c.args else "0")))
-    app.add_handler(CommandHandler("exchangesporepod", lambda u, c: exchange_coins(u, c, "Споровый стручок", c.args[0] if c.args else "0")))
-    app.add_handler(CommandHandler("exchangeplastanium", lambda u, c: exchange_coins(u, c, "Пластан", c.args[0] if c.args else "0")))
-    app.add_handler(CommandHandler("exchangesurgealloy", lambda u, c: exchange_coins(u, c, "Кинетический сплав", c.args[0] if c.args else "0")))
-    app.add_handler(CommandHandler("exchangephasefabric", lambda u, c: exchange_coins(u, c, "Фазовая ткань", c.args[0] if c.args else "0")))
-    app.add_handler(CommandHandler("exchangepyratite", lambda u, c: exchange_coins(u, c, "Пиротит", c.args[0] if c.args else "0")))
-    app.add_handler(CommandHandler("exchangeblastcompound", lambda u, c: exchange_coins(u, c, "Взрывчатая смесь", c.args[0] if c.args else "0")))
+    for r, ru in [("copper","Медь"),("lead","Свинец"),("sand","Песок"),("coal","Уголь"),("water","Вода"),("oil","Нефть"),("cryofluid","Криогенная жидкость"),("titanium","Титан"),("thorium","Торий"),("graphite","Графит"),("metaglass","Метастекло"),("silicon","Кремний"),("sporepod","Споровый стручок"),("plastanium","Пластан"),("surgealloy","Кинетический сплав"),("phasefabric","Фазовая ткань"),("pyratite","Пиротит"),("blastcompound","Взрывчатая смесь")]:
+        app.add_handler(CommandHandler(f"exchange{r}", lambda u, c, ru=ru: exchange_coins(u, c, ru, c.args[0] if c.args else "0")))
     
     # Команды обмена на артефакты
-    app.add_handler(CommandHandler("exchangegraphiteartifact", lambda u, c: exchange_artifact(u, c, "Графит", c.args[0] if c.args else "0")))
-    app.add_handler(CommandHandler("exchangemetaglassartifact", lambda u, c: exchange_artifact(u, c, "Метастекло", c.args[0] if c.args else "0")))
-    app.add_handler(CommandHandler("exchangesiliconartifact", lambda u, c: exchange_artifact(u, c, "Кремний", c.args[0] if c.args else "0")))
-    app.add_handler(CommandHandler("exchangesporepodartifact", lambda u, c: exchange_artifact(u, c, "Споровый стручок", c.args[0] if c.args else "0")))
-    app.add_handler(CommandHandler("exchangeplastaniumartifact", lambda u, c: exchange_artifact(u, c, "Пластан", c.args[0] if c.args else "0")))
-    app.add_handler(CommandHandler("exchangesurgealloyartifact", lambda u, c: exchange_artifact(u, c, "Кинетический сплав", c.args[0] if c.args else "0")))
-    app.add_handler(CommandHandler("exchangephasefabricartifact", lambda u, c: exchange_artifact(u, c, "Фазовая ткань", c.args[0] if c.args else "0")))
-    app.add_handler(CommandHandler("exchangepyratiteartifact", lambda u, c: exchange_artifact(u, c, "Пиротит", c.args[0] if c.args else "0")))
-    app.add_handler(CommandHandler("exchangeblastcompoundartifact", lambda u, c: exchange_artifact(u, c, "Взрывчатая смесь", c.args[0] if c.args else "0")))
+    for r, ru in [("graphite","Графит"),("metaglass","Метастекло"),("silicon","Кремний"),("sporepod","Споровый стручок"),("plastanium","Пластан"),("surgealloy","Кинетический сплав"),("phasefabric","Фазовая ткань"),("pyratite","Пиротит"),("blastcompound","Взрывчатая смесь")]:
+        app.add_handler(CommandHandler(f"exchange{r}artifact", lambda u, c, ru=ru: exchange_artifact(u, c, ru, c.args[0] if c.args else "0")))
     
     # Команды крафта
-    app.add_handler(CommandHandler("craftgraphite", lambda u, c: craft_item(u, c, "graphite", c.args[0] if c.args else "0")))
-    app.add_handler(CommandHandler("craftmetaglass", lambda u, c: craft_item(u, c, "metaglass", c.args[0] if c.args else "0")))
-    app.add_handler(CommandHandler("craftsilicon", lambda u, c: craft_item(u, c, "silicon", c.args[0] if c.args else "0")))
-    app.add_handler(CommandHandler("craftsporepod", lambda u, c: craft_item(u, c, "sporepod", c.args[0] if c.args else "0")))
-    app.add_handler(CommandHandler("craftplastanium", lambda u, c: craft_item(u, c, "plastanium", c.args[0] if c.args else "0")))
-    app.add_handler(CommandHandler("craftsurgealloy", lambda u, c: craft_item(u, c, "surgealloy", c.args[0] if c.args else "0")))
-    app.add_handler(CommandHandler("craftphasefabric", lambda u, c: craft_item(u, c, "phasefabric", c.args[0] if c.args else "0")))
-    app.add_handler(CommandHandler("craftpyratite", lambda u, c: craft_item(u, c, "pyratite", c.args[0] if c.args else "0")))
-    app.add_handler(CommandHandler("craftblastcompound", lambda u, c: craft_item(u, c, "blastcompound", c.args[0] if c.args else "0")))
-    app.add_handler(CommandHandler("craftoil", lambda u, c: craft_item(u, c, "oil", c.args[0] if c.args else "0")))
-    app.add_handler(CommandHandler("craftcryofluid", lambda u, c: craft_item(u, c, "cryofluid", c.args[0] if c.args else "0")))
+    for k in CRAFT_RECIPES.keys():
+        app.add_handler(CommandHandler(f"craft{k}", lambda u, c, kk=k: craft_item(u, c, kk, c.args[0] if c.args else "0")))
     
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_new_chat), group=0)
