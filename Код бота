@@ -5,19 +5,19 @@ import asyncio
 from telegram import Update, ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ContextTypes
 
-TOKEN = TOKEN = ""
+TOKEN = ""
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
 # Базовый кулдаун в секундах (1200 секунд = 20 минут)
-BASE_COOLDOWN = 1
-MIN_COOLDOWN = 1
+BASE_COOLDOWN = 1200
+MIN_COOLDOWN = 30
 
 # Базовые множители добычи
 BASE_MIN_ITEMS = 1
-BASE_MAX_ITEMS = 10000
+BASE_MAX_ITEMS = 10
 BASE_MIN_LIQUID = 100
-BASE_MAX_LIQUID = 1000
+BASE_MAX_LIQUID = 2000
 
 # Словарь с ресурсами и их шансами
 RESOURCES = {
@@ -368,6 +368,13 @@ UNIQUE_ITEMS_EMOJI = {
     "Большой логический процессор": "🌌"
 }
 
+INSULTS_RESPONSES = [
+    "Жалкий кукидрочер",
+    "Сделай сальто с окна",
+    "Включи газовую плиту и закрой окна",
+    "Бог тебя не простит..."
+]
+
 def get_random_resource():
     rand = random.random()
     cumulative = 0
@@ -421,7 +428,7 @@ def get_main_keyboard():
     keyboard = [
         [KeyboardButton("⛏️ Копать"), KeyboardButton("📦 Инвентарь")],
         [KeyboardButton("🛠 Крафтинг"), KeyboardButton("🔮 Магазин")],
-        [KeyboardButton("🔝 Улучшения"), KeyboardButton("🏭 Шахта")],
+        [KeyboardButton("🔝 Улучшения"), KeyboardButton("🏔 Шахта")],
         [KeyboardButton("🕹 Дронстанция"), KeyboardButton("🎁 Ежедневный подарок")],
         [KeyboardButton("⚔️ Сектор"), KeyboardButton("📜 Чертежи")]
     ]
@@ -512,6 +519,30 @@ async def drawings_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     user_name = update.effective_user.first_name
     
+    # Проверяем, есть ли активный чертеж
+    if 'active_drawing' in context.bot_data and user_id in context.bot_data['active_drawing']:
+        active = context.bot_data['active_drawing'][user_id]
+        elapsed = time.time() - active['start_time']
+        remaining = int((active['build_time'] * active['count']) - elapsed)
+        if remaining < 0:
+            remaining = 0
+        
+        text = f"📜 *Активный чертеж:*\n\n"
+        text += f"🔫 {active['name']}\n"
+        text += f"Количество: {active['count']} шт.\n"
+        text += f"💥 Вооружение (общ): {active['defense'] * active['count']} Единиц\n"
+        text += f"⏳️ Оставшееся время: {remaining} сек"
+        
+        keyboard = [[InlineKeyboardButton("❌ Отменить чертеж", callback_data="drawing_cancel")]]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        
+        if update.callback_query:
+            await safe_edit_message(update.callback_query, text, parse_mode='Markdown', reply_markup=reply_markup)
+        else:
+            await update.message.reply_text(text, parse_mode='Markdown', reply_markup=reply_markup)
+        return
+    
+    # Если нет активного чертежа, показываем список чертежей
     if 'drawings' not in context.bot_data:
         context.bot_data['drawings'] = {}
     
@@ -530,6 +561,7 @@ async def drawings_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     text = f"📜 *Список чертежей игрока {user_name}:*\n\n"
     keyboard = []
+    row = []
     
     for i, drawing in enumerate(drawings, 1):
         turret_name = drawing['name']
@@ -537,11 +569,22 @@ async def drawings_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         defense = drawing['defense'] * count
         build_time = drawing['build_time'] * count
         text += f"*Чертеж #{i}*\n🔫 {turret_name}\nКоличество: {count} шт.\n💥 Вооружение (общ): {defense} Единиц\n⏳️ Время создания (общ): {build_time} сек\n\n"
-        keyboard.append([InlineKeyboardButton(f"{turret_name} {count}шт. (5🔮)", callback_data=f"drawing_start_{i-1}")])
+        
+        button = InlineKeyboardButton(f"{turret_name} {count}шт. (5🔮)", callback_data=f"drawing_start_{i-1}")
+        row.append(button)
+        if len(row) == 2:
+            keyboard.append(row)
+            row = []
+    
+    if row:
+        keyboard.append(row)
     
     text += "Выберите чертеж, который хотите выполнить:"
     
-    await update.message.reply_text(text, parse_mode='Markdown', reply_markup=InlineKeyboardMarkup(keyboard))
+    if update.callback_query:
+        await safe_edit_message(update.callback_query, text, parse_mode='Markdown', reply_markup=InlineKeyboardMarkup(keyboard))
+    else:
+        await update.message.reply_text(text, parse_mode='Markdown', reply_markup=InlineKeyboardMarkup(keyboard))
 
 # ========== СЕКТОР ==========
 
@@ -578,10 +621,19 @@ async def sector_turret_build(update: Update, context: ContextTypes.DEFAULT_TYPE
     await query.answer()
     
     keyboard = []
+    row = []
     turrets_list = list(TURRETS.keys())
     for i, turret_name in enumerate(turrets_list):
-        keyboard.append([InlineKeyboardButton(turret_name, callback_data=f"sector_turret_{i}")])
-    keyboard.append([InlineKeyboardButton("⬅️  Назад", callback_data="sector_build")])
+        button = InlineKeyboardButton(turret_name, callback_data=f"turret_select_{i}")
+        row.append(button)
+        if len(row) == 2:
+            keyboard.append(row)
+            row = []
+    
+    if row:
+        keyboard.append(row)
+    
+    keyboard.append([InlineKeyboardButton("⬅️ Назад", callback_data="sector_build")])
     reply_markup = InlineKeyboardMarkup(keyboard)
     
     await safe_edit_message(query, "Выберите турель, которую хотите поместить в чертежи:", reply_markup=reply_markup)
@@ -595,25 +647,19 @@ async def sector_unit_build(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     await safe_edit_message(query, "🤖 *Юниты*\n\nСкоро здесь появятся юниты для создания!", parse_mode='Markdown', reply_markup=reply_markup)
 
-async def sector_turret_info(update: Update, context: ContextTypes.DEFAULT_TYPE, turret_index):
+async def sector_turret_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     
+    data = query.data
+    turret_index = int(data.split("_")[2])
+    
     turrets_list = list(TURRETS.keys())
-    
-    # Получаем индекс
-    try:
-        index = int(turret_index)
-    except ValueError:
-        await safe_edit_message(query, "❌ Ошибка: неверный формат данных!")
+    if turret_index < 0 or turret_index >= len(turrets_list):
+        await safe_edit_message(query, "❌ Ошибка: турель не найдена!")
         return
     
-    # Проверяем, что индекс в пределах списка
-    if index < 0 or index >= len(turrets_list):
-        await safe_edit_message(query, f"❌ Ошибка: турель с индексом {index} не найдена!")
-        return
-    
-    turret_name = turrets_list[index]
+    turret_name = turrets_list[turret_index]
     turret = TURRETS[turret_name]
     
     cost_text = ""
@@ -621,10 +667,10 @@ async def sector_turret_info(update: Update, context: ContextTypes.DEFAULT_TYPE,
         cost_text += f"{amount} {resource}, "
     cost_text = cost_text[:-2]
     
-    text = f"🔫  *{turret_name}*\n\n"
-    text += f"💸  Стоимость производства (1 Шт.): {cost_text}\n"
-    text += f"⏳️  Время производства (1 Шт.): {turret['build_time']} Секунд\n"
-    text += f"💥  Вооружение базы (1 Шт.): {turret['defense']} Единиц"
+    text = f"🔫 *{turret_name}*\n\n"
+    text += f"💸 Стоимость производства (1 Шт.): {cost_text}\n"
+    text += f"⏳️ Время производства (1 Шт.): {turret['build_time']} Секунд\n"
+    text += f"💥 Вооружение базы (1 Шт.): {turret['defense']} Единиц"
     
     user_id = update.effective_user.id
     if 'all_inventories' not in context.bot_data:
@@ -634,6 +680,7 @@ async def sector_turret_info(update: Update, context: ContextTypes.DEFAULT_TYPE,
     inventory = context.bot_data['all_inventories'][user_id]
     
     keyboard = []
+    row = []
     for amount in [1, 2, 5, 10, 25, 100]:
         can_buy = True
         for resource, cost in turret['cost'].items():
@@ -641,8 +688,16 @@ async def sector_turret_info(update: Update, context: ContextTypes.DEFAULT_TYPE,
                 can_buy = False
                 break
         status = "✅" if can_buy else "❌"
-        keyboard.append([InlineKeyboardButton(f"{amount} {status}", callback_data=f"sector_turret_buy_{index}_{amount}")])
-    keyboard.append([InlineKeyboardButton("⬅️  Назад", callback_data="sector_turret_build")])
+        button = InlineKeyboardButton(f"{amount} {status}", callback_data=f"turret_buy_{turret_index}_{amount}")
+        row.append(button)
+        if len(row) == 2:
+            keyboard.append(row)
+            row = []
+    
+    if row:
+        keyboard.append(row)
+    
+    keyboard.append([InlineKeyboardButton("⬅️ Назад", callback_data="sector_turret_build")])
     reply_markup = InlineKeyboardMarkup(keyboard)
     
     await safe_edit_message(query, text, parse_mode='Markdown', reply_markup=reply_markup)
@@ -653,22 +708,10 @@ async def sector_turret_buy(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     user_id = update.effective_user.id
     
-    # Извлекаем индекс турели и количество
     data = query.data
-    # Формат: sector_turret_buy_0_5
     parts = data.split("_")
-    # parts[0] = "sector", parts[1] = "turret", parts[2] = "buy", parts[3] = индекс, parts[4] = количество
-    
-    if len(parts) < 5:
-        await safe_edit_message(query, "❌ Ошибка: неверный формат данных!")
-        return
-    
-    try:
-        turret_index = int(parts[3])
-        amount = int(parts[4])
-    except ValueError:
-        await safe_edit_message(query, "❌ Ошибка: неверный формат индекса или количества!")
-        return
+    turret_index = int(parts[2])
+    amount = int(parts[3])
     
     turrets_list = list(TURRETS.keys())
     if turret_index < 0 or turret_index >= len(turrets_list):
@@ -687,7 +730,7 @@ async def sector_turret_buy(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Проверка ресурсов
     for resource, cost in turret['cost'].items():
         if inventory.get(resource, 0) < cost * amount:
-            keyboard = [[InlineKeyboardButton("⬅️  Назад", callback_data="sector_turret_build")]]
+            keyboard = [[InlineKeyboardButton("⬅️ Назад", callback_data="sector_turret_build")]]
             reply_markup = InlineKeyboardMarkup(keyboard)
             await safe_edit_message(query, "❌ Недостаточно ресурсов!", reply_markup=reply_markup)
             return
@@ -699,7 +742,7 @@ async def sector_turret_buy(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.bot_data['drawings'][user_id] = []
     
     if len(context.bot_data['drawings'][user_id]) >= 10:
-        keyboard = [[InlineKeyboardButton("⬅️  Назад", callback_data="sector_build")]]
+        keyboard = [[InlineKeyboardButton("⬅️ Назад", callback_data="sector_build")]]
         reply_markup = InlineKeyboardMarkup(keyboard)
         await safe_edit_message(query, "❌ У вас уже максимальное количество чертежей 10/10!", reply_markup=reply_markup)
         return
@@ -717,7 +760,7 @@ async def sector_turret_buy(update: Update, context: ContextTypes.DEFAULT_TYPE):
         'build_time': turret['build_time']
     })
     
-    keyboard = [[InlineKeyboardButton("⬅️  Назад", callback_data="sector_turret_build")]]
+    keyboard = [[InlineKeyboardButton("⬅️ Назад", callback_data="sector_turret_build")]]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
     await safe_edit_message(query, f"✅ {turret_name} в количестве {amount} шт. помещена в ваши чертежи!", reply_markup=reply_markup)
@@ -727,6 +770,13 @@ async def drawing_start(update: Update, context: ContextTypes.DEFAULT_TYPE, draw
     await query.answer()
     
     user_id = update.effective_user.id
+    user_name = update.effective_user.first_name
+    username = update.effective_user.username
+    
+    # Проверяем, нет ли уже активного чертежа
+    if 'active_drawing' in context.bot_data and user_id in context.bot_data['active_drawing']:
+        await safe_edit_message(query, "❌ У вас уже есть активный чертеж! Дождитесь его завершения или отмените.")
+        return
     
     if 'all_inventories' not in context.bot_data:
         context.bot_data['all_inventories'] = {}
@@ -765,7 +815,7 @@ async def drawing_start(update: Update, context: ContextTypes.DEFAULT_TYPE, draw
         'start_time': time.time()
     }
     
-    asyncio.create_task(complete_drawing(update, context, user_id))
+    asyncio.create_task(complete_drawing(update, context, user_id, user_name, username))
     
     text = f"📜 *Активный чертеж:*\n\n"
     text += f"🔫 {drawing['name']}\n"
@@ -778,7 +828,7 @@ async def drawing_start(update: Update, context: ContextTypes.DEFAULT_TYPE, draw
     
     await safe_edit_message(query, text, parse_mode='Markdown', reply_markup=reply_markup)
 
-async def complete_drawing(update: Update, context: ContextTypes.DEFAULT_TYPE, user_id):
+async def complete_drawing(update: Update, context: ContextTypes.DEFAULT_TYPE, user_id, user_name, username):
     await asyncio.sleep(1)
     
     while True:
@@ -812,10 +862,23 @@ async def complete_drawing(update: Update, context: ContextTypes.DEFAULT_TYPE, u
             sector_data['turrets'][turret_name] = sector_data['turrets'].get(turret_name, 0) + count
             sector_data['weapons'] += defense_per_turret * count
             
+            # Удаляем выполненный чертеж из списка
+            if 'drawings' in context.bot_data and user_id in context.bot_data['drawings']:
+                drawings = context.bot_data['drawings'][user_id]
+                index_to_remove = active['index']
+                if 0 <= index_to_remove < len(drawings):
+                    drawings.pop(index_to_remove)
+            
             del context.bot_data['active_drawing'][user_id]
             
+            # Формируем сообщение с юзернеймом для группы
+            if username:
+                message_text = f"@{username}, ✅ Чертеж завершен! {turret_name} в количестве {count} шт. добавлены на базу!"
+            else:
+                message_text = f"✅ Чертеж завершен! {turret_name} в количестве {count} шт. добавлены на базу!"
+            
             try:
-                await update.effective_user.send_message(f"✅ Чертеж завершен! {turret_name} в количестве {count} шт. добавлены на базу!")
+                await update.effective_user.send_message(message_text)
             except:
                 pass
             break
@@ -827,11 +890,48 @@ async def drawing_cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await query.answer()
     
     user_id = update.effective_user.id
+    user_name = update.effective_user.first_name
     
     if 'active_drawing' in context.bot_data and user_id in context.bot_data['active_drawing']:
         del context.bot_data['active_drawing'][user_id]
     
-    await drawings_command(update, context)
+    # Показываем список всех чертежей
+    if 'drawings' not in context.bot_data:
+        context.bot_data['drawings'] = {}
+    
+    if user_id not in context.bot_data['drawings']:
+        context.bot_data['drawings'][user_id] = []
+    
+    drawings = context.bot_data['drawings'][user_id]
+    
+    if not drawings:
+        text = f"📜 *Список чертежей игрока {user_name}:*\n\nЧертежи отсутствуют, чтобы создать новый чертеж, загляни в /sector"
+        await safe_edit_message(query, text, parse_mode='Markdown', reply_markup=get_main_keyboard())
+        return
+    
+    text = f"📜 *Список чертежей игрока {user_name}:*\n\n"
+    keyboard = []
+    row = []
+    
+    for i, drawing in enumerate(drawings, 1):
+        turret_name = drawing['name']
+        count = drawing['count']
+        defense = drawing['defense'] * count
+        build_time = drawing['build_time'] * count
+        text += f"*Чертеж #{i}*\n🔫 {turret_name}\nКоличество: {count} шт.\n💥 Вооружение (общ): {defense} Единиц\n⏳️ Время создания (общ): {build_time} сек\n\n"
+        
+        button = InlineKeyboardButton(f"{turret_name} {count}шт. (5🔮)", callback_data=f"drawing_start_{i-1}")
+        row.append(button)
+        if len(row) == 2:
+            keyboard.append(row)
+            row = []
+    
+    if row:
+        keyboard.append(row)
+    
+    text += "Выберите чертеж, который хотите выполнить:"
+    
+    await safe_edit_message(query, text, parse_mode='Markdown', reply_markup=InlineKeyboardMarkup(keyboard))
 
 async def sector_my_base(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -1412,12 +1512,12 @@ async def mineshaft_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     keyboard = [
         [InlineKeyboardButton("🛠 Построить бур", callback_data="mine_build_menu")],
-        [InlineKeyboardButton("🏭 Моя шахта", callback_data="mine_info")]
+        [InlineKeyboardButton("🏔 Моя шахта", callback_data="mine_info")]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
     await update.message.reply_text(
-        "🏭 *Шахта*\n\nЗарабатывай пассивные ресурсы во время АФК при помощи буров!\n\nСтоимость строительства буров:\n⚙️Медный бур (25 Медь) 15Рес/Ч\n⚙️Пневматический бур (35 Медь, 10 Графит) 60Рес/Ч\n⚙️Лазерный бур (120 Медь, 40 Кремний, 20 Титан) 360Рес/ч\n⚙️Воздушная бур. установка (250 Медь, 250 Свинец, 120 Кремний, 100 Титан, 50 Торий) 1800 Рес/Ч\n🏗Epiroc Pit Viper 351 (800 Медь, 400 Кремний, 250 Титан, 100 Фазовая ткань) 6000Рес/Ч\n🏗Sandvik Pantera DP1600i (2000 Свинец, 1500 Кремний, 1500 Титан, 400 Фазовая ткань, 400 Кинетический сплав) 31600Рес/Ч",
+        "🏔 *Шахта*\n\nЗарабатывай пассивные ресурсы во время АФК при помощи буров!\n\nСтоимость строительства буров:\n⚙️Медный бур (25 Медь) 15Рес/Ч\n⚙️Пневматический бур (35 Медь, 10 Графит) 60Рес/Ч\n⚙️Лазерный бур (120 Медь, 40 Кремний, 20 Титан) 360Рес/ч\n⚙️Воздушная бур. установка (250 Медь, 250 Свинец, 120 Кремний, 100 Титан, 50 Торий) 1800 Рес/Ч\n🏗Epiroc Pit Viper 351 (800 Медь, 400 Кремний, 250 Титан, 100 Фазовая ткань) 6000Рес/Ч\n🏗Sandvik Pantera DP1600i (2000 Свинец, 1500 Кремний, 1500 Титан, 400 Фазовая ткань, 400 Кинетический сплав) 31600Рес/Ч",
         parse_mode='Markdown',
         reply_markup=reply_markup
     )
@@ -1527,19 +1627,32 @@ async def mine_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     mine_data['stored'][resource] = mine_data['stored'].get(resource, 0) + 1
     
     mine_data['last_update'] = current_time
+    
     total_production = 0
     for drill_name, count in drills.items():
         if drill_name in DRILLS:
             total_production += DRILLS[drill_name]["production"] * count
     stored = mine_data.get('stored', {})
     
-    info_text = f"🏗 *Буры игрока {user_name}:*\n\n"
+    # Проверяем вооружение в секторе
+    sector_weapons = 0
+    if 'sector' in context.bot_data and user_id in context.bot_data['sector']:
+        sector_weapons = context.bot_data['sector'][user_id].get('weapons', 0)
+    
+    # Если вооружение в минусе, уменьшаем доход в 2 раза
+    if sector_weapons < 0:
+        total_production = total_production // 2
+        production_text = f"📈 *Доход ресурсов:* {total_production}/Ч (-50%)❗️\n💥 Ваше вооружение зашло в минус, доход от шахты уменьшен в 2 раза. загляните в /sector"
+    else:
+        production_text = f"📈 *Доход ресурсов:* {total_production}/Ч"
+    
+    info_text = f"🏔 *Буры игрока {user_name}:*\n\n"
     if not drills:
         info_text += "Нет построенных буров!\n"
     else:
         for drill_name, count in drills.items():
             info_text += f"{DRILLS[drill_name]['emoji']} {drill_name}: {count} шт.\n"
-    info_text += f"\n📈 *Доход ресурсов:* {total_production}/Ч\n\n📦 *Накоплено ресурсов:*\n"
+    info_text += f"\n{production_text}\n\n📦 *Накоплено ресурсов:*\n"
     for resource in ["Медь", "Свинец", "Уголь", "Песок", "Титан", "Торий"]:
         amount = stored.get(resource, 0)
         info_text += f"{resource}: {amount} шт.\n"
@@ -1586,11 +1699,11 @@ async def mine_back(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     keyboard = [
         [InlineKeyboardButton("🛠 Построить бур", callback_data="mine_build_menu")],
-        [InlineKeyboardButton("🏭 Моя шахта", callback_data="mine_info")]
+        [InlineKeyboardButton("🏔 Моя шахта", callback_data="mine_info")]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
-    await safe_edit_message(query, "🏭 *Шахта*\n\nЗарабатывай пассивные ресурсы во время АФК при помощи буров!\n\nСтоимость строительства буров:\n⚙️Медный бур (25 Медь) 15Рес/Ч\n⚙️Пневматический бур (35 Медь, 10 Графит) 60Рес/Ч\n⚙️Лазерный бур (120 Медь, 40 Кремний, 20 Титан) 360Рес/ч\n⚙️Воздушная бур. установка (250 Медь, 250 Свинец, 120 Кремний, 100 Титан, 50 Торий) 1800 Рес/Ч\n🏗Epiroc Pit Viper 351 (800 Медь, 400 Кремний, 250 Титан, 100 Фазовая ткань) 6000Рес/Ч\n🏗Sandvik Pantera DP1600i (2000 Свинец, 1500 Кремний, 1500 Титан, 400 Фазовая ткань, 400 Кинетический сплав) 31600Рес/Ч", parse_mode='Markdown', reply_markup=reply_markup)
+    await safe_edit_message(query, "🏔 *Шахта*\n\nЗарабатывай пассивные ресурсы во время АФК при помощи буров!\n\nСтоимость строительства буров:\n⚙️Медный бур (25 Медь) 15Рес/Ч\n⚙️Пневматический бур (35 Медь, 10 Графит) 60Рес/Ч\n⚙️Лазерный бур (120 Медь, 40 Кремний, 20 Титан) 360Рес/ч\n⚙️Воздушная бур. установка (250 Медь, 250 Свинец, 120 Кремний, 100 Титан, 50 Торий) 1800 Рес/Ч\n🏗Epiroc Pit Viper 351 (800 Медь, 400 Кремний, 250 Титан, 100 Фазовая ткань) 6000Рес/Ч\n🏗Sandvik Pantera DP1600i (2000 Свинец, 1500 Кремний, 1500 Титан, 400 Фазовая ткань, 400 Кинетический сплав) 31600Рес/Ч", parse_mode='Markdown', reply_markup=reply_markup)
 
 # ========== КОПАНИЕ ==========
 
@@ -2083,6 +2196,14 @@ async def craft_item(update: Update, context: ContextTypes.DEFAULT_TYPE, item_ke
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text.lower()
     
+    # Проверка на оскорбления
+    insult_keywords = ["копатель кал", "копатель говно", "верните куки", "удалите копателя"]
+    for keyword in insult_keywords:
+        if keyword in text:
+            response = random.choice(INSULTS_RESPONSES)
+            await update.message.reply_text(response)
+            return
+    
     if text == "⛏️ копать" or text == "копать":
         await mine(update, context)
     elif text == "📦 инвентарь":
@@ -2093,7 +2214,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await shop_command(update, context)
     elif text == "🔝 улучшения":
         await upgrade_command(update, context)
-    elif text == "🏭 шахта":
+    elif text == "🏔 шахта":
         await mineshaft_command(update, context)
     elif text == "🕹 дронстанция":
         await drones_command(update, context)
@@ -2143,10 +2264,10 @@ def main():
     app.add_handler(CallbackQueryHandler(sector_nucleus_build, pattern="sector_nucleus_build"))
     app.add_handler(CallbackQueryHandler(sector_unit_build, pattern="sector_unit_build"))
     app.add_handler(CallbackQueryHandler(sector_turret_build, pattern="sector_turret_build"))
-    app.add_handler(CallbackQueryHandler(lambda u, c: sector_turret_info(u, c, u.callback_query.data.replace("sector_turret_", "")), pattern="sector_turret_"))
-    app.add_handler(CallbackQueryHandler(sector_turret_buy, pattern="sector_turret_buy_"))
+    app.add_handler(CallbackQueryHandler(sector_turret_info, pattern="turret_select_"))
+    app.add_handler(CallbackQueryHandler(sector_turret_buy, pattern="turret_buy_"))
     
-    app.add_handler(CallbackQueryHandler(lambda u, c: drawing_start(u, c, int(c.data.replace("drawing_start_", ""))), pattern="drawing_start_"))
+    app.add_handler(CallbackQueryHandler(lambda u, c: drawing_start(u, c, int(u.callback_query.data.replace("drawing_start_", ""))), pattern="drawing_start_"))
     app.add_handler(CallbackQueryHandler(drawing_cancel, pattern="drawing_cancel"))
     
     for drone_name in DRONES.keys():
