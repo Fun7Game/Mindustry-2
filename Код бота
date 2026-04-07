@@ -336,55 +336,415 @@ SECTORS = {
         "turrets": {"Двойная турель": 2},
         "rewards": {"Медь": 200, "Графит": 100},
         "unlock": None,
-        "next": None
+        "next": ["4", "61", "258", "257", "13", "20"]
     },
     "71": {
         "name": "Сектор 71",
         "threat": "низкая",
         "core": "Осколок",
         "cores_count": 1,
-        "turrets": {"Двойная турель": 2},
-        "rewards": {"Медь": 200, "Графит": 100},
+        "turrets": {"Двойная турель": 3, "Рассеиватель": 2},
+        "rewards": {"Медь": 400, "Свинец": 400},
         "unlock": None,
-        "next": None
+        "next": ["92", "96", "45", "117", "22", "39"]
     },
     "113": {
         "name": "Сектор 113",
         "threat": "низкая",
         "core": "Осколок",
         "cores_count": 1,
-        "turrets": {"Двойная турель": 2},
-        "rewards": {"Медь": 200, "Графит": 100},
+        "turrets": {"Двойная турель": 4, "Обжигатель": 1},
+        "rewards": {"Кремний": 200},
         "unlock": None,
-        "next": None
+        "next": ["35", "189", "190", "2", "57", "11"]
     },
     "204": {
         "name": "Сектор 204",
         "threat": "низкая",
         "core": "Осколок",
         "cores_count": 1,
-        "turrets": {"Двойная турель": 2},
-        "rewards": {"Медь": 200, "Графит": 100},
+        "turrets": {"Рассеиватель": 3, "Град": 2},
+        "rewards": {"Графит": 150, "Кремний": 50},
         "unlock": None,
-        "next": None
+        "next": ["102", "16", "17", "76", "242", "130"]
     },
     "203": {
         "name": "Сектор 203",
         "threat": "средняя",
         "core": "Осколок",
-        "cores_count": 1,
-        "turrets": {"Двойная турель": 5, "Рассеиватель": 2},
-        "rewards": {"Медь": 500, "Титан": 100, "Кремний": 200},
+        "cores_count": 2,
+        "turrets": {"Двойная турель": 10, "Залп": 2},
+        "rewards": {"Кремний": 300},
         "unlock": None,
-        "next": None
+        "next": ["38", "173", "179", "163", "200", "53"]
     },
     "165": {
         "name": "Сектор 165",
         "threat": "средняя",
         "core": "Осколок",
         "cores_count": 1,
-        "turrets": {"Двойная турель": 4, "Град": 3},
-        "rewards": {"Свинец": 500, "Торий": 50, "Графит": 300},
+        "turrets": {"Обжигатель": 4, "Копейщик": 1},
+        "rewards": {"Свинец": 400, "Графит": 300},
+        "unlock": None,
+        "next": ["44", "72", "223", "86", "87", "54"]
+    },
+    "4": {
+        "name": "Сектор 4",
+        "threat": "средняя",
+        "core": "Штаб",
+        "cores_count": 1,
+        "turrets": {"Копейщик": 2, "Двойная турель": 15},
+        "rewards": {"Метастекло": 300},
+        "unlock": None,
+        "next": None
+    },
+    "61": {
+        "name": "Сектор 61",
+        "threat": "средняя",
+        "core": "Штаб",
+        "cores_count": 1,
+        "turrets": {"Дуга": 8, "Обжигатель": 3},
+        "rewards": {"Метастекло": 150, "Кремний": 150},
+        "unlock": None,
+        "next": None
+    },
+    "258": {
+        "name": "Сектор 258",
+        "threat": "высокая",
+        "core": "Штаб",
+        "cores_count": 2,
+        "turrets": {"Рябь": 4, "Залп": 8},
+        "rewards": {"Медь": 800, "Свинец": 800},
+        "unlock": None,
+        "next": None
+    },
+    "257": {
+        "name": "Сектор 257",
+        "threat": "высокая",
+        "core": "Штаб",
+        "cores_count": 1,
+        "turrets": {"Дуга": 15, "Залп": 5, "Регенерирующий проектор": 1},
+        "rewards": {"Кремний": 600},
+        "unlock": None,
+        "next": None
+    },
+    "13": {
+        "name": "Сектор 13",
+        "threat": "высокая",
+        "core": "Штаб",
+        "cores_count": 2,
+        "turrets": {"Копейщик": 5, "Рябь": 5},
+        "rewards": {"Медь": 2000},
+        "unlock": None,
+        "next": None
+    },
+    "20": {
+        "name": "Сектор 20",
+        "threat": "высокая",
+        "core": "Штаб",
+        "cores_count": 2,
+        "turrets": {"Роевик": 3, "Обжигатель": 8},
+        "rewards": {"Свинец": 2000},
+        "unlock": None,
+        "next": None
+    },
+    "92": {
+        "name": "Сектор 92",
+        "threat": "средняя",
+        "core": "Штаб",
+        "cores_count": 1,
+        "turrets": {"Рябь": 4},
+        "rewards": {"Кремний": 300, "Графит": 300},
+        "unlock": None,
+        "next": None
+    },
+    "96": {
+        "name": "Сектор 96",
+        "threat": "средняя",
+        "core": "Штаб",
+        "cores_count": 2,
+        "turrets": {"Копейщик": 4, "Залп": 4},
+        "rewards": {"Титан": 300},
+        "unlock": None,
+        "next": None
+    },
+    "45": {
+        "name": "Сектор 45",
+        "threat": "высокая",
+        "core": "Штаб",
+        "cores_count": 2,
+        "turrets": {"Циклон": 3, "Рассеиватель": 15},
+        "rewards": {"Графит": 600},
+        "unlock": None,
+        "next": None
+    },
+    "117": {
+        "name": "Сектор 117",
+        "threat": "высокая",
+        "core": "Штаб",
+        "cores_count": 2,
+        "turrets": {"Роевик": 4, "Копейщик": 2, "Залп": 4, "Двойная турель": 15},
+        "rewards": {"Кремний": 800, "Свинец": 800},
+        "unlock": None,
+        "next": None
+    },
+    "22": {
+        "name": "Сектор 22",
+        "threat": "высокая",
+        "core": "Штаб",
+        "cores_count": 1,
+        "turrets": {"Рябь": 6, "Залп": 6, "Регенерирующий проектор": 1},
+        "rewards": {"Кремний": 500, "Титан": 500},
+        "unlock": None,
+        "next": None
+    },
+    "39": {
+        "name": "Сектор 39",
+        "threat": "экстремальная",
+        "core": "Атом",
+        "cores_count": 1,
+        "turrets": {"Спектр": 1, "Циклон": 4, "Роевик": 4},
+        "rewards": {"Титан": 1000, "Метастекло": 800},
+        "unlock": None,
+        "next": None
+    },
+    "35": {
+        "name": "Сектор 35",
+        "threat": "средняя",
+        "core": "Осколок",
+        "cores_count": 3,
+        "turrets": {"Залп": 6, "Рябь": 1},
+        "rewards": {"Свинец": 1000, "Графит": 500},
+        "unlock": None,
+        "next": None
+    },
+    "189": {
+        "name": "Сектор 189",
+        "threat": "средняя",
+        "core": "Штаб",
+        "cores_count": 2,
+        "turrets": {"Роевик": 2},
+        "rewards": {"Кремний": 800},
+        "unlock": None,
+        "next": None
+    },
+    "190": {
+        "name": "Сектор 190",
+        "threat": "высокая",
+        "core": "Штаб",
+        "cores_count": 3,
+        "turrets": {"Копейщик": 6, "Дуга": 12, "Рассеиватель": 8},
+        "rewards": {"Графит": 1000},
+        "unlock": None,
+        "next": None
+    },
+    "2": {
+        "name": "Сектор 2",
+        "threat": "высокая",
+        "core": "Штаб",
+        "cores_count": 2,
+        "turrets": {"Циклон": 2, "Залп": 6, "Обжигатель": 4},
+        "rewards": {"Кремний": 600, "Графит": 600},
+        "unlock": None,
+        "next": None
+    },
+    "57": {
+        "name": "Сектор 57",
+        "threat": "высокая",
+        "core": "Осколок",
+        "cores_count": 5,
+        "turrets": {"Рябь": 12, "Регенерирующий проектор": 2},
+        "rewards": {"Медь": 1000, "Метастекло": 600},
+        "unlock": None,
+        "next": None
+    },
+    "11": {
+        "name": "Сектор 11",
+        "threat": "высокая",
+        "core": "Штаб",
+        "cores_count": 2,
+        "turrets": {"Роевик": 5},
+        "rewards": {"Титан": 700, "Пластан": 100},
+        "unlock": None,
+        "next": None
+    },
+    "102": {
+        "name": "Сектор 102",
+        "threat": "средняя",
+        "core": "Осколок",
+        "cores_count": 2,
+        "turrets": {"Рябь": 2, "Обжигатель": 6},
+        "rewards": {"Титан": 600},
+        "unlock": None,
+        "next": None
+    },
+    "16": {
+        "name": "Сектор 16",
+        "threat": "средняя",
+        "core": "Осколок",
+        "cores_count": 2,
+        "turrets": {"Дуга": 12, "Двойная турель": 12},
+        "rewards": {"Свинец": 3000},
+        "unlock": None,
+        "next": None
+    },
+    "17": {
+        "name": "Сектор 17",
+        "threat": "высокая",
+        "core": "Штаб",
+        "cores_count": 4,
+        "turrets": {"Роевик": 4, "Копейщик": 4},
+        "rewards": {"Титан": 1000},
+        "unlock": None,
+        "next": None
+    },
+    "76": {
+        "name": "Сектор 76",
+        "threat": "высокая",
+        "core": "Штаб",
+        "cores_count": 2,
+        "turrets": {"Спектр": 1},
+        "rewards": {"Метастекло": 500, "Графит": 500},
+        "unlock": None,
+        "next": None
+    },
+    "242": {
+        "name": "Сектор 242",
+        "threat": "высокая",
+        "core": "Штаб",
+        "cores_count": 2,
+        "turrets": {"Залп": 6, "Рябь": 2, "Двойная турель": 20, "Рассеиватель": 4, "Регенерирующий проектор": 1},
+        "rewards": {"Медь": 1500, "Пластан": 200},
+        "unlock": None,
+        "next": None
+    },
+    "130": {
+        "name": "Сектор 130",
+        "threat": "экстремальная",
+        "core": "Штаб",
+        "cores_count": 6,
+        "turrets": {"Роевик": 15, "Регенерирующий проектор": 3},
+        "rewards": {"Титан": 1200, "Кремний": 1000},
+        "unlock": None,
+        "next": None
+    },
+    "38": {
+        "name": "Сектор 38",
+        "threat": "средняя",
+        "core": "Штаб",
+        "cores_count": 2,
+        "turrets": {"Рябь": 6},
+        "rewards": {"Графит": 1000},
+        "unlock": None,
+        "next": None
+    },
+    "173": {
+        "name": "Сектор 173",
+        "threat": "высокая",
+        "core": "Штаб",
+        "cores_count": 2,
+        "turrets": {"Циклон": 2, "Град": 12},
+        "rewards": {"Метастекло": 600, "Кремний": 800},
+        "unlock": None,
+        "next": None
+    },
+    "179": {
+        "name": "Сектор 179",
+        "threat": "высокая",
+        "core": "Штаб",
+        "cores_count": 1,
+        "turrets": {"Копейщик": 10, "Регенерирующий проектор": 1},
+        "rewards": {"Пластан": 200},
+        "unlock": None,
+        "next": None
+    },
+    "163": {
+        "name": "Сектор 163",
+        "threat": "высокая",
+        "core": "Атом",
+        "cores_count": 1,
+        "turrets": {"Взрыватель": 3},
+        "rewards": {"Медь": 1500, "Графит": 1000},
+        "unlock": None,
+        "next": None
+    },
+    "200": {
+        "name": "Сектор 200",
+        "threat": "экстремальная",
+        "core": "Атом",
+        "cores_count": 2,
+        "turrets": {"Спектр": 2, "Взрыватель": 4},
+        "rewards": {"Кремний": 1500, "Титан": 1500},
+        "unlock": None,
+        "next": None
+    },
+    "53": {
+        "name": "Сектор 53",
+        "threat": "экстремальная",
+        "core": "Атом",
+        "cores_count": 1,
+        "turrets": {"Испепелитель": 2},
+        "rewards": {"Кремний": 1000, "Пластан": 600},
+        "unlock": None,
+        "next": None
+    },
+    "44": {
+        "name": "Сектор 44",
+        "threat": "средняя",
+        "core": "Осколок",
+        "cores_count": 2,
+        "turrets": {"Циклон": 1, "Регенерирующий проектор": 2},
+        "rewards": {"Метастекло": 800},
+        "unlock": None,
+        "next": None
+    },
+    "72": {
+        "name": "Сектор 72",
+        "threat": "высокая",
+        "core": "Штаб",
+        "cores_count": 2,
+        "turrets": {"Копейщик": 10, "Рябь": 5, "Залп": 10},
+        "rewards": {"Фазовая ткань": 100},
+        "unlock": None,
+        "next": None
+    },
+    "223": {
+        "name": "Сектор 223",
+        "threat": "высокая",
+        "core": "Штаб",
+        "cores_count": 3,
+        "turrets": {"Взрыватель": 2, "Рассеиватель": 30, "Регенерирующий проектор": 1},
+        "rewards": {"Кремний": 1500},
+        "unlock": None,
+        "next": None
+    },
+    "86": {
+        "name": "Сектор 86",
+        "threat": "высокая",
+        "core": "Атом",
+        "cores_count": 1,
+        "turrets": {"Циклон": 6},
+        "rewards": {"Графит": 1700},
+        "unlock": None,
+        "next": None
+    },
+    "87": {
+        "name": "Сектор 87",
+        "threat": "экстремальная",
+        "core": "Штаб",
+        "cores_count": 4,
+        "turrets": {"Испепелитель": 1, "Взрыватель": 4, "Роевик": 6, "Регенерирующий проектор": 3},
+        "rewards": {"Кремний": 2000, "Титан": 2000, "Пластан": 600},
+        "unlock": None,
+        "next": None
+    },
+    "54": {
+        "name": "Сектор 54",
+        "threat": "истребляющая",
+        "core": "Атом",
+        "cores_count": 2,
+        "turrets": {"Знамение": 2, "Циклон": 12, "Регенерирующий проектор": 6},
+        "rewards": {"Кремний": 3000, "Торий": 1000},
         "unlock": None,
         "next": None
     }
@@ -1819,12 +2179,23 @@ async def sector_attack(update: Update, context: ContextTypes.DEFAULT_TYPE):
     captured = context.bot_data['sector'].get(user_id, {}).get('captured_sectors', [])
     
     # Если сектор уже захвачен - показываем сообщение как при победе (без награды)
-    if sector_id in captured:
-        text = f"🟡  {sector['name']}\n✅ Сектор захвачен\n\n🩸  Уничтоженные юниты: (юниты которые были отправлены при захвате)"
-        
-        keyboard = [[InlineKeyboardButton("⬅️  Назад", callback_data="sector_enemy_bases")]]
-        await safe_edit_message(query, text, reply_markup=InlineKeyboardMarkup(keyboard))
-        return
+if sector_id in captured:
+    # Получаем сохранённую информацию о юнитах
+    sector_data = context.bot_data['sector'].get(user_id, {})
+    captured_units = sector_data.get('captured_units', {}).get(sector_id, {})
+    unit_name = captured_units.get('unit_name', 'неизвестный юнит')
+    amount = captured_units.get('amount', '?')
+    
+    text = f"🟡  {sector['name']}\n✅ Сектор захвачен\n\n🩸  Уничтоженные юниты: {unit_name} {amount}."
+    
+    keyboard = [[InlineKeyboardButton("⬅️  Назад", callback_data="sector_enemy_bases")]]
+    
+    # Добавляем кнопку "Дальше" если есть следующие сектора
+    if sector.get('next'):
+        keyboard.append([InlineKeyboardButton("➡️  Дальше", callback_data=f"next_{sector_id}")])
+    
+    await safe_edit_message(query, text, reply_markup=InlineKeyboardMarkup(keyboard))
+    return
     
     # Если сектор не захвачен
     text = f"🔴  {sector['name']}\n"
@@ -1910,6 +2281,30 @@ async def sector_attack_unit(update: Update, context: ContextTypes.DEFAULT_TYPE)
     reply_markup = InlineKeyboardMarkup(keyboard)
     
     await safe_edit_message(query, f"Выберите количество\n\nУ вас: {unit_count} {unit_name}", reply_markup=reply_markup)
+
+async def sector_next_bases(update: Update, context: ContextTypes.DEFAULT_TYPE, sector_id):
+    query = update.callback_query
+    await query.answer()
+    
+    user_id = update.effective_user.id
+    sector = SECTORS.get(sector_id)
+    if not sector or not sector.get('next'):
+        await safe_edit_message(query, "❌ Дальнейших секторов нет!")
+        return
+    
+    captured = context.bot_data['sector'].get(user_id, {}).get('captured_sectors', [])
+    
+    keyboard = []
+    for next_id in sector['next']:
+        next_sector = SECTORS.get(next_id)
+        if next_sector:
+            status = "🟡 " if next_id in captured else "🔴 "
+            keyboard.append([InlineKeyboardButton(f"{status} {next_sector['name']} (Угроза: {next_sector['threat']})", callback_data=f"attack_{next_id}")])
+    
+    keyboard.append([InlineKeyboardButton("⬅️  Назад", callback_data=f"attack_{sector_id}")])
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    
+    await safe_edit_message(query, f"🚀  Высадиться на сектор (после {sector['name']}):", reply_markup=reply_markup)
 
 async def sector_attack_amount_error(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
