@@ -1017,7 +1017,8 @@ def get_main_keyboard():
         [KeyboardButton("⛏️ Копать"), KeyboardButton("📦 Инвентарь"), KeyboardButton("🛠 Крафтинг")],
         [KeyboardButton("🔮 Магазин"), KeyboardButton("🔝 Улучшения"), KeyboardButton("🏔 Шахта")],
         [KeyboardButton("🕹 Дронстанция"), KeyboardButton("🎁 Ежед. подарок"), KeyboardButton("⚔️ Сектор")],
-        [KeyboardButton("📜 Чертежи"), KeyboardButton("🏆 Лидерборд"), KeyboardButton("👤 Профиль")]
+        [KeyboardButton("📜 Чертежи"), KeyboardButton("🏆 Лидерборд"), KeyboardButton("👤 Профиль")],
+        [KeyboardButton("❓️ Как играть?")]
     ]
     return ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
 
@@ -3411,6 +3412,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await leaderboard_command(update, context)
     elif text == "👤 Профиль":
         await profile_command(update, context)
+    elif text == "❓️ Как играть?":
+        await help_command(update, context)
 
 async def handle_new_chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Проверяем, что это текстовое сообщение и бот добавлен в чат
@@ -3631,6 +3634,48 @@ async def profile_gif(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def profile_back(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await profile_command(update, context)
 
+async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    help_text = (
+        "⛏️  **Mindustry Копатель - полный гайд** ⛏️ \n\n"
+        
+        "/mine - ⛏️  Основная команда бота. Копай каждые 20 минут, получай один из восьми случайных ресурсов в случайном количестве - Медь/Свинец/Уголь/Песок/Титан/Торий/Вода/Нефть\n\n"
+        
+        "/inventory - 📦 Показывает количество артефактов, монет, добытых и скрафченных ресурсов игрока\n\n"
+        
+        "/craft - 🛠 Показывает рецепты крафтовых ресурсов, их курс обмена на монеты/артефакты а также команды для их крафта\n\n"
+        
+        "/shop - 🔮  Показывает курс обмена монет на артефакты а также команды для обмена ресурсов на артефакты/монеты\n\n"
+        
+        "/upgrade - 🔝  Команда для увеличения дохода а также сокращения кулдауна копания в /mine за артефакты\n\n"
+        
+        "/mineshaft - 🏔 Шахта с созданием буром за ресурсы. Буры автоматически добывают ресурсы, а чтобы поместить накопленное в инвентарь, нужно нажать на кнопку Собрать\n\n"
+        
+        "/drones - 🕹 Команда для исследования и покупки дронов за монеты. Дроны позволяют добывать ресурсы, которые выбирает игрок (чтобы поместить ресурсы в инвентарь нужно зайти в статистику дронов)\n\n"
+        
+        "/daygift - 🎁  Ежедневный подарок каждые 24 часа с выпадением случайного количества монет и артефактов а также выпадением уникальных предметов и турелей\n\n"
+        
+        "/sector - ⚔️  Самая большая команда. Показывает базу игрока с его вооружением, текущем уровнем, ядром, турелями, юнитами, статусом базы, последней атаки на базу, а также вражескими секторами для нападения. За прохождение секторов игрок получает монеты и разблокирует новые турели/юниты, а за полное прохождение секторов атака на его базу прекращается. Также в этой команде покупаются чертежи доступных турелей/юнитов за ресурсы\n\n"
+        
+        "/drawings - 📜  Показывает полный список чертежей игрока с их выполнением и ускорением за монеты/артефакты\n\n"
+        
+        "/top - 🏆 Показывает топ 30 лучших игроков за все время\n\n"
+        
+        "/profile - 👤  Показывает профиль игрока с его уровнем, вооружением базы, артефактами, монетами, количеством копаний за все время, а также его уникальными предметами, полученными в /daygift\n\n"
+        
+        "❓️  **Что такое 🔮  Артефакты?**\n"
+        "🔮  Артефакты - Валюта которая в основном используется в /upgrade для улучшения добычи копания. Также используется для выполнения и ускорения чертежей.\n"
+        "-Получить можно путем обмена крафтовых ресурсов или в /daygift\n\n"
+        
+        "❓️  **Что такое 🪙  Монеты?**\n"
+        "🪙  Монеты - Валюта в основном для исследования и покупки дронов в /drones. Также используется для ускорения чертежей и для обмена на артефакты.\n"
+        "-Получить можно путем обмена крафтовых и добываемых ресурсов или в /daygift\n\n"
+        
+        "❓️  **Что такое 💥  Вооружение?**\n"
+        "💥  Вооружение - Это совокупность защиты и атаки всех имеющихся на базе игрока турелей и юнитов. Основная цель игры. Определяет место игрока в лидерборде. Вооружение может снижаться после атаки вражеских юнитов. При отрицательном вооружении игрок получает санкции на добычу."
+    )
+    
+    await update.message.reply_text(help_text, parse_mode='Markdown')
+
 def main():
     app = Application.builder().token(TOKEN).build()
     
@@ -3646,6 +3691,7 @@ def main():
     app.add_handler(CommandHandler("sector", sector_command))
     app.add_handler(CommandHandler("drawings", drawings_command))
     app.add_handler(CommandHandler("top", leaderboard_command))
+    app.add_handler(CommandHandler("help", help_command))
     
     # Команды обмена и крафта
     app.add_handler(CommandHandler("buyartifact", lambda u, c: buy_artifact(u, c, c.args[0] if c.args else "0")))
