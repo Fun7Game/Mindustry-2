@@ -925,27 +925,27 @@ UNIQUE_ITEMS = {
     "Большой логический процессор": 0.01
 }
 
-UNIQUE_ITEMS_EMOJI = {
-    "Сломанный медный бур": "⚫️",
-    "Конвейер": "⚫️",
-    "Помпа": "⚫️",
-    "Силовой узел": "⚫️",
-    "Генератор внутреннего сгорания": "🔵",
-    "Кремниевая плавильня": "🔵",
-    "Паровой генератор": "🔵",
-    "Пластановый компрессор": "🔵",
-    "Радиоизотопный термоэлектрический генератор": "🔵",
-    "Фазовый ткач": "🔵",
-    "Умножающий реконструктор": "🟣",
-    "Ториевый реактор": "🟣",
-    "Сверхприводный проектор": "🟣",
-    "Малый логический процессор": "🟣",
-    "Силовой проектор": "🟡",
-    "Импульсный реактор": "🟡",
-    "Экспоненциальный реконструктор": "🟡",
-    "Логический процессор": "🟡",
-    "Тетративный реконструктор": "🌌",
-    "Большой логический процессор": "🌌"
+UNIQUE_ITEMS_LIST = {
+    "Сломанный медный бур": {"emoji": "⚫️ ", "rarity": "Обычный"},
+    "Конвейер": {"emoji": "⚫️ ", "rarity": "Обычный"},
+    "Помпа": {"emoji": "⚫️ ", "rarity": "Обычный"},
+    "Силовой узел": {"emoji": "⚫️ ", "rarity": "Обычный"},
+    "Генератор внутреннего сгорания": {"emoji": "🔵 ", "rarity": "Редкий"},
+    "Кремниевая плавильня": {"emoji": "🔵 ", "rarity": "Редкий"},
+    "Паровой генератор": {"emoji": "🔵 ", "rarity": "Редкий"},
+    "Пластановый компрессор": {"emoji": "🔵 ", "rarity": "Редкий"},
+    "Радиоизотопный термоэлектрический генератор": {"emoji": "🔵 ", "rarity": "Редкий"},
+    "Фазовый ткач": {"emoji": "🔵 ", "rarity": "Редкий"},
+    "Умножающий реконструктор": {"emoji": "🟣 ", "rarity": "Эпический"},
+    "Ториевый реактор": {"emoji": "🟣 ", "rarity": "Эпический"},
+    "Сверхприводный проектор": {"emoji": "🟣 ", "rarity": "Эпический"},
+    "Малый логический процессор": {"emoji": "🟣 ", "rarity": "Эпический"},
+    "Силовой проектор": {"emoji": "🟡 ", "rarity": "Легендарный"},
+    "Импульсный реактор": {"emoji": "🟡 ", "rarity": "Легендарный"},
+    "Экспоненциальный реконструктор": {"emoji": "🟡 ", "rarity": "Легендарный"},
+    "Логический процессор": {"emoji": "🟡 ", "rarity": "Легендарный"},
+    "Тетративный реконструктор": {"emoji": "🌌 ", "rarity": "Божественный"},
+    "Большой логический процессор": {"emoji": "🌌 ", "rarity": "Божественный"}
 }
 
 INSULTS_RESPONSES = [
@@ -1017,7 +1017,7 @@ def get_main_keyboard():
         [KeyboardButton("⛏️ Копать"), KeyboardButton("📦 Инвентарь"), KeyboardButton("🛠 Крафтинг")],
         [KeyboardButton("🔮 Магазин"), KeyboardButton("🔝 Улучшения"), KeyboardButton("🏔 Шахта")],
         [KeyboardButton("🕹 Дронстанция"), KeyboardButton("🎁 Ежед. подарок"), KeyboardButton("⚔️ Сектор")],
-        [KeyboardButton("📜 Чертежи"), KeyboardButton("🏆 Лидерборд")]
+        [KeyboardButton("📜 Чертежи"), KeyboardButton("🏆 Лидерборд"), KeyboardButton("👤 Профиль")]
     ]
     return ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
 
@@ -2890,6 +2890,13 @@ async def mine(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     
     context.bot_data['cooldowns'][user_id] = current_time
+
+    # Увеличиваем счетчик копаний (только если успешно скопал)
+    if 'mine_count' not in context.bot_data:
+        context.bot_data['mine_count'] = {}
+    if user_id not in context.bot_data['mine_count']:
+        context.bot_data['mine_count'][user_id] = 0
+    context.bot_data['mine_count'][user_id] += 1
     
     resource = get_random_resource()
     amount = get_resource_amount(resource, upgrades)
@@ -3128,12 +3135,21 @@ async def daygift_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     if turret:
         gift_text += f"\n🔫 {turret} {turret_amount} шт."
-    
+
     if unique_items:
-        gift_text += "\n\n⚙️ *Уникальные предметы:*"
+        gift_text += "\n\n⚙️  *Уникальные предметы:*"
         for item in unique_items:
-            emoji = UNIQUE_ITEMS_EMOJI.get(item, "⚙️")
-            gift_text += f"\n{emoji} {item}"
+            item_data = UNIQUE_ITEMS_LIST.get(item, {"emoji": "⚙️ ", "rarity": "Обычный"})
+            gift_text += f"\n{item_data['emoji']} {item} - {item_data['rarity']}"
+    
+        if 'unique_items' not in context.bot_data:
+            context.bot_data['unique_items'] = {}
+        if user_id not in context.bot_data['unique_items']:
+            context.bot_data['unique_items'][user_id] = []
+    
+        for item in unique_items:
+            if item not in context.bot_data['unique_items'][user_id]:
+                context.bot_data['unique_items'][user_id].append(item)
     
     await update.message.reply_text(gift_text, parse_mode='Markdown', reply_markup=get_main_keyboard())
 
@@ -3385,7 +3401,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await mineshaft_command(update, context)
     elif text == "🕹 Дронстанция":
         await drones_command(update, context)
-    elif text == "🎁 Ежедневный подарок":
+    elif text == "🎁 Ежед. подарок":
         await daygift_command(update, context)
     elif text == "⚔️ Сектор":
         await sector_command(update, context)
@@ -3393,6 +3409,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await drawings_command(update, context)
     elif text == "🏆 Лидерборд":
         await leaderboard_command(update, context)
+    elif text == "👤 Профиль":
+        await profile_command(update, context)
 
 async def handle_new_chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Проверяем, что это текстовое сообщение и бот добавлен в чат
@@ -3491,6 +3509,128 @@ async def safe_edit_message_group(query, text=None, reply_markup=None, parse_mod
         except:
             pass
 
+async def profile_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    user_name = update.effective_user.first_name
+    
+    # Проверяем и создаем данные если нет
+    if 'all_inventories' not in context.bot_data:
+        context.bot_data['all_inventories'] = {}
+    if user_id not in context.bot_data['all_inventories']:
+        context.bot_data['all_inventories'][user_id] = {'coins': 100, 'artifacts': 0}
+    
+    if 'sector' not in context.bot_data:
+        context.bot_data['sector'] = {}
+    if user_id not in context.bot_data['sector']:
+        context.bot_data['sector'][user_id] = {
+            'core': 'Осколок',
+            'weapons': 0,
+            'turrets': {},
+            'units': {},
+            'wave': 1,
+            'last_attack_time': time.time(),
+            'last_wave_damage': 0,
+            'last_wave_composition': None,
+            'captured_sectors': []
+        }
+    
+    if 'mine_count' not in context.bot_data:
+        context.bot_data['mine_count'] = {}
+    if user_id not in context.bot_data['mine_count']:
+        context.bot_data['mine_count'][user_id] = 0
+    
+    # Получаем данные
+    inventory = context.bot_data['all_inventories'][user_id]
+    sector_data = context.bot_data['sector'][user_id]
+    mine_count = context.bot_data['mine_count'][user_id]
+    
+    weapons = sector_data.get('weapons', 0)
+    coins = inventory.get('coins', 0)
+    artifacts = inventory.get('artifacts', 0)
+    
+    # Определяем уровень
+    if weapons < 1000:
+        rank = "◽️  Начинающий (Lv. 1)"
+    elif weapons < 2500:
+        rank = "◻️  Осваивающийся (Lv. 2)"
+    elif weapons < 10000:
+        rank = "◾️  Любитель (Lv. 3)"
+    elif weapons < 50000:
+        rank = "◼️  Продвинутый (Lv. 4)"
+    elif weapons < 150000:
+        rank = "🔶 ️ Эксперт (Lv. 5)"
+    elif weapons < 2000000:
+        rank = "🔷 ️ Мастер (Lv. 6)"
+    elif weapons < 30000000:
+        rank = "🔺 ️ Легенда (Lv. 7)"
+    else:
+        rank = "💠  Бог (Lv. 8)"
+    
+    text = f"👤  {user_name}\n"
+    text += f"{rank}\n"
+    text += f"💥  Вооружение: {weapons}\n"
+    text += f"🔮  Артефакты: {artifacts}\n"
+    text += f"🪙  Монеты: {coins}\n"
+    text += f"⛏️  Количество копаний: {mine_count}"
+    
+    keyboard = [
+        [InlineKeyboardButton("⚙️  Уникальные предметы", callback_data=f"profile_items_{user_id}")],
+        [InlineKeyboardButton("🖼 GIF", callback_data=f"profile_gif_{user_id}")]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    
+    if update.callback_query:
+        await safe_edit_message(update.callback_query, text, reply_markup=reply_markup)
+    else:
+        await update.message.reply_text(text, reply_markup=reply_markup)
+
+async def profile_items(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    
+    data = query.data.split("_")
+    owner_id = int(data[2])
+    
+    if query.from_user.id != owner_id:
+        await query.answer("❌ Это не ваш профиль!", show_alert=True)
+        return
+    
+    # Получаем уникальные предметы игрока
+    player_items = context.bot_data.get('unique_items', {}).get(owner_id, [])
+    
+    if not player_items:
+        text = f"⚙️  Уникальные предметы игрока:\n\nНет уникальных предметов! Получайте их в ежедневном подарке /daygift"
+    else:
+        text = f"⚙️  Уникальные предметы игрока:\n\n"
+        for item in player_items:
+            item_data = UNIQUE_ITEMS_LIST.get(item, {"emoji": "⚙️ ", "rarity": "Обычный"})
+            text += f"{item_data['emoji']} {item} - {item_data['rarity']}\n"
+    
+    keyboard = [[InlineKeyboardButton("⬅️  Назад", callback_data=f"profile_back_{owner_id}")]]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    
+    await query.edit_message_text(text, reply_markup=reply_markup)
+
+async def profile_gif(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    
+    data = query.data.split("_")
+    owner_id = int(data[2])
+    
+    if query.from_user.id != owner_id:
+        await query.answer("❌ Это не ваш профиль!", show_alert=True)
+        return
+    
+    text = "Скоро..."
+    keyboard = [[InlineKeyboardButton("⬅️  Назад", callback_data=f"profile_back_{owner_id}")]]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    
+    await query.edit_message_text(text, reply_markup=reply_markup)
+
+async def profile_back(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await profile_command(update, context)
+
 def main():
     app = Application.builder().token(TOKEN).build()
     
@@ -3549,6 +3689,7 @@ def main():
     app.add_handler(CommandHandler("craftblastcompound", lambda u, c: craft_item(u, c, "blastcompound", c.args[0] if c.args else "0")))
     app.add_handler(CommandHandler("craftoil", lambda u, c: craft_item(u, c, "oil", c.args[0] if c.args else "0")))
     app.add_handler(CommandHandler("craftcryofluid", lambda u, c: craft_item(u, c, "cryofluid", c.args[0] if c.args else "0")))
+    app.add_handler(CommandHandler("profile", profile_command))
     
     # Callback обработчики с group=0
     app.add_handler(CallbackQueryHandler(sector_my_base, pattern="^sector_my_base$"), group=0)
@@ -3586,6 +3727,9 @@ def main():
     app.add_handler(CallbackQueryHandler(drone_back, pattern="^drone_back$"), group=0)
     app.add_handler(CallbackQueryHandler(drone_stats, pattern="^drone_stats$"), group=0)
     app.add_handler(CallbackQueryHandler(drone_buy_cancel, pattern="^drone_buy_cancel$"), group=0)
+    app.add_handler(CallbackQueryHandler(profile_items, pattern="^profile_items_"), group=0)
+    app.add_handler(CallbackQueryHandler(profile_gif, pattern="^profile_gif_"), group=0)
+    app.add_handler(CallbackQueryHandler(profile_back, pattern="^profile_back_"), group=0)
     
     for drone_name in DRONES.keys():
         app.add_handler(CallbackQueryHandler(lambda u, c, dn=drone_name: drone_research(u, c, dn), pattern=f"^drone_research_{drone_name}$"), group=0)
