@@ -18,7 +18,7 @@ WAVE_COOLDOWN = 10800
 BASE_MIN_ITEMS = 1
 BASE_MAX_ITEMS = 10000
 BASE_MIN_LIQUID = 100
-BASE_MAX_LIQUID = 2000
+BASE_MAX_LIQUID = 1000
 
 # Словарь с ресурсами и их шансами
 RESOURCES = {
@@ -1014,12 +1014,10 @@ def get_resource_amount(resource, user_data=None):
 
 def get_main_keyboard():
     keyboard = [
-        [KeyboardButton("⛏️  Копать"), KeyboardButton("📦 Инвентарь")],
-        [KeyboardButton("🛠 Крафтинг"), KeyboardButton("🔮  Магазин")],
-        [KeyboardButton("🔝  Улучшения"), KeyboardButton("🏔 Шахта")],
-        [KeyboardButton("🕹 Дронстанция"), KeyboardButton("🎁  Ежедневный подарок")],
-        [KeyboardButton("⚔️  Сектор"), KeyboardButton("📜  Чертежи")],
-        [KeyboardButton("🏆 Лидерборд")]
+        [KeyboardButton("⛏️ Копать"), KeyboardButton("📦 Инвентарь"), KeyboardButton("🛠 Крафтинг")],
+        [KeyboardButton("🔮 Магазин"), KeyboardButton("🔝 Улучшения"), KeyboardButton("🏔 Шахта")],
+        [KeyboardButton("🕹 Дронстанция"), KeyboardButton("🎁 Ежед. подарок"), KeyboardButton("⚔️ Сектор")],
+        [KeyboardButton("📜 Чертежи"), KeyboardButton("🏆 Лидерборд")]
     ]
     return ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
 
@@ -1183,8 +1181,6 @@ async def sector_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 async def sector_build(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_chat.type != "private":
-        return
     query = update.callback_query
     await query.answer()
     
@@ -1198,8 +1194,6 @@ async def sector_build(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await safe_edit_message(query, "Выберите категорию:", reply_markup=reply_markup)
 
 async def sector_turret_build(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_chat.type != "private":
-        return
     query = update.callback_query
     await query.answer()
     
@@ -1224,8 +1218,6 @@ async def sector_turret_build(update: Update, context: ContextTypes.DEFAULT_TYPE
 # ========== ЮНИТЫ ==========
 
 async def sector_unit_build(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_chat.type != "private":
-        return
     query = update.callback_query
     await query.answer()
     
@@ -1254,8 +1246,6 @@ async def sector_unit_build(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await safe_edit_message(query, "Выберите категорию юнитов:", reply_markup=reply_markup)
 
 async def unit_category(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_chat.type != "private":
-        return
     query = update.callback_query
     await query.answer()
     
@@ -1412,8 +1402,6 @@ async def unit_buy(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await query.edit_message_text(f"✅ {name} в количестве {amount} шт. помещена в ваши чертежи!", reply_markup=InlineKeyboardMarkup(keyboard))
 
 async def sector_turret_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_chat.type != "private":
-        return
     query = update.callback_query
     await query.answer()
     
@@ -1469,8 +1457,6 @@ async def sector_turret_info(update: Update, context: ContextTypes.DEFAULT_TYPE)
     await safe_edit_message(query, text, parse_mode='Markdown', reply_markup=reply_markup)
 
 async def sector_turret_buy(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_chat.type != "private":
-        return
     query = update.callback_query
     await query.answer()
     
@@ -1535,8 +1521,6 @@ async def sector_turret_buy(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await safe_edit_message(query, f"✅ {turret_name} в количестве {amount} шт. помещена в ваши чертежи!", reply_markup=reply_markup)
 
 async def drawing_start(update: Update, context: ContextTypes.DEFAULT_TYPE, drawing_index):
-    if update.effective_chat.type != "private":
-        return
     query = update.callback_query
     await query.answer()
     
@@ -1606,8 +1590,6 @@ async def drawing_start(update: Update, context: ContextTypes.DEFAULT_TYPE, draw
     await drawings_command(update, context)
 
 async def speedup_drawing(update: Update, context: ContextTypes.DEFAULT_TYPE, currency, seconds):
-    if update.effective_chat.type != "private":
-        return
     query = update.callback_query
     await query.answer()
     
@@ -1762,8 +1744,6 @@ async def complete_drawing(update: Update, context: ContextTypes.DEFAULT_TYPE, u
         await asyncio.sleep(5)
 
 async def drawing_cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_chat.type != "private":
-        return
     query = update.callback_query
     await query.answer()
     
@@ -1776,15 +1756,11 @@ async def drawing_cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await drawings_command(update, context)
 
 async def drawings_back(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_chat.type != "private":
-        return
     query = update.callback_query
     await query.answer()
     await drawings_command(update, context)
 
 async def sector_my_base(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_chat.type != "private":
-        return
     query = update.callback_query
     await query.answer()
     
@@ -1905,8 +1881,7 @@ async def sector_my_base(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # ========== ЯДРО ШТАБ ==========
 
 async def sector_foundation(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_chat.type != "private":
-        return
+
     query = update.callback_query
     await query.answer()
     
@@ -1942,8 +1917,6 @@ async def sector_foundation(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await safe_edit_message(query, "Построить ядро Штаб за 4000 Медь, 4000 Свинец, 1500 Кремний?", reply_markup=reply_markup)
 
 async def sector_foundation_build(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_chat.type != "private":
-        return
     query = update.callback_query
     await query.answer()
     
@@ -1991,8 +1964,6 @@ async def sector_foundation_build(update: Update, context: ContextTypes.DEFAULT_
 # ========== ЯДРО АТОМ ==========
 
 async def sector_nucleus(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_chat.type != "private":
-        return
     query = update.callback_query
     await query.answer()
     
@@ -2028,8 +1999,6 @@ async def sector_nucleus(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await safe_edit_message(query, "Построить ядро Атом за 12000 Медь, 12000 Свинец, 8000 Кремний, 4500 Торий, 500 Кинетический сплав?", reply_markup=reply_markup)
 
 async def sector_nucleus_build(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_chat.type != "private":
-        return
     query = update.callback_query
     await query.answer()
     
@@ -2081,8 +2050,6 @@ async def sector_nucleus_build(update: Update, context: ContextTypes.DEFAULT_TYP
     await safe_edit_message(query, "✅ Ядро улучшено до Атома! +10000 к вооружению базы!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Назад", callback_data="sector_my_base")]]))
 
 async def sector_enemy_bases_old(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_chat.type != "private":
-        return
     query = update.callback_query
     await query.answer()
     
@@ -2092,8 +2059,6 @@ async def sector_enemy_bases_old(update: Update, context: ContextTypes.DEFAULT_T
     await safe_edit_message(query, "🔴 *Вражеские базы*\n\nСкоро здесь появятся вражеские сектора для атаки!", parse_mode='Markdown', reply_markup=reply_markup)
 
 async def sector_back(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_chat.type != "private":
-        return
     query = update.callback_query
     await query.answer()
     
@@ -2107,24 +2072,18 @@ async def sector_back(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await safe_edit_message(query, "⚔️ *Сектор*\n\nУлучшай защиту своей базы, делай атаки на вражеские сектора чтобы получать ресурсы и разблокировать новые турели/юниты!", parse_mode='Markdown', reply_markup=reply_markup)
 
 async def sector_attack_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_chat.type != "private":
-        return
     query = update.callback_query
     await query.answer()
     sector_id = query.data.replace("sector_attack_", "")
     await sector_attack(update, context, sector_id)
 
 async def sector_attack_confirm_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_chat.type != "private":
-        return
     query = update.callback_query
     await query.answer()
     sector_id = query.data.replace("sector_attack_confirm_", "")
     await sector_attack_confirm(update, context, sector_id)
 
 async def sector_attack_unit_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_chat.type != "private":
-        return
     query = update.callback_query
     await query.answer()
     parts = query.data.split("_")
@@ -2133,8 +2092,6 @@ async def sector_attack_unit_callback(update: Update, context: ContextTypes.DEFA
     await sector_attack_unit(update, context, sector_id, unit_name)
 
 async def sector_attack_amount_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_chat.type != "private":
-        return
     query = update.callback_query
     await query.answer()
     parts = query.data.split("_")
@@ -2156,14 +2113,14 @@ async def sector_enemy_bases(update: Update, context: ContextTypes.DEFAULT_TYPE)
     
     for sector_id, threat in sectors_list:
         if sector_id in captured:
-            keyboard.append([InlineKeyboardButton(f"🟡  Сектор {sector_id} (ЗАХВАЧЕН)", callback_data=f"attack_{sector_id}")])
+            keyboard.append([InlineKeyboardButton(f"🟡 Сектор {sector_id} (ЗАХВАЧЕН)", callback_data=f"attack_{sector_id}")])
         else:
-            keyboard.append([InlineKeyboardButton(f"🔴  Сектор {sector_id} (Угроза: {threat})", callback_data=f"attack_{sector_id}")])
+            keyboard.append([InlineKeyboardButton(f"🔴 Сектор {sector_id} (Угроза: {threat})", callback_data=f"attack_{sector_id}")])
     
     keyboard.append([InlineKeyboardButton("⬅️  Назад", callback_data="sector_back")])
     reply_markup = InlineKeyboardMarkup(keyboard)
     
-    await safe_edit_message(query, "🚀  Высадиться на сектор:", reply_markup=reply_markup)
+    await safe_edit_message(query, "🚀 Высадиться на сектор:", reply_markup=reply_markup)
 
 async def sector_attack(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -2187,29 +2144,29 @@ async def sector_attack(update: Update, context: ContextTypes.DEFAULT_TYPE):
         unit_name = captured_units.get('unit_name', 'неизвестный юнит')
         amount = captured_units.get('amount', '?')
         
-        text = f"🟡   {sector['name']}\n✅ Сектор захвачен\n\n🩸   Уничтоженные юниты: {unit_name} {amount}."
+        text = f"🟡   {sector['name']}\n✅ Сектор захвачен\n\n🩸 Уничтоженные юниты: {unit_name} {amount}."
         
-        keyboard = [[InlineKeyboardButton("⬅️   Назад", callback_data="sector_enemy_bases")]]
+        keyboard = [[InlineKeyboardButton("⬅️ Назад", callback_data="sector_enemy_bases")]]
         
         # Добавляем кнопку "Дальше" если есть следующие сектора
         if sector.get('next'):
-            keyboard.append([InlineKeyboardButton("➡️   Дальше", callback_data=f"next_{sector_id}")])
+            keyboard.append([InlineKeyboardButton("➡️ Дальше", callback_data=f"next_{sector_id}")])
         
         await safe_edit_message(query, text, reply_markup=InlineKeyboardMarkup(keyboard))
         return
     
     # Если сектор не захвачен
-    text = f"🔴   {sector['name']}\n"
-    text += f"💀   Угроза: {sector['threat']}\n"
+    text = f"🔴 {sector['name']}\n"
+    text += f"💀 Угроза: {sector['threat']}\n"
     text += f"🛡 Вражеские ядра: {sector['core']} {sector['cores_count']}\n"
-    text += f"🔫   Вражеская оборона:\n"
+    text += f"🔫 Вражеская оборона:\n"
     for turret_name, count in sector['turrets'].items():
         text += f"• {turret_name} {count} шт.\n"
     text += "\nВыберите действие:"
     
     keyboard = [
-        [InlineKeyboardButton("⚔️   Атаковать", callback_data=f"confirm_{sector_id}")],
-        [InlineKeyboardButton("⬅️   Назад", callback_data="sector_enemy_bases")]
+        [InlineKeyboardButton("⚔️ Атаковать", callback_data=f"confirm_{sector_id}")],
+        [InlineKeyboardButton("⬅️ Назад", callback_data="sector_enemy_bases")]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
@@ -2223,7 +2180,7 @@ async def sector_attack_confirm(update: Update, context: ContextTypes.DEFAULT_TY
     sector_id = query.data.replace("confirm_", "")
     
     if 'sector' not in context.bot_data or user_id not in context.bot_data['sector']:
-        keyboard = [[InlineKeyboardButton("⬅️  Назад", callback_data=f"attack_{sector_id}")]]
+        keyboard = [[InlineKeyboardButton("⬅️ Назад", callback_data=f"attack_{sector_id}")]]
         await safe_edit_message(query, "❌ Один в поле не воин. У вас нету юнитов для атаки.", reply_markup=InlineKeyboardMarkup(keyboard))
         return
     
@@ -2233,7 +2190,7 @@ async def sector_attack_confirm(update: Update, context: ContextTypes.DEFAULT_TY
     available_units = [(name, count) for name, count in units.items() if count > 0]
     
     if not available_units:
-        keyboard = [[InlineKeyboardButton("⬅️  Назад", callback_data=f"attack_{sector_id}")]]
+        keyboard = [[InlineKeyboardButton("⬅️ Назад", callback_data=f"attack_{sector_id}")]]
         await safe_edit_message(query, "❌ Один в поле не воин. У вас нету юнитов для атаки.", reply_markup=InlineKeyboardMarkup(keyboard))
         return
     
@@ -2249,7 +2206,7 @@ async def sector_attack_confirm(update: Update, context: ContextTypes.DEFAULT_TY
         keyboard.append(row)
     
     reply_markup = InlineKeyboardMarkup(keyboard)
-    await safe_edit_message(query, "⚔️  Выберите юнита, которым будете атаковать сектор:", reply_markup=reply_markup)
+    await safe_edit_message(query, "⚔️ Выберите юнита, которым будете атаковать сектор:", reply_markup=reply_markup)
 
 async def sector_attack_unit(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -2305,7 +2262,7 @@ async def sector_next_bases(update: Update, context: ContextTypes.DEFAULT_TYPE, 
     keyboard.append([InlineKeyboardButton("⬅️  Назад", callback_data=f"attack_{sector_id}")])
     reply_markup = InlineKeyboardMarkup(keyboard)
     
-    await safe_edit_message(query, f"🚀  Высадиться на сектор (после {sector['name']}):", reply_markup=reply_markup)
+    await safe_edit_message(query, f"🚀 Высадиться на сектор (после {sector['name']}):", reply_markup=reply_markup)
 
 async def sector_attack_amount_error(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -2316,7 +2273,7 @@ async def sector_attack_amount_error(update: Update, context: ContextTypes.DEFAU
     sector_id = parts[0]
     unit_name = parts[1]
     
-    keyboard = [[InlineKeyboardButton("⬅️  Назад", callback_data=f"unit_{sector_id}_{unit_name}")]]
+    keyboard = [[InlineKeyboardButton("⬅️ Назад", callback_data=f"unit_{sector_id}_{unit_name}")]]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
     await safe_edit_message(query, "❌ У вас нету столько юнитов на базе!", reply_markup=reply_markup)
@@ -2343,7 +2300,7 @@ async def sector_attack_amount(update: Update, context: ContextTypes.DEFAULT_TYP
         amount = int(amount)
     
     if amount > unit_count:
-        keyboard = [[InlineKeyboardButton("⬅️  Назад", callback_data=f"unit_{sector_id}_{unit_name}")]]
+        keyboard = [[InlineKeyboardButton("⬅️ Назад", callback_data=f"unit_{sector_id}_{unit_name}")]]
         await safe_edit_message(query, "❌ У вас нету столько юнитов на базе!", reply_markup=InlineKeyboardMarkup(keyboard))
         return
     
@@ -2384,26 +2341,24 @@ async def sector_attack_amount(update: Update, context: ContextTypes.DEFAULT_TYP
             
             text = f"🟡  {sector['name']}\n✅ Сектор захвачен{unlock_text}\n\n💰 Награда: {reward_text}\n\n🩸  Уничтоженные юниты: {unit_name} {amount}."
             
-            keyboard = [[InlineKeyboardButton("⬅️  Назад", callback_data="sector_enemy_bases")]]
+            keyboard = [[InlineKeyboardButton("⬅️ Назад", callback_data="sector_enemy_bases")]]
             if sector.get('next'):
-                keyboard.append([InlineKeyboardButton("➡️  Вперед", callback_data=f"attack_{sector['next']}")])
+                keyboard.append([InlineKeyboardButton("➡️ Вперед", callback_data=f"attack_{sector['next']}")])
             reply_markup = InlineKeyboardMarkup(keyboard)
             
             await safe_edit_message(query, text, reply_markup=reply_markup)
         else:
-            await safe_edit_message(query, f"🟡  {sector['name']}\n✅ Сектор уже захвачен!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️  Назад", callback_data="sector_enemy_bases")]]))
+            await safe_edit_message(query, f"🟡 {sector['name']}\n✅ Сектор уже захвачен!", reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("⬅️  Назад", callback_data="sector_enemy_bases")]]))
     else:
         # Поражение
-        text = f"🔴  {sector['name']}\n💀  АТАКА ПРОВАЛЕНА!\nОборона врага оказалась сильнее, чем мы думали...\n\n🩸  Уничтоженные юниты: {unit_name} {amount}."
+        text = f"🔴 {sector['name']}\n💀  АТАКА ПРОВАЛЕНА!\nОборона врага оказалась сильнее, чем мы думали...\n\n🩸 Уничтоженные юниты: {unit_name} {amount}."
         
-        keyboard = [[InlineKeyboardButton("⬅️  Назад", callback_data=f"attack_{sector_id}")]]
+        keyboard = [[InlineKeyboardButton("⬅️ Назад", callback_data=f"attack_{sector_id}")]]
         reply_markup = InlineKeyboardMarkup(keyboard)
         
         await safe_edit_message(query, text, reply_markup=reply_markup)
 
 async def update_drone_resources(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_chat.type != "private":
-        return
     user_id = update.effective_user.id
     
     if 'drones' not in context.bot_data:
@@ -2478,8 +2433,6 @@ async def drones_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(text, parse_mode='Markdown', reply_markup=reply_markup)
 
 async def drone_research(update: Update, context: ContextTypes.DEFAULT_TYPE, drone_name):
-    if update.effective_chat.type != "private":
-        return
     query = update.callback_query
     await query.answer()
     user_id = update.effective_user.id
@@ -2515,8 +2468,6 @@ async def drone_research(update: Update, context: ContextTypes.DEFAULT_TYPE, dro
         await drones_command(update, context)
 
 async def drone_buy(update: Update, context: ContextTypes.DEFAULT_TYPE, drone_name):
-    if update.effective_chat.type != "private":
-        return
     query = update.callback_query
     await query.answer()
     user_id = update.effective_user.id
@@ -2567,8 +2518,6 @@ async def drone_buy(update: Update, context: ContextTypes.DEFAULT_TYPE, drone_na
     await safe_edit_message(query, f"Выберите ресурс, который будет добывать дрон {drone_name}\n\nВыбирайте с умом, позже это нельзя будет изменить!", reply_markup=reply_markup)
 
 async def drone_buy_cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_chat.type != "private":
-        return
     query = update.callback_query
     await query.answer()
     user_id = update.effective_user.id
@@ -2588,8 +2537,6 @@ async def drone_buy_cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await drones_command(update, context)
 
 async def drone_set_resource(update: Update, context: ContextTypes.DEFAULT_TYPE, drone_name, resource):
-    if update.effective_chat.type != "private":
-        return
     query = update.callback_query
     await query.answer()
     user_id = update.effective_user.id
@@ -2630,8 +2577,6 @@ async def drone_set_resource(update: Update, context: ContextTypes.DEFAULT_TYPE,
     await drones_command(update, context)
 
 async def drone_stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_chat.type != "private":
-        return
     query = update.callback_query
     await query.answer()
     user_id = update.effective_user.id
@@ -2677,8 +2622,6 @@ async def drone_stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await safe_edit_message(query, stats_text, parse_mode='Markdown', reply_markup=reply_markup)
 
 async def drone_back(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_chat.type != "private":
-        return
     user_id = update.effective_user.id
     
     if 'drones' not in context.bot_data:
@@ -2718,8 +2661,6 @@ async def mineshaft_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 async def mine_build_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_chat.type != "private":
-        return
     query = update.callback_query
     await query.answer()
     user_id = update.effective_user.id
@@ -2745,8 +2686,6 @@ async def mine_build_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await safe_edit_message(query, "Выбери бур, который хочешь построить:", reply_markup=reply_markup)
 
 async def mine_build_drill(update: Update, context: ContextTypes.DEFAULT_TYPE, drill_name):
-    if update.effective_chat.type != "private":
-        return
     query = update.callback_query
     await query.answer()
     user_id = update.effective_user.id
@@ -2792,8 +2731,6 @@ async def mine_build_drill(update: Update, context: ContextTypes.DEFAULT_TYPE, d
     await mine_build_menu(update, context)
 
 async def mine_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_chat.type != "private":
-        return
     query = update.callback_query
     await query.answer()
     user_id = update.effective_user.id
@@ -2867,8 +2804,6 @@ async def mine_info(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await safe_edit_message(query, info_text, parse_mode='Markdown', reply_markup=reply_markup)
 
 async def mine_collect(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_chat.type != "private":
-        return
     query = update.callback_query
     await query.answer()
     user_id = update.effective_user.id
@@ -2897,8 +2832,6 @@ async def mine_collect(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await mine_info(update, context)
 
 async def mine_back(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_chat.type != "private":
-        return
     query = update.callback_query
     await query.answer()
     
@@ -3072,8 +3005,6 @@ async def upgrade_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(text, parse_mode='Markdown', reply_markup=reply_markup)
 
 async def upgrade_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_chat.type != "private":
-        return
     query = update.callback_query
     await query.answer()
     
@@ -3235,8 +3166,6 @@ COIN_EXCHANGE = {
 }
 
 async def buy_artifact(update: Update, context: ContextTypes.DEFAULT_TYPE, amount_str):
-    if update.effective_chat.type != "private":
-        return
     user_id = update.effective_user.id
     
     if 'all_inventories' not in context.bot_data:
@@ -3270,8 +3199,6 @@ async def buy_artifact(update: Update, context: ContextTypes.DEFAULT_TYPE, amoun
     await update.message.reply_text(f"✅ Вы купили 🔮 Артефакты в количестве {amount} шт!")
 
 async def exchange_artifact(update: Update, context: ContextTypes.DEFAULT_TYPE, resource_name, amount_str):
-    if update.effective_chat.type != "private":
-        return
     user_id = update.effective_user.id
     
     if resource_name not in ARTIFACT_EXCHANGE:
@@ -3317,8 +3244,6 @@ async def exchange_artifact(update: Update, context: ContextTypes.DEFAULT_TYPE, 
     await update.message.reply_text(f"✅ Вы обменяли {required_total} {resource_name} на {amount} 🔮 Артефактов!")
 
 async def exchange_coins(update: Update, context: ContextTypes.DEFAULT_TYPE, resource_name, amount_str):
-    if update.effective_chat.type != "private":
-        return
     user_id = update.effective_user.id
     
     if resource_name not in COIN_EXCHANGE:
@@ -3370,8 +3295,6 @@ async def exchange_coins(update: Update, context: ContextTypes.DEFAULT_TYPE, res
     await update.message.reply_text(f"✅ Вы обменяли {amount} {resource_name} на {coins_earned} 🪙 Монет!")
 
 async def craft_item(update: Update, context: ContextTypes.DEFAULT_TYPE, item_key, amount_str):
-    if update.effective_chat.type != "private":
-        return
     user_id = update.effective_user.id
     
     if item_key not in CRAFT_RECIPES:
@@ -3555,8 +3478,22 @@ async def leaderboard_command(update: Update, context: ContextTypes.DEFAULT_TYPE
     
     await update.message.reply_text(text, parse_mode='Markdown')
 
+async def safe_edit_message_group(query, text=None, reply_markup=None, parse_mode=None):
+    try:
+        if text is not None:
+            await query.edit_message_text(text, reply_markup=reply_markup, parse_mode=parse_mode)
+        else:
+            await query.edit_message_reply_markup(reply_markup=reply_markup)
+    except Exception as e:
+        # Если не удалось отредактировать, отправляем новое сообщение
+        try:
+            await query.message.reply_text(text, reply_markup=reply_markup, parse_mode=parse_mode)
+        except:
+            pass
+
 def main():
     app = Application.builder().token(TOKEN).build()
+    
     app.add_handler(CommandHandler("start", start)) 
     app.add_handler(CommandHandler("mine", mine))
     app.add_handler(CommandHandler("inventory", inventory_command))
@@ -3569,7 +3506,6 @@ def main():
     app.add_handler(CommandHandler("sector", sector_command))
     app.add_handler(CommandHandler("drawings", drawings_command))
     app.add_handler(CommandHandler("top", leaderboard_command))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     
     # Команды обмена и крафта
     app.add_handler(CommandHandler("buyartifact", lambda u, c: buy_artifact(u, c, c.args[0] if c.args else "0")))
@@ -3614,52 +3550,49 @@ def main():
     app.add_handler(CommandHandler("craftoil", lambda u, c: craft_item(u, c, "oil", c.args[0] if c.args else "0")))
     app.add_handler(CommandHandler("craftcryofluid", lambda u, c: craft_item(u, c, "cryofluid", c.args[0] if c.args else "0")))
     
-    # Callback обработчики
-    app.add_handler(CallbackQueryHandler(mine_build_menu, pattern="^mine_build_menu$"))
-    app.add_handler(CallbackQueryHandler(mine_info, pattern="^mine_info$"))
-    app.add_handler(CallbackQueryHandler(mine_collect, pattern="^mine_collect$"))
-    app.add_handler(CallbackQueryHandler(mine_back, pattern="^mine_back$"))
-    app.add_handler(CallbackQueryHandler(lambda u, c: mine_build_drill(u, c, u.callback_query.data.replace("mine_build_", "")), pattern="^mine_build_"))
-    app.add_handler(CallbackQueryHandler(upgrade_callback, pattern="^upgrade_"))
-    app.add_handler(CallbackQueryHandler(drone_back, pattern="^drone_back$"))
-    app.add_handler(CallbackQueryHandler(drone_stats, pattern="^drone_stats$"))
-    app.add_handler(CallbackQueryHandler(drone_buy_cancel, pattern="^drone_buy_cancel$"))
-    app.add_handler(CallbackQueryHandler(sector_my_base, pattern="^sector_my_base$"))
-    app.add_handler(CallbackQueryHandler(sector_build, pattern="^sector_build$"))
-    app.add_handler(CallbackQueryHandler(sector_back, pattern="^sector_back$"))
-    app.add_handler(CallbackQueryHandler(sector_foundation, pattern="^sector_foundation$"))
-    app.add_handler(CallbackQueryHandler(sector_foundation_build, pattern="^sector_foundation_build$"))
-    app.add_handler(CallbackQueryHandler(sector_nucleus, pattern="^sector_nucleus$"))
-    app.add_handler(CallbackQueryHandler(sector_nucleus_build, pattern="^sector_nucleus_build$"))
-    app.add_handler(CallbackQueryHandler(sector_unit_build, pattern="^sector_unit_build$"))
-    app.add_handler(CallbackQueryHandler(sector_turret_build, pattern="^sector_turret_build$"))
-    app.add_handler(CallbackQueryHandler(sector_turret_info, pattern="^turret_select_"))
-    app.add_handler(CallbackQueryHandler(sector_turret_buy, pattern="^turret_buy_"))
-    app.add_handler(CallbackQueryHandler(unit_category, pattern="^unit_category_"))
-    app.add_handler(CallbackQueryHandler(unit_info, pattern="^unit_select_"))
-    app.add_handler(CallbackQueryHandler(unit_buy, pattern="^unit_buy_"))
-    
-    # Обработчики атаки на секторы
-    app.add_handler(CallbackQueryHandler(lambda u, c: sector_next_bases(u, c, u.callback_query.data.replace("next_", "")), pattern="^next_"))
-    app.add_handler(CallbackQueryHandler(sector_enemy_bases, pattern="^sector_enemy_bases$"))
-    app.add_handler(CallbackQueryHandler(sector_attack, pattern="^attack_"))
-    app.add_handler(CallbackQueryHandler(sector_attack_confirm, pattern="^confirm_"))
-    app.add_handler(CallbackQueryHandler(sector_attack_unit, pattern="^unit_"))
-    app.add_handler(CallbackQueryHandler(sector_attack_amount, pattern="^amount_"))
-    app.add_handler(CallbackQueryHandler(sector_attack_amount_error, pattern="^error_"))
-    
-    app.add_handler(CallbackQueryHandler(lambda u, c: drawing_start(u, c, int(u.callback_query.data.replace("drawing_start_", ""))), pattern="^drawing_start_"))
-    app.add_handler(CallbackQueryHandler(drawing_cancel, pattern="^drawing_cancel$"))
-    app.add_handler(CallbackQueryHandler(lambda u, c: speedup_drawing(u, c, "coins", int(u.callback_query.data.split("_")[2])), pattern="^speedup_coins_"))
-    app.add_handler(CallbackQueryHandler(lambda u, c: speedup_drawing(u, c, "artifacts", int(u.callback_query.data.split("_")[2])), pattern="^speedup_artifacts_"))
-    app.add_handler(CallbackQueryHandler(drawings_back, pattern="^drawings_back$"))
+    # Callback обработчики с group=0
+    app.add_handler(CallbackQueryHandler(sector_my_base, pattern="^sector_my_base$"), group=0)
+    app.add_handler(CallbackQueryHandler(sector_enemy_bases, pattern="^sector_enemy_bases$"), group=0)
+    app.add_handler(CallbackQueryHandler(sector_build, pattern="^sector_build$"), group=0)
+    app.add_handler(CallbackQueryHandler(sector_back, pattern="^sector_back$"), group=0)
+    app.add_handler(CallbackQueryHandler(sector_foundation, pattern="^sector_foundation$"), group=0)
+    app.add_handler(CallbackQueryHandler(sector_foundation_build, pattern="^sector_foundation_build$"), group=0)
+    app.add_handler(CallbackQueryHandler(sector_nucleus, pattern="^sector_nucleus$"), group=0)
+    app.add_handler(CallbackQueryHandler(sector_nucleus_build, pattern="^sector_nucleus_build$"), group=0)
+    app.add_handler(CallbackQueryHandler(sector_unit_build, pattern="^sector_unit_build$"), group=0)
+    app.add_handler(CallbackQueryHandler(sector_turret_build, pattern="^sector_turret_build$"), group=0)
+    app.add_handler(CallbackQueryHandler(sector_turret_info, pattern="^turret_select_"), group=0)
+    app.add_handler(CallbackQueryHandler(sector_turret_buy, pattern="^turret_buy_"), group=0)
+    app.add_handler(CallbackQueryHandler(unit_category, pattern="^unit_category_"), group=0)
+    app.add_handler(CallbackQueryHandler(unit_info, pattern="^unit_select_"), group=0)
+    app.add_handler(CallbackQueryHandler(unit_buy, pattern="^unit_buy_"), group=0)
+    app.add_handler(CallbackQueryHandler(lambda u, c: sector_next_bases(u, c, u.callback_query.data.replace("next_", "")), pattern="^next_"), group=0)
+    app.add_handler(CallbackQueryHandler(sector_attack, pattern="^attack_"), group=0)
+    app.add_handler(CallbackQueryHandler(sector_attack_confirm, pattern="^confirm_"), group=0)
+    app.add_handler(CallbackQueryHandler(sector_attack_unit, pattern="^unit_"), group=0)
+    app.add_handler(CallbackQueryHandler(sector_attack_amount, pattern="^amount_"), group=0)
+    app.add_handler(CallbackQueryHandler(sector_attack_amount_error, pattern="^error_"), group=0)
+    app.add_handler(CallbackQueryHandler(lambda u, c: drawing_start(u, c, int(u.callback_query.data.replace("drawing_start_", ""))), pattern="^drawing_start_"), group=0)
+    app.add_handler(CallbackQueryHandler(drawing_cancel, pattern="^drawing_cancel$"), group=0)
+    app.add_handler(CallbackQueryHandler(lambda u, c: speedup_drawing(u, c, "coins", int(u.callback_query.data.split("_")[2])), pattern="^speedup_coins_"), group=0)
+    app.add_handler(CallbackQueryHandler(lambda u, c: speedup_drawing(u, c, "artifacts", int(u.callback_query.data.split("_")[2])), pattern="^speedup_artifacts_"), group=0)
+    app.add_handler(CallbackQueryHandler(drawings_back, pattern="^drawings_back$"), group=0)
+    app.add_handler(CallbackQueryHandler(mine_build_menu, pattern="^mine_build_menu$"), group=0)
+    app.add_handler(CallbackQueryHandler(mine_info, pattern="^mine_info$"), group=0)
+    app.add_handler(CallbackQueryHandler(mine_collect, pattern="^mine_collect$"), group=0)
+    app.add_handler(CallbackQueryHandler(mine_back, pattern="^mine_back$"), group=0)
+    app.add_handler(CallbackQueryHandler(lambda u, c: mine_build_drill(u, c, u.callback_query.data.replace("mine_build_", "")), pattern="^mine_build_"), group=0)
+    app.add_handler(CallbackQueryHandler(upgrade_callback, pattern="^upgrade_"), group=0)
+    app.add_handler(CallbackQueryHandler(drone_back, pattern="^drone_back$"), group=0)
+    app.add_handler(CallbackQueryHandler(drone_stats, pattern="^drone_stats$"), group=0)
+    app.add_handler(CallbackQueryHandler(drone_buy_cancel, pattern="^drone_buy_cancel$"), group=0)
     
     for drone_name in DRONES.keys():
-        app.add_handler(CallbackQueryHandler(lambda u, c, dn=drone_name: drone_research(u, c, dn), pattern=f"^drone_research_{drone_name}$"))
-        app.add_handler(CallbackQueryHandler(lambda u, c, dn=drone_name: drone_buy(u, c, dn), pattern=f"^drone_buy_{drone_name}$"))
-        app.add_handler(CallbackQueryHandler(lambda u, c, dn=drone_name: drone_set_resource(u, c, dn, u.callback_query.data.split("_")[3]), pattern=f"^drone_resource_{drone_name}_"))
+        app.add_handler(CallbackQueryHandler(lambda u, c, dn=drone_name: drone_research(u, c, dn), pattern=f"^drone_research_{drone_name}$"), group=0)
+        app.add_handler(CallbackQueryHandler(lambda u, c, dn=drone_name: drone_buy(u, c, dn), pattern=f"^drone_buy_{drone_name}$"), group=0)
+        app.add_handler(CallbackQueryHandler(lambda u, c, dn=drone_name: drone_set_resource(u, c, dn, u.callback_query.data.split("_")[3]), pattern=f"^drone_resource_{drone_name}_"), group=0)
     
-    # Обработчик текстовых сообщений (для кнопок и команд)
+    # Обработчик текстовых сообщений
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     
     print("🤖  Бот запущен!")
