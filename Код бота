@@ -1018,7 +1018,8 @@ def get_main_keyboard():
         [KeyboardButton("🛠 Крафтинг"), KeyboardButton("🔮  Магазин")],
         [KeyboardButton("🔝  Улучшения"), KeyboardButton("🏔 Шахта")],
         [KeyboardButton("🕹 Дронстанция"), KeyboardButton("🎁  Ежедневный подарок")],
-        [KeyboardButton("⚔️  Сектор"), KeyboardButton("📜  Чертежи")]
+        [KeyboardButton("⚔️  Сектор"), KeyboardButton("📜  Чертежи")],
+        [KeyboardButton("🏆 Лидерборд")]
     ]
     return ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
 
@@ -2179,36 +2180,36 @@ async def sector_attack(update: Update, context: ContextTypes.DEFAULT_TYPE):
     captured = context.bot_data['sector'].get(user_id, {}).get('captured_sectors', [])
     
     # Если сектор уже захвачен - показываем сообщение как при победе (без награды)
-if sector_id in captured:
-    # Получаем сохранённую информацию о юнитах
-    sector_data = context.bot_data['sector'].get(user_id, {})
-    captured_units = sector_data.get('captured_units', {}).get(sector_id, {})
-    unit_name = captured_units.get('unit_name', 'неизвестный юнит')
-    amount = captured_units.get('amount', '?')
-    
-    text = f"🟡  {sector['name']}\n✅ Сектор захвачен\n\n🩸  Уничтоженные юниты: {unit_name} {amount}."
-    
-    keyboard = [[InlineKeyboardButton("⬅️  Назад", callback_data="sector_enemy_bases")]]
-    
-    # Добавляем кнопку "Дальше" если есть следующие сектора
-    if sector.get('next'):
-        keyboard.append([InlineKeyboardButton("➡️  Дальше", callback_data=f"next_{sector_id}")])
-    
-    await safe_edit_message(query, text, reply_markup=InlineKeyboardMarkup(keyboard))
-    return
+    if sector_id in captured:
+        # Получаем сохранённую информацию о юнитах
+        sector_data = context.bot_data['sector'].get(user_id, {})
+        captured_units = sector_data.get('captured_units', {}).get(sector_id, {})
+        unit_name = captured_units.get('unit_name', 'неизвестный юнит')
+        amount = captured_units.get('amount', '?')
+        
+        text = f"🟡   {sector['name']}\n✅ Сектор захвачен\n\n🩸   Уничтоженные юниты: {unit_name} {amount}."
+        
+        keyboard = [[InlineKeyboardButton("⬅️   Назад", callback_data="sector_enemy_bases")]]
+        
+        # Добавляем кнопку "Дальше" если есть следующие сектора
+        if sector.get('next'):
+            keyboard.append([InlineKeyboardButton("➡️   Дальше", callback_data=f"next_{sector_id}")])
+        
+        await safe_edit_message(query, text, reply_markup=InlineKeyboardMarkup(keyboard))
+        return
     
     # Если сектор не захвачен
-    text = f"🔴  {sector['name']}\n"
-    text += f"💀  Угроза: {sector['threat']}\n"
+    text = f"🔴   {sector['name']}\n"
+    text += f"💀   Угроза: {sector['threat']}\n"
     text += f"🛡 Вражеские ядра: {sector['core']} {sector['cores_count']}\n"
-    text += f"🔫  Вражеская оборона:\n"
+    text += f"🔫   Вражеская оборона:\n"
     for turret_name, count in sector['turrets'].items():
         text += f"• {turret_name} {count} шт.\n"
     text += "\nВыберите действие:"
     
     keyboard = [
-        [InlineKeyboardButton("⚔️  Атаковать", callback_data=f"confirm_{sector_id}")],
-        [InlineKeyboardButton("⬅️  Назад", callback_data="sector_enemy_bases")]
+        [InlineKeyboardButton("⚔️   Атаковать", callback_data=f"confirm_{sector_id}")],
+        [InlineKeyboardButton("⬅️   Назад", callback_data="sector_enemy_bases")]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
@@ -3447,26 +3448,28 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
     
     # Обработка кнопок с эмодзи
-    if text == "⛏️  Копать" or text == "копать":
+    if text == "⛏️ Копать" or text == "копать":
         await mine(update, context)
     elif text == "📦 Инвентарь":
         await inventory_command(update, context)
     elif text == "🛠 Крафтинг":
         await craft_command(update, context)
-    elif text == "🔮  Магазин":
+    elif text == "🔮 Магазин":
         await shop_command(update, context)
-    elif text == "🔝  Улучшения":
+    elif text == "🔝 Улучшения":
         await upgrade_command(update, context)
     elif text == "🏔 Шахта":
         await mineshaft_command(update, context)
     elif text == "🕹 Дронстанция":
         await drones_command(update, context)
-    elif text == "🎁  Ежедневный подарок":
+    elif text == "🎁 Ежедневный подарок":
         await daygift_command(update, context)
-    elif text == "⚔️  Сектор":
+    elif text == "⚔️ Сектор":
         await sector_command(update, context)
-    elif text == "📜  Чертежи":
+    elif text == "📜 Чертежи":
         await drawings_command(update, context)
+    elif text == "🏆 Лидерборд":
+        await leaderboard_command(update, context)
 
 async def handle_new_chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Проверяем, что это текстовое сообщение и бот добавлен в чат
@@ -3490,6 +3493,68 @@ async def start_group(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_markup=get_main_keyboard()
     )
 
+async def leaderboard_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    
+    # Собираем всех игроков и их вооружение
+    players = []
+    
+    if 'sector' in context.bot_data:
+        for uid, data in context.bot_data['sector'].items():
+            weapons = data.get('weapons', 0)
+            # Получаем имя игрока (пытаемся из чата, если нет - из данных)
+            name = "Игрок"
+            try:
+                user = await context.bot.get_chat(uid)
+                name = user.first_name if user.first_name else f"Игрок_{uid}"
+            except:
+                name = f"Игрок_{uid}"
+            players.append((uid, name, weapons))
+    
+    # Сортируем по вооружению (по убыванию)
+    players.sort(key=lambda x: x[2], reverse=True)
+    
+    # Берем топ-30
+    top_players = players[:30]
+    
+    # Функция определения уровня
+    def get_rank(weapons):
+        if weapons < 1000:
+            return "◽️  Начинающий (Lv. 1)"
+        elif weapons < 2500:
+            return "◻️  Осваивающийся (Lv. 2)"
+        elif weapons < 10000:
+            return "◾️  Любитель (Lv. 3)"
+        elif weapons < 50000:
+            return "◼️  Продвинутый (Lv. 4)"
+        elif weapons < 150000:
+            return "🔶 ️ Эксперт (Lv. 5)"
+        elif weapons < 2000000:
+            return "🔷 ️ Мастер (Lv. 6)"
+        elif weapons < 30000000:
+            return "🔺 ️ Легенда (Lv. 7)"
+        else:
+            return "💠  Бог (Lv. 8)"
+    
+    # Формируем текст
+    if not top_players:
+        await update.message.reply_text("🏆 Пока нет игроков в лидерборде!")
+        return
+    
+    text = "🎖 **ТОП ЛУЧШИХ ИГРОКОВ ЗА ВСЕ ВРЕМЯ** 🎖\n\n"
+    
+    medals = ["🥇 ", "🥈 ", "🥉 "]
+    for i, (uid, name, weapons) in enumerate(top_players, 1):
+        if i <= 3:
+            medal = medals[i-1]
+            text += f"#{i}{medal} **{name}**\n"
+        else:
+            text += f"#{i} **{name}**\n"
+        text += f"💥  Вооружение: {weapons}\n"
+        text += f"{get_rank(weapons)}\n\n"
+    
+    await update.message.reply_text(text, parse_mode='Markdown')
+
 def main():
     app = Application.builder().token(TOKEN).build()
     app.add_handler(CommandHandler("start", start)) 
@@ -3503,6 +3568,7 @@ def main():
     app.add_handler(CommandHandler("daygift", daygift_command))
     app.add_handler(CommandHandler("sector", sector_command))
     app.add_handler(CommandHandler("drawings", drawings_command))
+    app.add_handler(CommandHandler("top", leaderboard_command))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     
     # Команды обмена и крафта
@@ -3574,6 +3640,7 @@ def main():
     app.add_handler(CallbackQueryHandler(unit_buy, pattern="^unit_buy_"))
     
     # Обработчики атаки на секторы
+    app.add_handler(CallbackQueryHandler(lambda u, c: sector_next_bases(u, c, u.callback_query.data.replace("next_", "")), pattern="^next_"))
     app.add_handler(CallbackQueryHandler(sector_enemy_bases, pattern="^sector_enemy_bases$"))
     app.add_handler(CallbackQueryHandler(sector_attack, pattern="^attack_"))
     app.add_handler(CallbackQueryHandler(sector_attack_confirm, pattern="^confirm_"))
