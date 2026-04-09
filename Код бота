@@ -10,13 +10,13 @@ TOKEN = ""
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
 # Базовый кулдаун в секундах (1200 секунд = 20 минут)
-BASE_COOLDOWN = 1
-MIN_COOLDOWN = 1
+BASE_COOLDOWN = 1200
+MIN_COOLDOWN = 30
 WAVE_COOLDOWN = 10800
 
 # Базовые множители добычи
 BASE_MIN_ITEMS = 1
-BASE_MAX_ITEMS = 10000
+BASE_MAX_ITEMS = 10
 BASE_MIN_LIQUID = 100
 BASE_MAX_LIQUID = 1000
 
