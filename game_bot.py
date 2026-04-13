@@ -1251,10 +1251,12 @@ async def safe_edit_message(query, text=None, reply_markup=None, parse_mode=None
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
+    print(f"🔍 Получена команда /start от {user_id}")
     
     await update.message.reply_text(
+        "✅ Бот получил команду /start!\n\n"
         "Привет! Я - Mindustry Копатель Бот.⛏️ \n\n"
-        "Eсли хочешь узнать список команд, используй /help",
+        "Если хочешь узнать список команд, используй /help",
         reply_markup=get_main_keyboard()
     )
 
