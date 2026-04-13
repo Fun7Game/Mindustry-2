@@ -1,0 +1,9 @@
+meta:
+  environment: python
+  build:
+    args:
+      - pip install -r requirements.txt
+  run:
+    command: python game_bot.py
+    persistence:
+      - /app/save.json
