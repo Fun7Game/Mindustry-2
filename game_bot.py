@@ -1276,7 +1276,8 @@ async def craft_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "Пример: 10 кинетического сплава - /craftsurgealloy 10"
     )
     
-    await update.message.reply_text(craft_text, parse_mode='Markdown')
+    keyboard = [[InlineKeyboardButton("⬅️ Назад", callback_data="back_to_menu")]]
+    await update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(keyboard))
 
 async def shop_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     shop_text = (
@@ -1288,7 +1289,8 @@ async def shop_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "/exchangesilicon 5 - обменять 5 Кремния на 25 монет"
     )
     
-    await update.message.reply_text(shop_text, parse_mode='Markdown')
+    keyboard = [[InlineKeyboardButton("⬅️ Назад", callback_data="back_to_menu")]]
+    await update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(keyboard))
 
 async def drawings_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
@@ -1313,10 +1315,10 @@ async def drawings_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if remaining > 0:
             coins_cost = remaining * 1000
             artifacts_cost = remaining
-            keyboard.append([InlineKeyboardButton(f"⏱️ Ускорить ({coins_cost}🪙)", callback_data=f"speedup_coins_{remaining}")])
-            keyboard.append([InlineKeyboardButton(f"⏱️ Ускорить ({artifacts_cost}🔮)", callback_data=f"speedup_artifacts_{remaining}")])
+            keyboard.append([InlineKeyboardButton(f"⏱️ Ускорить ({coins_cost}🪙 )", callback_data=f"speedup_coins_{remaining}")])
+            keyboard.append([InlineKeyboardButton(f"⏱️ Ускорить ({artifacts_cost}🔮 )", callback_data=f"speedup_artifacts_{remaining}")])
         keyboard.append([InlineKeyboardButton("❌ Отменить чертеж", callback_data="drawing_cancel")])
-        reply_markup = InlineKeyboardMarkup(keyboard)
+        keyboard.append([InlineKeyboardButton("⬅️ Назад", callback_data="back_to_menu")])
         
         if update.callback_query:
             await safe_edit_message(update.callback_query, text, parse_mode='Markdown', reply_markup=reply_markup)
@@ -1355,7 +1357,9 @@ async def drawings_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     if row:
         keyboard.append(row)
-    
+
+    keyboard.append([InlineKeyboardButton("⬅️ Назад", callback_data="back_to_menu")])
+
     text += "Выберите чертеж, который хотите выполнить:"
     
     if update.callback_query:
@@ -1369,7 +1373,8 @@ async def sector_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [
         [InlineKeyboardButton("🟡 Моя база", callback_data="sector_my_base")],
         [InlineKeyboardButton("🔴 Вражеские базы", callback_data="sector_enemy_bases")],
-        [InlineKeyboardButton("🛠 Создать турель/юнита", callback_data="sector_build")]
+        [InlineKeyboardButton("🛠 Создать турель/юнита", callback_data="sector_build")],
+        [InlineKeyboardButton("⬅️ Назад", callback_data="back_to_menu")]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
@@ -2619,11 +2624,11 @@ async def drones_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     for drone_name, drone_info in DRONES.items():
         research_key = drone_info['research_key']
         if not drones_data.get(research_key, False):
-            keyboard.append([InlineKeyboardButton(f"🔍 Исследовать дрон {drone_name} ({drone_info['research_cost']}🪙)", callback_data=f"drone_research_{drone_name}")])
+            keyboard.append([InlineKeyboardButton(f"🔍 Исследовать дрон {drone_name} ({drone_info['research_cost']}🪙 )", callback_data=f"drone_research_{drone_name}")])
         else:
-            keyboard.append([InlineKeyboardButton(f"🛒 Купить {drone_name} ({drone_info['buy_cost']}🪙)", callback_data=f"drone_buy_{drone_name}")])
+            keyboard.append([InlineKeyboardButton(f"🛒 Купить {drone_name} ({drone_info['buy_cost']}🪙 )", callback_data=f"drone_buy_{drone_name}")])
     keyboard.append([InlineKeyboardButton("📊 Статистика дронов", callback_data="drone_stats")])
-    reply_markup = InlineKeyboardMarkup(keyboard)
+    keyboard.append([InlineKeyboardButton("⬅️ Назад", callback_data="back_to_menu")])
     
     text = f"🕹 *Дронстанция*\n\nИсследуйте и используйте дроны чтобы добывать недостающие ресурсы!\n\nПроизводительность дронов:\n🕹Моно - 1Рес/Ч\n🕹Поли - 9Рес/Ч\n🕹Мега - 65Рес/Ч\n🕹Квад - 380Рес/Ч\n🕹Окт - 8500Рес/Ч\n\n🪙 Монеты: {coins}."
     
@@ -2850,7 +2855,8 @@ async def mineshaft_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     keyboard = [
         [InlineKeyboardButton("🛠 Построить бур", callback_data="mine_build_menu")],
-        [InlineKeyboardButton("🏔 Моя шахта", callback_data="mine_info")]
+        [InlineKeyboardButton("🏔 Моя шахта", callback_data="mine_info")],
+        [InlineKeyboardButton("⬅️ Назад", callback_data="back_to_menu")]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
@@ -3138,7 +3144,8 @@ async def mine(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.bot_data['all_inventories'][user_id][resource] = 0
     context.bot_data['all_inventories'][user_id][resource] += amount
     
-    await update.message.reply_text(result_text)
+    keyboard = [[InlineKeyboardButton("⬅️ Назад", callback_data="back_to_menu")]]
+    await update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(keyboard))
 
 async def inventory_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
@@ -3169,7 +3176,8 @@ async def inventory_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             else:
                 inventory_text += f"• {resource}: {amount} шт.\n"
     
-    await update.message.reply_text(inventory_text)
+    keyboard = [[InlineKeyboardButton("⬅️ Назад", callback_data="back_to_menu")]]
+    await update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(keyboard))
 
 # ========== УЛУЧШЕНИЯ ==========
 
@@ -3200,7 +3208,8 @@ async def upgrade_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     keyboard = [
         [InlineKeyboardButton(f"🔝 Производство x1.5 ({mining_cost}🔮)", callback_data=f"upgrade_mining_{mining_cost}")],
-        [InlineKeyboardButton(f"⏱️ Кулдаун -15с ({cooldown_cost}🔮)", callback_data=f"upgrade_cooldown_{cooldown_cost}")]
+        [InlineKeyboardButton(f"⏱️ Кулдаун -15с ({cooldown_cost}🔮)", callback_data=f"upgrade_cooldown_{cooldown_cost}")],
+        [InlineKeyboardButton("⬅️ Назад", callback_data="back_to_menu")]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
@@ -3351,7 +3360,8 @@ async def daygift_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             if item not in context.bot_data['unique_items'][user_id]:
                 context.bot_data['unique_items'][user_id].append(item)
     
-    await update.message.reply_text(gift_text, parse_mode='Markdown')
+    keyboard = [[InlineKeyboardButton("⬅️ Назад", callback_data="back_to_menu")]]
+    await update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(keyboard))
 
 # ========== ОБМЕНЫ И КРАФТ ==========
 
@@ -3652,7 +3662,8 @@ async def leaderboard_command(update: Update, context: ContextTypes.DEFAULT_TYPE
         text += f"💥  Вооружение: {weapons}\n"
         text += f"{get_rank(weapons)}\n\n"
     
-    await update.message.reply_text(text, parse_mode='Markdown')
+    keyboard = [[InlineKeyboardButton("⬅️ Назад", callback_data="back_to_menu")]]
+    await update.message.reply_text(text, reply_markup=InlineKeyboardMarkup(keyboard))
 
 async def mindustrymining_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Поддержка как для обычных команд, так и для callback (кнопка "Назад")
@@ -3767,8 +3778,9 @@ async def profile_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text += f"⛏️  Количество копаний: {mine_count}"
     
     keyboard = [
-        [InlineKeyboardButton("⚙️  Уникальные предметы", callback_data=f"profile_items_{user_id}")],
-        [InlineKeyboardButton("🖼 GIF", callback_data=f"profile_gif_{user_id}")]
+        [InlineKeyboardButton("⚙️ Уникальные предметы", callback_data=f"profile_items_{user_id}")],
+        [InlineKeyboardButton("🖼 GIF", callback_data=f"profile_gif_{user_id}")],
+        [InlineKeyboardButton("⬅️ Назад", callback_data="back_to_menu")]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
@@ -3864,7 +3876,8 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "💥  Вооружение - Это совокупность защиты и атаки всех имеющихся на базе игрока турелей и юнитов. Основная цель игры. Определяет место игрока в лидерборде. Вооружение может снижаться после атаки вражеских юнитов. При отрицательном вооружении игрок получает санкции на добычу."
     )
     
-    await update.message.reply_text(help_text, parse_mode='Markdown')
+    keyboard = [[InlineKeyboardButton("⬅️ Назад", callback_data="back_to_menu")]]
+    await update.message.reply_text(help_text, parse_mode='Markdown', reply_markup=InlineKeyboardMarkup(keyboard))
 
 def get_back_button():
     return [[InlineKeyboardButton("⬅️  Назад", callback_data="back_to_menu")]]
