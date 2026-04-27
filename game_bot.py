@@ -3689,77 +3689,6 @@ async def mindustrymining_command(update: Update, context: ContextTypes.DEFAULT_
     
     await send_message(text, reply_markup=reply_markup)
 
-async def menu_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    
-    action = query.data.replace("menu_", "")
-    
-    # Обработка возврата в главное меню
-    if action == "back":
-        await mindustrymining_command(update, context)
-        return
-    
-    # Для всех остальных команд — перенаправляем
-    class FakeMessage:
-        def __init__(self, query):
-            self.query = query
-        
-        async def reply_text(self, text, parse_mode=None, reply_markup=None):
-            # Добавляем кнопку "Назад" к reply_markup
-            back_button = [InlineKeyboardButton("⬅️  Назад", callback_data="menu_back")]
-            
-            if reply_markup and hasattr(reply_markup, 'inline_keyboard'):
-                # Преобразуем кортеж в список, если нужно
-                if isinstance(reply_markup.inline_keyboard, tuple):
-                    new_keyboard = list(reply_markup.inline_keyboard)
-                else:
-                    new_keyboard = reply_markup.inline_keyboard.copy()
-                new_keyboard.append(back_button)
-            else:
-                new_keyboard = [back_button]
-            
-            new_markup = InlineKeyboardMarkup(new_keyboard)
-            await self.query.edit_message_text(text, parse_mode=parse_mode, reply_markup=new_markup)
-    
-    class FakeUpdate:
-        def __init__(self, message, effective_user, effective_chat):
-            self.message = message
-            self.effective_user = effective_user
-            self.effective_chat = effective_chat
-            self.callback_query = None
-    
-    fake_message = FakeMessage(query)
-    fake_update = FakeUpdate(fake_message, update.effective_user, update.effective_chat)
-    
-    # Вызываем соответствующую команду
-    if action == "mine":
-        await mine(fake_update, context)
-    elif action == "inventory":
-        await inventory_command(fake_update, context)
-    elif action == "upgrade":
-        await upgrade_command(fake_update, context)
-    elif action == "craft":
-        await craft_command(fake_update, context)
-    elif action == "shop":
-        await shop_command(fake_update, context)
-    elif action == "mineshaft":
-        await mineshaft_command(fake_update, context)
-    elif action == "drones":
-        await drones_command(fake_update, context)
-    elif action == "daygift":
-        await daygift_command(fake_update, context)
-    elif action == "sector":
-        await sector_command(fake_update, context)
-    elif action == "drawings":
-        await drawings_command(fake_update, context)
-    elif action == "profile":
-        await profile_command(fake_update, context)
-    elif action == "top":
-        await leaderboard_command(fake_update, context)
-    elif action == "help":
-        await help_command(fake_update, context)
-
 async def safe_edit_message_group(query, text=None, reply_markup=None, parse_mode=None):
     try:
         if text is not None:
@@ -3936,6 +3865,14 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
     
     await update.message.reply_text(help_text, parse_mode='Markdown')
+
+def get_back_button():
+    return [[InlineKeyboardButton("⬅️  Назад", callback_data="back_to_menu")]]
+
+async def back_to_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    await mindustrymining_command(update, context)
 
 def main():
     app = Application.builder().token(TOKEN).build()
