@@ -3937,9 +3937,6 @@ def main():
         app.add_handler(CallbackQueryHandler(lambda u, c, dn=drone_name: drone_buy(u, c, dn), pattern=f"^drone_buy_{drone_name}$"), group=0)
         app.add_handler(CallbackQueryHandler(lambda u, c, dn=drone_name: drone_set_resource(u, c, dn, u.callback_query.data.split("_")[3]), pattern=f"^drone_resource_{drone_name}_"), group=0)
     
-    # Обработчик текстовых сообщений
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-    
     print("🤖  Бот запущен!")
     app.run_polling(allowed_updates=Update.ALL_TYPES)
 
