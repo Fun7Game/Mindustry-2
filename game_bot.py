@@ -3700,6 +3700,64 @@ async def mindustrymining_command(update: Update, context: ContextTypes.DEFAULT_
     
     await send_message(text, reply_markup=reply_markup)
 
+async def menu_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    
+    action = query.data.replace("menu_", "")
+    
+    # Обработка возврата в главное меню
+    if action == "back":
+        await mindustrymining_command(update, context)
+        return
+    
+    # Создаем временные объекты для вызова команд
+    class FakeMessage:
+        def __init__(self, chat_id, bot):
+            self.chat_id = chat_id
+            self.bot = bot
+        
+        async def reply_text(self, text, parse_mode=None, reply_markup=None):
+            await query.edit_message_text(text, parse_mode=parse_mode, reply_markup=reply_markup)
+    
+    class FakeUpdate:
+        def __init__(self, message, effective_user, effective_chat):
+            self.message = message
+            self.effective_user = effective_user
+            self.effective_chat = effective_chat
+            self.callback_query = None
+    
+    fake_message = FakeMessage(update.effective_chat.id, context.bot)
+    fake_update = FakeUpdate(fake_message, update.effective_user, update.effective_chat)
+    
+    # Вызываем команду
+    if action == "mine":
+        await mine(fake_update, context)
+    elif action == "inventory":
+        await inventory_command(fake_update, context)
+    elif action == "upgrade":
+        await upgrade_command(fake_update, context)
+    elif action == "craft":
+        await craft_command(fake_update, context)
+    elif action == "shop":
+        await shop_command(fake_update, context)
+    elif action == "mineshaft":
+        await mineshaft_command(fake_update, context)
+    elif action == "drones":
+        await drones_command(fake_update, context)
+    elif action == "daygift":
+        await daygift_command(fake_update, context)
+    elif action == "sector":
+        await sector_command(fake_update, context)
+    elif action == "drawings":
+        await drawings_command(fake_update, context)
+    elif action == "profile":
+        await profile_command(fake_update, context)
+    elif action == "top":
+        await leaderboard_command(fake_update, context)
+    elif action == "help":
+        await help_command(fake_update, context)
+
 async def safe_edit_message_group(query, text=None, reply_markup=None, parse_mode=None):
     try:
         if text is not None:
@@ -3989,6 +4047,7 @@ def main():
     app.add_handler(CallbackQueryHandler(profile_gif, pattern="^profile_gif_"), group=0)
     app.add_handler(CallbackQueryHandler(profile_back, pattern="^profile_back_"), group=0)
     app.add_handler(CallbackQueryHandler(back_to_menu, pattern="^back_to_menu$"), group=0)
+    app.add_handler(CallbackQueryHandler(menu_callback, pattern="^menu_"), group=0)
     
     for drone_name in DRONES.keys():
         app.add_handler(CallbackQueryHandler(lambda u, c, dn=drone_name: drone_research(u, c, dn), pattern=f"^drone_research_{drone_name}$"), group=0)
