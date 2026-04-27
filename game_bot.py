@@ -3988,7 +3988,6 @@ def main():
     app.add_handler(CallbackQueryHandler(profile_items, pattern="^profile_items_"), group=0)
     app.add_handler(CallbackQueryHandler(profile_gif, pattern="^profile_gif_"), group=0)
     app.add_handler(CallbackQueryHandler(profile_back, pattern="^profile_back_"), group=0)
-    app.add_handler(CallbackQueryHandler(menu_callback, pattern="^menu_"), group=0)
     app.add_handler(CallbackQueryHandler(back_to_menu, pattern="^back_to_menu$"), group=0)
     
     for drone_name in DRONES.keys():
