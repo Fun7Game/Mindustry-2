@@ -1223,16 +1223,6 @@ def get_resource_amount(resource, user_data=None):
         return random.randint(BASE_MIN_LIQUID, BASE_MAX_LIQUID)
     return 1
 
-def get_main_keyboard():
-    keyboard = [
-        [KeyboardButton("⛏️ Копать"), KeyboardButton("📦 Инвентарь"), KeyboardButton("🛠 Крафтинг")],
-        [KeyboardButton("🔮 Магазин"), KeyboardButton("🔝 Улучшения"), KeyboardButton("🏔 Шахта")],
-        [KeyboardButton("🕹 Дронстанция"), KeyboardButton("🎁 Ежед. подарок"), KeyboardButton("⚔️ Сектор")],
-        [KeyboardButton("📜 Чертежи"), KeyboardButton("🏆 Лидерборд"), KeyboardButton("👤 Профиль")],
-        [KeyboardButton("❓️ Как играть?")]
-    ]
-    return ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
-
 def get_upgrade_cost(level):
     return 1 * (2 ** (level)) if level > 0 else 1
 
@@ -1254,8 +1244,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     await update.message.reply_text(
         "Привет! Я - Mindustry Копатель Бот.⛏️ \n\n"
-        "Eсли хочешь узнать список команд, используй /help",
-        reply_markup=get_main_keyboard()
+        "Eсли хочешь узнать список команд, используй /help"
     )
 
 async def craft_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -1287,7 +1276,7 @@ async def craft_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "Пример: 10 кинетического сплава - /craftsurgealloy 10"
     )
     
-    await update.message.reply_text(craft_text, parse_mode='Markdown', reply_markup=get_main_keyboard())
+    await update.message.reply_text(craft_text, parse_mode='Markdown')
 
 async def shop_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     shop_text = (
@@ -1299,7 +1288,7 @@ async def shop_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "/exchangesilicon 5 - обменять 5 Кремния на 25 монет"
     )
     
-    await update.message.reply_text(shop_text, parse_mode='Markdown', reply_markup=get_main_keyboard())
+    await update.message.reply_text(shop_text, parse_mode='Markdown')
 
 async def drawings_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
@@ -1346,8 +1335,7 @@ async def drawings_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not drawings:
         await update.message.reply_text(
             f"📜 *Список чертежей игрока {user_name}:*\n\nЧертежи отсутствуют, чтобы создать новый чертеж, загляни в /sector",
-            parse_mode='Markdown',
-            reply_markup=get_main_keyboard()
+            parse_mode='Markdown'
         )
         return
     
@@ -3181,7 +3169,7 @@ async def inventory_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             else:
                 inventory_text += f"• {resource}: {amount} шт.\n"
     
-    await update.message.reply_text(inventory_text, reply_markup=get_main_keyboard())
+    await update.message.reply_text(inventory_text)
 
 # ========== УЛУЧШЕНИЯ ==========
 
@@ -3363,7 +3351,7 @@ async def daygift_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             if item not in context.bot_data['unique_items'][user_id]:
                 context.bot_data['unique_items'][user_id].append(item)
     
-    await update.message.reply_text(gift_text, parse_mode='Markdown', reply_markup=get_main_keyboard())
+    await update.message.reply_text(gift_text, parse_mode='Markdown')
 
 # ========== ОБМЕНЫ И КРАФТ ==========
 
@@ -3584,48 +3572,6 @@ async def craft_item(update: Update, context: ContextTypes.DEFAULT_TYPE, item_ke
     unit = "мл" if item_type == "liquid" else "шт"
     await update.message.reply_text(f"✅ Вы скрафтили {item_name} в количестве {crafted_amount} {unit}!")
 
-async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if not update.message or not update.message.text:
-        return
-    
-    text = update.message.text
-    
-    # Проверка на оскорбления
-    insult_keywords = ["копатель кал", "копатель говно", "верните куки", "удалите копателя"]
-    for keyword in insult_keywords:
-        if keyword in text.lower():
-            response = random.choice(INSULTS_RESPONSES)
-            await update.message.reply_text(response)
-            return
-    
-    # Обработка кнопок с эмодзи
-    if text == "⛏️ Копать" or text == "копать":
-        await mine(update, context)
-    elif text == "📦 Инвентарь":
-        await inventory_command(update, context)
-    elif text == "🛠 Крафтинг":
-        await craft_command(update, context)
-    elif text == "🔮 Магазин":
-        await shop_command(update, context)
-    elif text == "🔝 Улучшения":
-        await upgrade_command(update, context)
-    elif text == "🏔 Шахта":
-        await mineshaft_command(update, context)
-    elif text == "🕹 Дронстанция":
-        await drones_command(update, context)
-    elif text == "🎁 Ежед. подарок":
-        await daygift_command(update, context)
-    elif text == "⚔️ Сектор":
-        await sector_command(update, context)
-    elif text == "📜 Чертежи":
-        await drawings_command(update, context)
-    elif text == "🏆 Лидерборд":
-        await leaderboard_command(update, context)
-    elif text == "👤 Профиль":
-        await profile_command(update, context)
-    elif text == "❓️ Как играть?":
-        await help_command(update, context)
-
 async def handle_new_chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Проверяем, что это текстовое сообщение и бот добавлен в чат
     if not update.message or not update.message.text:
@@ -3635,8 +3581,7 @@ async def handle_new_chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         "🤖  Игровой бот Mindustry запущен!\n"
         "Используйте команды или кнопки ниже для игры.\n\n"
-        "⚠️  Для работы бота в группе, напишите /start в личные сообщения бота, чтобы создать профиль.",
-        reply_markup=get_main_keyboard()
+        "⚠️  Для работы бота в группе, напишите /start в личные сообщения бота, чтобы создать профиль."
     )
 
 async def start_group(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -3644,8 +3589,7 @@ async def start_group(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         "🤖  Игровой бот Mindustry!\n\n"
         "Для игры используйте кнопки ниже.\n"
-        "⚠️  Для создания профиля напишите /start в ЛИЧНЫЕ сообщения боту.",
-        reply_markup=get_main_keyboard()
+        "⚠️  Для создания профиля напишите /start в ЛИЧНЫЕ сообщения боту."
     )
 
 async def leaderboard_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
