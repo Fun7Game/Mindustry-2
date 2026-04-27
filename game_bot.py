@@ -3669,12 +3669,14 @@ async def mindustrymining_command(update: Update, context: ContextTypes.DEFAULT_
     # Кнопки: сначала уменьшенные (2 в ряд), потом нормальная, потом снова уменьшенные
     keyboard = [
         [InlineKeyboardButton("⛏️  Копать", callback_data="menu_mine"), InlineKeyboardButton("📦 Инвентарь", callback_data="menu_inventory")],
-        [InlineKeyboardButton("🔝  Улучшения", callback_data="menu_upgrade"), InlineKeyboardButton("🛠 Крафтинг", callback_data="menu_craft")],
-        [InlineKeyboardButton("🔮  Магазин", callback_data="menu_shop")],
-        [InlineKeyboardButton("🏔 Шахта", callback_data="menu_mineshaft"), InlineKeyboardButton("🕹 Дроны", callback_data="menu_drones")],
-        [InlineKeyboardButton("🎁  Ежед. Подарок", callback_data="menu_daygift"), InlineKeyboardButton("⚔️  Сектор", callback_data="menu_sector")],
+        [InlineKeyboardButton("🔝  Улучшения", callback_data="menu_upgrade")],
+        [InlineKeyboardButton("🛠 Крафтинг", callback_data="menu_craft"), InlineKeyboardButton("🔮  Магазин", callback_data="menu_shop")],
+        [InlineKeyboardButton("🏔 Шахта", callback_data="menu_mineshaft")],
+        [InlineKeyboardButton("🕹 Дроны", callback_data="menu_drones"), InlineKeyboardButton("🎁  Ежед. Подарок", callback_data="menu_daygift")],
+        [InlineKeyboardButton("⚔️  Сектор", callback_data="menu_sector")],
         [InlineKeyboardButton("📜  Чертежи", callback_data="menu_drawings"), InlineKeyboardButton("👤  Профиль", callback_data="menu_profile")],
-        [InlineKeyboardButton("🏆 Лидерборд", callback_data="menu_top"), InlineKeyboardButton("❓️  Как играть?", callback_data="menu_help")]
+        [InlineKeyboardButton("🏆 Лидерборд", callback_data="menu_top")],
+        [InlineKeyboardButton("❓️  Как играть?", callback_data="menu_help")]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
