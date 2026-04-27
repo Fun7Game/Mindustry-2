@@ -11,13 +11,13 @@ TOKEN = os.getenv("TOKEN")
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
 # Базовый кулдаун в секундах (1200 секунд = 20 минут)
-BASE_COOLDOWN = 1200
-MIN_COOLDOWN = 30
+BASE_COOLDOWN = 1
+MIN_COOLDOWN = 1
 WAVE_COOLDOWN = 10800
 
 # Базовые множители добычи
 BASE_MIN_ITEMS = 1
-BASE_MAX_ITEMS = 10
+BASE_MAX_ITEMS = 1000000
 BASE_MIN_LIQUID = 100
 BASE_MAX_LIQUID = 1000
 
@@ -1284,7 +1284,7 @@ async def shop_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "Обменивай свои добытые и скрафченные ресурсы на 🔮Артефакты или 🪙Монеты, чтобы покупать на них улучшения и добывать еще больше ресурсов!\n\n"
         "1 Артефакт🔮 = 1000 Монет🪙\n\n"
         "/buyartifact 1 - купить 1 артефакт\n"
-        "/exchangesurgealloyartifact 1 - обменять 2 Кинетического сплава на 1 Артефакт\n"
+        "/exchangephasefabricartifact 1 - обменять 2 Фазовой ткани на 1 Артефакт\n"
         "/exchangesilicon 5 - обменять 5 Кремния на 25 монет"
     )
     
@@ -3654,6 +3654,104 @@ async def leaderboard_command(update: Update, context: ContextTypes.DEFAULT_TYPE
     
     await update.message.reply_text(text, parse_mode='Markdown')
 
+async def mindustrymining_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    user_name = update.effective_user.first_name
+    
+    # Создаем профиль если нет
+    if 'all_inventories' not in context.bot_data:
+        context.bot_data['all_inventories'] = {}
+    if user_id not in context.bot_data['all_inventories']:
+        context.bot_data['all_inventories'][user_id] = {'coins': 100, 'artifacts': 0}
+    
+    text = f"Главное Меню ⛏️ \n\n👋  Привет, {user_name}! Выбери раздел:"
+    
+    # Кнопки: сначала уменьшенные (2 в ряд), потом нормальная, потом снова уменьшенные
+    keyboard = [
+        [InlineKeyboardButton("⛏️  Копать", callback_data="menu_mine"), InlineKeyboardButton("📦 Инвентарь", callback_data="menu_inventory")],
+        [InlineKeyboardButton("🔝  Улучшения", callback_data="menu_upgrade"), InlineKeyboardButton("🛠 Крафтинг", callback_data="menu_craft")],
+        [InlineKeyboardButton("🔮  Магазин", callback_data="menu_shop")],
+        [InlineKeyboardButton("🏔 Шахта", callback_data="menu_mineshaft"), InlineKeyboardButton("🕹 Дроны", callback_data="menu_drones")],
+        [InlineKeyboardButton("🎁  Ежед. Подарок", callback_data="menu_daygift"), InlineKeyboardButton("⚔️  Сектор", callback_data="menu_sector")],
+        [InlineKeyboardButton("📜  Чертежи", callback_data="menu_drawings"), InlineKeyboardButton("👤  Профиль", callback_data="menu_profile")],
+        [InlineKeyboardButton("🏆 Лидерборд", callback_data="menu_top"), InlineKeyboardButton("❓️  Как играть?", callback_data="menu_help")]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    
+    if update.callback_query:
+        await safe_edit_message(update.callback_query, text, reply_markup=reply_markup)
+    else:
+        await update.message.reply_text(text, reply_markup=reply_markup)
+
+async def menu_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+    
+    action = query.data.replace("menu_", "")
+    
+    # Создаем имитацию update для вызова команд
+    class FakeUpdate:
+        def __init__(self, message, effective_user, effective_chat):
+            self.message = message
+            self.effective_user = effective_user
+            self.effective_chat = effective_chat
+            self.callback_query = None
+    
+    class FakeMessage:
+        def __init__(self, reply_text_func):
+            self.reply_text = reply_text_func
+    
+    user_id = update.effective_user.id
+    
+    # Функция для отправки сообщения с кнопкой "Назад"
+    async def send_with_back_button(text, parse_mode=None, reply_markup=None):
+        # Добавляем кнопку "Назад" если её нет
+        if reply_markup and hasattr(reply_markup, 'inline_keyboard'):
+            new_keyboard = reply_markup.inline_keyboard.copy()
+            new_keyboard.append([InlineKeyboardButton("⬅️  Назад", callback_data="menu_back")])
+            reply_markup = InlineKeyboardMarkup(new_keyboard)
+        elif reply_markup is None:
+            reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("⬅️  Назад", callback_data="menu_back")]])
+        else:
+            new_keyboard = [reply_markup.inline_keyboard[0]] if reply_markup.inline_keyboard else []
+            new_keyboard.append([InlineKeyboardButton("⬅️  Назад", callback_data="menu_back")])
+            reply_markup = InlineKeyboardMarkup(new_keyboard)
+        
+        await query.edit_message_text(text, parse_mode=parse_mode, reply_markup=reply_markup)
+    
+    fake_message = FakeMessage(send_with_back_button)
+    fake_update = FakeUpdate(fake_message, update.effective_user, update.effective_chat)
+    
+    # Вызываем соответствующую команду
+    if action == "mine":
+        await mine(fake_update, context)
+    elif action == "inventory":
+        await inventory_command(fake_update, context)
+    elif action == "upgrade":
+        await upgrade_command(fake_update, context)
+    elif action == "craft":
+        await craft_command(fake_update, context)
+    elif action == "shop":
+        await shop_command(fake_update, context)
+    elif action == "mineshaft":
+        await mineshaft_command(fake_update, context)
+    elif action == "drones":
+        await drones_command(fake_update, context)
+    elif action == "daygift":
+        await daygift_command(fake_update, context)
+    elif action == "sector":
+        await sector_command(fake_update, context)
+    elif action == "drawings":
+        await drawings_command(fake_update, context)
+    elif action == "profile":
+        await profile_command(fake_update, context)
+    elif action == "top":
+        await leaderboard_command(fake_update, context)
+    elif action == "help":
+        await help_command(fake_update, context)
+    elif action == "back":
+        await mindustrymining_command(update, context)
+
 async def safe_edit_message_group(query, text=None, reply_markup=None, parse_mode=None):
     try:
         if text is not None:
@@ -3891,6 +3989,7 @@ def main():
     app.add_handler(CommandHandler("craftoil", lambda u, c: craft_item(u, c, "oil", c.args[0] if c.args else "0")))
     app.add_handler(CommandHandler("craftcryofluid", lambda u, c: craft_item(u, c, "cryofluid", c.args[0] if c.args else "0")))
     app.add_handler(CommandHandler("profile", profile_command))
+    app.add_handler(CommandHandler("mindustrymining", mindustrymining_command))
     
     # Callback обработчики с group=0
     app.add_handler(CallbackQueryHandler(sector_my_base, pattern="^sector_my_base$"), group=0)
@@ -3931,6 +4030,7 @@ def main():
     app.add_handler(CallbackQueryHandler(profile_items, pattern="^profile_items_"), group=0)
     app.add_handler(CallbackQueryHandler(profile_gif, pattern="^profile_gif_"), group=0)
     app.add_handler(CallbackQueryHandler(profile_back, pattern="^profile_back_"), group=0)
+    app.add_handler(CallbackQueryHandler(menu_callback, pattern="^menu_"))
     
     for drone_name in DRONES.keys():
         app.add_handler(CallbackQueryHandler(lambda u, c, dn=drone_name: drone_research(u, c, dn), pattern=f"^drone_research_{drone_name}$"), group=0)
