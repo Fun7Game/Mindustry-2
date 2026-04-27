@@ -3694,25 +3694,33 @@ async def menu_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await query.answer()
     
     action = query.data.replace("menu_", "")
-    user_id = update.effective_user.id
-    chat_id = update.effective_chat.id
     
-    # Функция для отправки/редактирования сообщения с кнопкой "Назад"
-    async def send_with_back(text, parse_mode=None, reply_markup=None):
-        # Добавляем кнопку "Назад" в конец
-        back_button = [InlineKeyboardButton("⬅️  Назад", callback_data="menu_back")]
-        if reply_markup and hasattr(reply_markup, 'inline_keyboard'):
-            new_keyboard = reply_markup.inline_keyboard.copy()
-            new_keyboard.append(back_button)
-        else:
-            new_keyboard = [back_button]
-        new_markup = InlineKeyboardMarkup(new_keyboard)
-        await query.edit_message_text(text, parse_mode=parse_mode, reply_markup=new_markup)
+    # Обработка возврата в главное меню
+    if action == "back":
+        await mindustrymining_command(update, context)
+        return
     
-    # Временные объекты
+    # Для всех остальных команд — перенаправляем
     class FakeMessage:
-        def __init__(self):
-            self.reply_text = send_with_back
+        def __init__(self, query):
+            self.query = query
+        
+        async def reply_text(self, text, parse_mode=None, reply_markup=None):
+            # Добавляем кнопку "Назад" к reply_markup
+            back_button = [InlineKeyboardButton("⬅️  Назад", callback_data="menu_back")]
+            
+            if reply_markup and hasattr(reply_markup, 'inline_keyboard'):
+                # Преобразуем кортеж в список, если нужно
+                if isinstance(reply_markup.inline_keyboard, tuple):
+                    new_keyboard = list(reply_markup.inline_keyboard)
+                else:
+                    new_keyboard = reply_markup.inline_keyboard.copy()
+                new_keyboard.append(back_button)
+            else:
+                new_keyboard = [back_button]
+            
+            new_markup = InlineKeyboardMarkup(new_keyboard)
+            await self.query.edit_message_text(text, parse_mode=parse_mode, reply_markup=new_markup)
     
     class FakeUpdate:
         def __init__(self, message, effective_user, effective_chat):
@@ -3721,10 +3729,10 @@ async def menu_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             self.effective_chat = effective_chat
             self.callback_query = None
     
-    fake_message = FakeMessage()
+    fake_message = FakeMessage(query)
     fake_update = FakeUpdate(fake_message, update.effective_user, update.effective_chat)
     
-    # Вызываем команду
+    # Вызываем соответствующую команду
     if action == "mine":
         await mine(fake_update, context)
     elif action == "inventory":
@@ -3751,8 +3759,6 @@ async def menu_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await leaderboard_command(fake_update, context)
     elif action == "help":
         await help_command(fake_update, context)
-    elif action == "back":
-        await mindustrymining_command(update, context)
 
 async def safe_edit_message_group(query, text=None, reply_markup=None, parse_mode=None):
     try:
