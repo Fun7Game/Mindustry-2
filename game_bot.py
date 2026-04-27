@@ -3690,8 +3690,30 @@ async def menu_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await query.answer()
     
     action = query.data.replace("menu_", "")
+    user_id = update.effective_user.id
+    chat_id = update.effective_chat.id
     
-    # Создаем имитацию update для вызова команд
+    # Создаем временное сообщение для ответа
+    class FakeMessage:
+        def __init__(self, chat_id, bot):
+            self.chat_id = chat_id
+            self.bot = bot
+            self.reply_text_called = False
+            self.last_text = None
+            self.last_reply_markup = None
+        
+        async def reply_text(self, text, parse_mode=None, reply_markup=None):
+            self.reply_text_called = True
+            self.last_text = text
+            self.last_reply_markup = reply_markup
+            # Редактируем исходное сообщение, а не отправляем новое
+            try:
+                await query.edit_message_text(text, parse_mode=parse_mode, reply_markup=reply_markup)
+            except:
+                pass
+    
+    fake_message = FakeMessage(chat_id, context.bot)
+    
     class FakeUpdate:
         def __init__(self, message, effective_user, effective_chat):
             self.message = message
@@ -3699,32 +3721,9 @@ async def menu_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             self.effective_chat = effective_chat
             self.callback_query = None
     
-    class FakeMessage:
-        def __init__(self, reply_text_func):
-            self.reply_text = reply_text_func
-    
-    user_id = update.effective_user.id
-    
-    # Функция для отправки сообщения с кнопкой "Назад"
-    async def send_with_back_button(text, parse_mode=None, reply_markup=None):
-        # Добавляем кнопку "Назад" если её нет
-        if reply_markup and hasattr(reply_markup, 'inline_keyboard'):
-            new_keyboard = reply_markup.inline_keyboard.copy()
-            new_keyboard.append([InlineKeyboardButton("⬅️  Назад", callback_data="menu_back")])
-            reply_markup = InlineKeyboardMarkup(new_keyboard)
-        elif reply_markup is None:
-            reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("⬅️  Назад", callback_data="menu_back")]])
-        else:
-            new_keyboard = [reply_markup.inline_keyboard[0]] if reply_markup.inline_keyboard else []
-            new_keyboard.append([InlineKeyboardButton("⬅️  Назад", callback_data="menu_back")])
-            reply_markup = InlineKeyboardMarkup(new_keyboard)
-        
-        await query.edit_message_text(text, parse_mode=parse_mode, reply_markup=reply_markup)
-    
-    fake_message = FakeMessage(send_with_back_button)
     fake_update = FakeUpdate(fake_message, update.effective_user, update.effective_chat)
     
-    # Вызываем соответствующую команду
+    # Вызываем команду
     if action == "mine":
         await mine(fake_update, context)
     elif action == "inventory":
@@ -3753,6 +3752,18 @@ async def menu_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await help_command(fake_update, context)
     elif action == "back":
         await mindustrymining_command(update, context)
+    
+    # Если команда не отредактировала сообщение, добавляем кнопку "Назад"
+    if not fake_message.reply_text_called:
+        text = "Выберите действие:"
+        keyboard = [[InlineKeyboardButton("⬅️  Назад", callback_data="menu_back")]]
+        await query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(keyboard))
+    else:
+        # Добавляем кнопку "Назад" к уже существующим кнопкам
+        if fake_message.last_reply_markup and hasattr(fake_message.last_reply_markup, 'inline_keyboard'):
+            new_keyboard = fake_message.last_reply_markup.inline_keyboard.copy()
+            new_keyboard.append([InlineKeyboardButton("⬅️  Назад", callback_data="menu_back")])
+            await query.edit_message_reply_markup(reply_markup=InlineKeyboardMarkup(new_keyboard))
 
 async def safe_edit_message_group(query, text=None, reply_markup=None, parse_mode=None):
     try:
